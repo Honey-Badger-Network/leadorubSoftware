@@ -6,7 +6,7 @@ const dotenv = require('dotenv')
 const { Router } = require('express');
 
 const usersModel = require('../models/usersModel')
-
+const leadsModel = require('../models/leadsModel')
 
 const router = Router();
 
@@ -110,6 +110,22 @@ router.post('/api/users/edit', async (req, res) => {
     try {
 
         const { editUser } = req.body
+
+        const oldUserObjectName = await usersModel.findById(editUser._id)
+
+        console.log(oldUserObjectName, '!@#!@')
+
+        const resultByUpdateLeadsData = await leadsModel.updateMany(
+            {
+                userName: oldUserObjectName.name
+            },
+            {
+                $set: {
+                    userName: editUser.name
+                }
+            },
+            { new: true }
+        )
 
         const result = await usersModel.findOneAndUpdate(
             { _id: editUser._id },

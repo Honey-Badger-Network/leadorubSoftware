@@ -64,7 +64,7 @@ function setTransfersCrone() {
 
   setTransfersToDB(new Date(), new Date())
   
-  crone.schedule(cronExpression, () => {
+  crone.schedule(cronHour, () => {
     setTransfersToDB(new Date(), new Date())
   })
 }

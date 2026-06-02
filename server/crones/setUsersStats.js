@@ -112,7 +112,7 @@ function setUsersStatsCrone() {
     // setUsersStatsToDB(new Date('2026-04-03'), new Date('2026-04-03'))
     setUsersStatsToDB(new Date(), new Date())
   
-    crone.schedule(cronExpression, () => {
+    crone.schedule(cronHour, () => {
         setUsersStatsToDB(new Date(), new Date())
     })
   }

@@ -125,25 +125,29 @@ router.get('/api/salary/get', async (req, res) => {
         result.forEach((item) => {
 
             let bonusByDate = getBonusByDate(item)
+            let userIdString = item.user.toString()
+            let userName = item.name
 
-            if (resultObject[item.name]) {
-                resultObject[item.name].countCalls += item.countCalls || 0
-                // resultObject[item.name].countCallsWithProfile += item.countCallsWithProfile
-                resultObject[item.name].countCallsWithProfile += 0
-                resultObject[item.name].countLeads += item.countLeads
-                resultObject[item.name].countTargets += item.countTargets
-                resultObject[item.name].countHolds += item.countHolds
-                resultObject[item.name].sumHold += item.sumHold
-                resultObject[item.name].salary += Math.round(item.salary)
-                resultObject[item.name].scriptBonus += bonusByDate
-                resultObject[item.name].clear += item.clear
-                resultObject[item.name].brokerSalary += item.brokerSalary
+            // if (resultObject[item.name]) {
+            if (resultObject[userIdString]) {
+                // resultObject[userIdString].countCallsWithProfile += item.countCallsWithProfile
+                resultObject[userIdString].countCalls += item.countCalls || 0
+                resultObject[userIdString].countCallsWithProfile += 0
+                resultObject[userIdString].countLeads += item.countLeads
+                resultObject[userIdString].countTargets += item.countTargets
+                resultObject[userIdString].countHolds += item.countHolds
+                resultObject[userIdString].sumHold += item.sumHold
+                resultObject[userIdString].salary += Math.round(item.salary)
+                resultObject[userIdString].scriptBonus += bonusByDate
+                resultObject[userIdString].clear += item.clear
+                resultObject[userIdString].brokerSalary += item.brokerSalary
             } else {
-                resultObject[item.name] = {
+                // resultObject[item.name] = {
+                resultObject[userIdString] = {
+                    // countCallsWithProfile: item.countCallsWithProfile,
                     name: item.name,
                     email: item.email,
                     countCalls: item.countCalls || 0,
-                    // countCallsWithProfile: item.countCallsWithProfile,
                     countCallsWithProfile: 0,
                     countLeads: item.countLeads,
                     countTargets: item.countTargets,
