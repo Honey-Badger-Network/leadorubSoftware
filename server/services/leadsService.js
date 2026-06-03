@@ -183,13 +183,16 @@ function aggregateUsersLeads(array) {
     let allowedHolds = ['hold', 'confirmed', 'refused']
 
     array.forEach((item) => {
-        if (arrayObject[item.userName]) {
-            arrayObject[item.userName].countLeads++
-            arrayObject[item.userName].countHolds += allowedHolds.includes(item.residenceStatus) ? 1 : 0
-            arrayObject[item.userName].sumHold += item.price
-            arrayObject[item.userName].countTargets += item.statusOKK === true ? 1 : 0
+
+        let userIdString = item.user.toString()
+
+        if (arrayObject[userIdString]) {
+            arrayObject[userIdString].countLeads++
+            arrayObject[userIdString].countHolds += allowedHolds.includes(item.residenceStatus) ? 1 : 0
+            arrayObject[userIdString].sumHold += item.price
+            arrayObject[userIdString].countTargets += item.statusOKK === true ? 1 : 0
         } else {
-            arrayObject[item.userName] = {
+            arrayObject[userIdString] = {
                 userName: item.userName,
                 countLeads: 1,
                 // countHolds: allowedHolds.includes(item.residenceStatus) ? 1 : 0,
