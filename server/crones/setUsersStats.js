@@ -22,7 +22,7 @@ async function setUsersStatsToDB(gte, lte) {
 
     const usersLeads = await getLeadsToDate(gte, lte)
 
-    const aggregatedUsersLeads = aggregateUsersLeads(usersLeads)
+    const aggregatedUsersLeads = await aggregateUsersLeads(usersLeads)
 
     // for (let user of aggregatedUsersLeads) {
 

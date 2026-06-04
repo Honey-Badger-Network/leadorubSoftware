@@ -5,6 +5,7 @@ const crone = require('node-cron')
 const dotenv = require('dotenv')
 
 const leadsModel = require('../models/leadsModel.js')
+const usersModel = require('../models/usersModel.js')
 
 /**
  * получить лиды за определные времени
@@ -177,7 +178,7 @@ function calculateClearByUser(userObject, countUsers) {
     }
 }
 
-function aggregateUsersLeads(array) {
+async function aggregateUsersLeads(array) {
 
     let arrayObject = {}
     let allowedHolds = ['hold', 'confirmed', 'refused']
@@ -193,18 +194,28 @@ function aggregateUsersLeads(array) {
             arrayObject[userIdString].countTargets += item.statusOKK === true ? 1 : 0
         } else {
             arrayObject[userIdString] = {
-                userName: item.userName,
+                // userName: item.userName,
+                userIdString,
                 countLeads: 1,
-                // countHolds: allowedHolds.includes(item.residenceStatus) ? 1 : 0,
-                countHolds: item.countHold || 0,
+                countHolds: allowedHolds.includes(item.residenceStatus) ? 1 : 0,
                 sumHold: item.price,
                 countTargets: item.statusOKK === true ? 1 : 0
             }
         }
     })
 
-    return Object.values(arrayObject)
+    let aggregatedArr = Object.values(arrayObject)
 
+    for (let user of aggregatedArr) {
+        let userObject = await usersModel.findById(user.userIdString)
+
+        if (userObject) {
+            user.userName = userObject.name
+            user.userRank = userObject.rankName
+        }
+    }
+
+    return aggregatedArr
 }
 
 module.exports = { upsertNewLeadsData, getLeadsToDate, aggregateUsersLeads, getLeadsByUser, calculateClearByUser }

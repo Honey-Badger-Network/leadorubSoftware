@@ -111,22 +111,6 @@ router.post('/api/users/edit', async (req, res) => {
 
         const { editUser } = req.body
 
-        const oldUserObjectName = await usersModel.findById(editUser._id)
-
-        console.log(oldUserObjectName, '!@#!@')
-
-        const resultByUpdateLeadsData = await leadsModel.updateMany(
-            {
-                userName: oldUserObjectName.name
-            },
-            {
-                $set: {
-                    userName: editUser.name
-                }
-            },
-            { new: true }
-        )
-
         const result = await usersModel.findOneAndUpdate(
             { _id: editUser._id },
             { $set: { ...editUser } },
