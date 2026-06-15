@@ -56,6 +56,14 @@
                           <Plus/>
                         </el-icon>
                       </el-button>
+
+                      <!-- если лид не был переводим можно добавить к нему оферы с статусами -->
+                      <el-button v-if="row.offersList.length === 0" @click="openInfoModalLead(row)" circle type="danger" plain style="margin-left: 10px">
+                        <el-icon>
+                          <Plus/>
+                        </el-icon>
+                      </el-button>
+
                     </div>
                 </template>
               </el-table-column>

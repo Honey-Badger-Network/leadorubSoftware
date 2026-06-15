@@ -63,13 +63,38 @@
                 <el-input v-model="row.commentOKK"></el-input>
             </template>
         </el-table-column> -->
-        <el-table-column prop="residenceStatus" :width="100" label="Статус">
+
+
+        <!-- <el-table-column prop="residenceStatus" :width="100" label="Статус">
             <template #default="{ row }">
                 <div class="custom" :style="{ 'background-color' : getTypeOfBadge(row.residenceStatus)}">
                     {{ row.residenceStatus }}
                 </div>
             </template>
+        </el-table-column> -->
+
+        <el-table-column prop="residenceStatus" :width="200" label="Статус">
+            <template #default="{ row }">
+              <div style="display: flex; align-items: center;">
+                <div v-if="!row.isEditResidence" class="custom" :style="{ 'background-color' : getTypeOfBadge(row.residenceStatus), flex: 1 }">
+                  {{ row.residenceStatus }}
+                </div>
+                
+                <el-select v-if="row.isEditResidence" v-model="row.residenceStatus" style="flex: 1;">
+                  <el-option v-for="(status, idx) in allStatuses" :key="idx" :label="status" :value="status" />
+                </el-select>
+                
+                <el-button :type="row.isEditResidence ? 'success' : 'warning'" plain @click="row.isEditResidence = !row.isEditResidence" style="flex-shrink: 0;">
+                    <el-icon>
+                        <Check v-if="row.isEditResidence"></Check>
+                        <Edit v-if="!row.isEditResidence"></Edit>
+                    </el-icon>
+                </el-button>
+
+              </div>
+            </template>
         </el-table-column>
+
         <el-table-column :width="100" label="Проверен">
             <template #default="{ row }">
                 <el-checkbox v-model="row.isEdited"></el-checkbox>
@@ -194,7 +219,7 @@
     font-size: 14px;
     text-align: center;
     color: white;
-    border-radius: 30px;
+    /* border-radius: 30px; */
     padding-top: 3px;
     padding-bottom: 3px;
     margin-left: -10px;
@@ -209,7 +234,7 @@
 <script>
 
     import { ElButton, ElSlider } from 'element-plus'
-    import { VideoPlay, VideoPause, Edit } from '@element-plus/icons-vue'
+    import { VideoPlay, VideoPause, Edit, Check, Close } from '@element-plus/icons-vue'
     import { ElMessage } from 'element-plus';
 
     import FormItemSelect from '../components/FormItemSelect.vue'
@@ -225,7 +250,9 @@
         VideoPlay,
         VideoPause,
         FormItemSelect,
-        Edit
+        Edit,
+        Check,
+        Close
     },
     data() {
         return {
@@ -263,6 +290,9 @@
             })
 
             this.tableData = response.leads
+        },
+        setNewStatus(status, lead) {
+            
         },
         openAllAudio(lead) {
             this.allLeadAudioArray = lead.audioArray
