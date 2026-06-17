@@ -67,7 +67,7 @@
 
         <!-- <el-table-column prop="residenceStatus" :width="100" label="Статус">
             <template #default="{ row }">
-                <div class="custom" :style="{ 'background-color' : getTypeOfBadge(row.residenceStatus)}">
+                <div class="custom-div" :style="{ 'background-color' : getTypeOfBadge(row.residenceStatus)}">
                     {{ row.residenceStatus }}
                 </div>
             </template>
@@ -76,7 +76,7 @@
         <el-table-column prop="residenceStatus" :width="200" label="Статус">
             <template #default="{ row }">
               <div style="display: flex; align-items: center;">
-                <div v-if="!row.isEditResidence" class="custom" :style="{ 'background-color' : getTypeOfBadge(row.residenceStatus), flex: 1 }">
+                <div v-if="!row.isEditResidence" class="custom-div" :style="{ 'background-color' : getTypeOfBadge(row.residenceStatus), flex: 1 }">
                   {{ row.residenceStatus }}
                 </div>
                 
@@ -213,13 +213,12 @@
     height: 30px;
 }
 
-.custom {
+.custom-div {
     width: 80px;
     text-align: center;
     font-size: 14px;
     text-align: center;
     color: white;
-    /* border-radius: 30px; */
     padding-top: 3px;
     padding-bottom: 3px;
     margin-left: -10px;
