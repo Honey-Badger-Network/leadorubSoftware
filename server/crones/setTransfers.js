@@ -11,6 +11,7 @@ const { getSkorozvonToken, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls }
 const { getResidenceLeads, getLeadsOnePhone, defaineSelfLead, findAllCallsInResidence } = require('../services/residenceService.js')
 const { getAllUsers, getUserIdByName } = require('../services/usersService.js')
 const { upsertNewLeadsData } = require('../services/leadsService.js')
+const { getUISCalls } = require('../services/uisService.js')
 
 function foundCallByLeadPhone(phone, callsArr) {
   const callObjectsArr = callsArr.filter((item) => item.phone === phone.slice(1))
@@ -42,6 +43,7 @@ async function setTransfersToDB(gte, lte) {
       }
 
       const allResidenceCalls = await findAllCallsInResidence(gte, lte)
+      // const uisCallsData = await getUISCalls(gte, lte)
 
       for (let lead of leadsToDate) {
         let leadUser = await getLeadTimeline(lead);
@@ -87,8 +89,8 @@ function setTransfersCrone() {
   const cronMinute = '*/15 * * * *'
   const cronExpression = '*/5 * * * *'
 
-  // setTransfersToDB(new Date('2026-06-18'), new Date('2026-06-18'))
-  setTransfersToDB(new Date(), new Date())
+  setTransfersToDB(new Date('2026-06-18'), new Date('2026-06-18'))
+  // setTransfersToDB(new Date(), new Date())
   
   crone.schedule(cronHour, () => {
     setTransfersToDB(new Date(), new Date())

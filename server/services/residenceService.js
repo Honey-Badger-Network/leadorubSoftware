@@ -27,6 +27,42 @@ async function getResidenceLeads(gte, lte) {
     }
 }
 
+async function getBrokers() {
+    try {
+        let brokers = []
+        const response = await axios.get('https://residence.hbnetwork.ru/api/users/', {
+            headers: { Authorization: `Bearer ${residenceToken}` },
+            params: { 
+                _page: 1, 
+                _limit: 500,
+                _populate: 'rankId'
+            }
+        })
+
+        let users = response.data.data
+        const notAllowedRanks = ['Админ', 'Уволен', 'Стажер']
+
+        users = users.filter((user) => {
+            return !notAllowedRanks.includes(user.rankId.name)
+        })
+
+        users.forEach((user) => {
+            brokers.push({
+                user: user?.name ?? null,
+                employeeId: user?.integrations?.uis?.employeeId ?? null
+            })
+        })
+
+        brokers = brokers.filter((broker) => {
+            return broker.employeeId !== null
+        })
+
+        return brokers
+    } catch (e) {
+        console.log('ошбика получения бркоеров из резиденции', e.message)
+    }
+}
+
 async function findAllCallsInResidence(gte, lte) {
     try {
         const response = await axios.get('https://residence.hbnetwork.ru/api/calls', {
@@ -147,4 +183,4 @@ async function getLeadsOnePhone(gte, lte, phone) {
 }
 
 
-module.exports = { getResidenceLeads, getLeadsOnePhone, defaineSelfLead, findAllCallsInResidence }
+module.exports = { getResidenceLeads, getLeadsOnePhone, defaineSelfLead, findAllCallsInResidence, getBrokers }
