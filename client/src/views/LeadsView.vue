@@ -252,7 +252,7 @@
         leadsTableData: [],
         usersTransfersData: [],
         currentData: [],
-        rowsInPage: 10,
+        rowsInPage: 25,
         statusesArray: ['hold', 'confirmed', 'refused', 'invalid', 'breaked', 'created'],
         usersArray: [],
         selectedStatuses: null,

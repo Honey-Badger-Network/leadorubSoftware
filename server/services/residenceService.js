@@ -27,6 +27,39 @@ async function getResidenceLeads(gte, lte) {
     }
 }
 
+async function findAllCallsInResidence(gte, lte) {
+    try {
+        const response = await axios.get('https://residence.hbnetwork.ru/api/calls', {
+            headers: { Authorization: `Bearer ${residenceToken}` },
+            params: {
+                startedAt: ['gte:' + dayjs(gte).format('YYYY-MM-DD'), 'lte:' + dayjs(lte).format('YYYY-MM-DD')],
+                state: ['transfer', 'call', 'break'],
+                _populate: 'userId',
+                _limit: 0
+            }
+        })
+
+        const residenceCalls = response.data.data
+
+        // console.log(residenceCalls, '********* RESIDENCE CALLS ***********', residenceCalls.length)
+
+        let miniResidenceCalls = []
+
+        residenceCalls.forEach((call) => {
+            miniResidenceCalls.push({
+                state: call.state,
+                phone: call.contactPhone,
+                broker: call?.userId?.name ?? null
+            })
+        })
+
+        return miniResidenceCalls
+    } catch (e) {
+        console.log(e.message)
+        return []
+    }
+}
+
 async function defaineSelfLead(gte, lte, phone) {
 
     const allowedUsers = ['Владимир Медоед', 'Наташа Юрист ']
@@ -114,4 +147,4 @@ async function getLeadsOnePhone(gte, lte, phone) {
 }
 
 
-module.exports = { getResidenceLeads, getLeadsOnePhone, defaineSelfLead }
+module.exports = { getResidenceLeads, getLeadsOnePhone, defaineSelfLead, findAllCallsInResidence }

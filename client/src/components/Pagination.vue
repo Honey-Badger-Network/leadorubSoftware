@@ -49,7 +49,7 @@
       tableData: Array,
       modelValue: {
         type: Number,
-        default: 10
+        default: 25
       }
     },
     emits: ['update:modelValue', 'page-change'],
