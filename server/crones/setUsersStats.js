@@ -22,6 +22,9 @@ async function setUsersStatsToDB(gte, lte) {
 
     const usersLeads = await getLeadsToDate(gte, lte)
 
+    // TODO сделать чтобы сли с одного лиды выпало n холдов то считать вот так
+    // countLeads: 1,  countHolds: n,  sumHold: summ(hold.price.offer[i])[n]
+
     const aggregatedUsersLeads = await aggregateUsersLeads(usersLeads)
 
     // for (let user of aggregatedUsersLeads) {
@@ -104,12 +107,28 @@ async function setUsersStatsToDB(gte, lte) {
 }
 
 
+async function setUsersStatsByManyDays() {
+    const startDate = '2026-06-01'
+    const endDate = '2026-06-30'
+
+    const totalDays = dayjs(endDate).diff(dayjs(startDate), 'day') + 1
+
+    const promises = [];
+    for (let i = 0; i < totalDays; i++) {
+        const currentDate = dayjs(startDate).add(i, 'day').format('YYYY-MM-DD')
+        promises.push(setUsersStatsToDB(currentDate, currentDate))
+    }
+
+    await Promise.all(promises)
+    console.log('Все обновления завершены по скорозвон статистикс')
+}
+
+
 function setUsersStatsCrone() {
     const cronHour = '0,30 * * * *'
     const cronMinute = '*/15 * * * *'
     const cronExpression = '*/5 * * * *'
 
-    // setUsersStatsToDB(new Date('2026-04-03'), new Date('2026-04-03'))
     setUsersStatsToDB(new Date(), new Date())
   
     crone.schedule(cronHour, () => {

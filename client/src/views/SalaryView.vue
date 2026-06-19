@@ -48,6 +48,11 @@
         <el-table-column :width="100" prop="countLeads" label="Лиды"></el-table-column>
         <el-table-column :width="100" prop="countTargets" label="Целевые"></el-table-column>
         <el-table-column :width="100" prop="countHolds" label="Холды"></el-table-column>
+        <el-table-column :width="100" prop="countHolds" label="CTR">
+            <template #default="{ row }">
+                <span>{{ Math.round(row.countHolds / row.countTargets * 100) || 0 }} %</span>
+            </template>
+        </el-table-column>
         <el-table-column :width="100" v-if="userRole === 'admin'" prop="sumHold" label="Сумма холдов"></el-table-column>
         <el-table-column :width="100" prop="salary" label="Зарплата"></el-table-column>
         <el-table-column :width="100" prop="scriptBonus" label="Бонус"></el-table-column>
