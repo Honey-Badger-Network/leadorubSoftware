@@ -70,7 +70,7 @@ async function upsertNewLeadsData(lead) {
 
     try {
 
-        // console.log(lead)
+        console.log(lead)
 
         const entryFromDB = await leadsModel.findOne({
             date: lead.date,
@@ -94,7 +94,9 @@ async function upsertNewLeadsData(lead) {
                             selfLead: lead.selfLead,
                             selfLeadName: lead.selfLeadName,
                             countHold: lead.countHold,
-                            offersList: lead.offersList
+                            offersList: lead.offersList,
+                            isUniquePhone: lead.isUniquePhone,
+                            lastPhoneCalled: lead.lastPhoneCalled
                         }
                     }
                 );
@@ -120,6 +122,8 @@ async function upsertNewLeadsData(lead) {
                     countHold: lead.countHold,
                     isEdited: lead.isEdited,
                     offersList: lead.offersList,
+                    isUniquePhone: lead.isUniquePhone,
+                    lastPhoneCalled: lead.lastPhoneCalled
                 })
         
                 await newEntry.save()
@@ -139,7 +143,9 @@ async function upsertNewLeadsData(lead) {
                 user: lead.user,
                 countHold: lead.countHold,
                 isEdited: lead.isEdited,
-                offersList: lead.offersList
+                offersList: lead.offersList,
+                isUniquePhone: lead.isUniquePhone,
+                lastPhoneCalled: lead.lastPhoneCalled
             })
     
             await newEntry.save()
@@ -236,7 +242,17 @@ async function getInfoLeadIsUnique(phone, gte, lte) {
             ]
         })
 
-        console.log(allLeadsByPhone, '!!!!!', allLeadsByPhone.length)
+        let infoObject = {
+            isUniquePhone: true,
+            lastPhoneCalled: 'first'
+        }
+
+        if (allLeadsByPhone.length > 0) {
+            infoObject.isUniquePhone = false
+            infoObject.lastPhoneCalled = allLeadsByPhone[allLeadsByPhone.length - 1].date
+        }
+
+        return infoObject
 
     } catch (e) {
         console.log(e.message)

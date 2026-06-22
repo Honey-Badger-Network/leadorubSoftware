@@ -44,13 +44,26 @@ async function setTransfersToDB(gte, lte) {
       // const uisCallsData = await getUISCalls(gte, lte)
 
       for (let lead of leadsToDate) {
+
+        // получение даных о лиде
         let leadUser = await getLeadTimeline(lead);
         let leadResidence = await getLeadsOnePhone(gte, lte, lead.number.slice(1));
         let leadAudioArray = await getLeadAudioUrls(lead);
         let userIdObject = await getUserIdByName(leadUser);
         let isSelfLead = await defaineSelfLead(gte, lte, lead.number.slice(1));
-
         let infoByUniqueLead = await getInfoLeadIsUnique(lead.number.slice(1), gte, lte)
+
+        // TODO: на будущее есть эта функция будет слишком мног овремнеи жрать то попробовтаь сделать 1 зарпос к БД
+        // получить все лиды по всем нмоерам телефонов и дальше через .filter искать уникальные и повторящии пока ждому лиду его номер телефону
+        // сделать масив всех нмоеров телефонов по лидам котоыре получены этим кроном из сокрозвона
+
+        if (infoByUniqueLead) {
+          lead.isUniquePhone = infoByUniqueLead.isUniquePhone
+          lead.lastPhoneCalled = infoByUniqueLead.lastPhoneCalled
+        } else {
+          lead.isUniquePhone = true
+          lead.lastPhoneCalled = 'first'
+        }
         
         if (!leadResidence.broker) {
           var brokerInCalls = foundCallByLeadPhone(lead.number, allResidenceCalls)
@@ -73,6 +86,8 @@ async function setTransfersToDB(gte, lte) {
           isEdited: false,
           commentOKK: "",
           offersList: leadResidence.offersList,
+          isUniquePhone: lead.isUniquePhone,
+          lastPhoneCalled: lead.lastPhoneCalled
         };
   
         const result = await upsertNewLeadsData(leadInfo);
@@ -105,7 +120,7 @@ function setTransfersCrone() {
   const cronMinute = '*/15 * * * *'
   const cronExpression = '*/5 * * * *'
 
-  setTransfersToDB(new Date('2026-06-20'), new Date('2026-06-20'))
+  setTransfersToDB(new Date(), new Date())
   // setLeadsInfoManyDays()
   
   crone.schedule(cronHour, () => {
