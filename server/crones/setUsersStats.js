@@ -92,7 +92,8 @@ async function setUsersStatsToDB(gte, lte) {
 
         let scriptBonus = 0
 
-        scriptBonus += await calculateBonusToTargetsLeadorub(user)
+        // для новой мотивации бонус по кол-ву целевых убрать TODO если что потом раскоментить
+        // scriptBonus += await calculateBonusToTargetsLeadorub(user)
         scriptBonus += await calculateBonusToClearPrice(user)
 
         user.scriptBonus = scriptBonus
@@ -108,8 +109,8 @@ async function setUsersStatsToDB(gte, lte) {
 
 
 async function setUsersStatsByManyDays() {
-    const startDate = '2026-06-01'
-    const endDate = '2026-06-30'
+    const startDate = '2026-04-01'
+    const endDate = '2026-04-30'
 
     const totalDays = dayjs(endDate).diff(dayjs(startDate), 'day') + 1
 
@@ -129,7 +130,8 @@ function setUsersStatsCrone() {
     const cronMinute = '*/15 * * * *'
     const cronExpression = '*/5 * * * *'
 
-    setUsersStatsToDB(new Date(), new Date())
+    // setUsersStatsToDB(new Date(), new Date())
+    setUsersStatsByManyDays()
   
     crone.schedule(cronHour, () => {
         setUsersStatsToDB(new Date(), new Date())

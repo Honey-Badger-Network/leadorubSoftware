@@ -48,7 +48,7 @@ async function getUISCalls(gte, lte) {
         return uisCalls
 
     } catch (e) {
-        console.log(e.message)
+        console.log('ошибка получения даных с uis', e.message)
         return []
     }
 }

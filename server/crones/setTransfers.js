@@ -43,7 +43,9 @@ async function setTransfersToDB(gte, lte) {
       }
 
       const allResidenceCalls = await findAllCallsInResidence(gte, lte)
-      // const uisCallsData = await getUISCalls(gte, lte)
+      const uisCallsData = await getUISCalls(gte, lte)
+
+      console.log(uisCallsData, 'uisCallsData uisCallsData uisCallsData!!!!!!')
 
       for (let lead of leadsToDate) {
         let leadUser = await getLeadTimeline(lead);
@@ -84,13 +86,29 @@ async function setTransfersToDB(gte, lte) {
     }
 }
 
+async function setLeadsInfoManyDays() {
+  const startDate = '2026-06-01'
+  const endDate = '2026-06-30'
+
+  const totalDays = dayjs(endDate).diff(dayjs(startDate), 'day') + 1
+
+  const promises = [];
+  for (let i = 0; i < totalDays; i++) {
+      const currentDate = dayjs(startDate).add(i, 'day').format('YYYY-MM-DD')
+      promises.push(setTransfersToDB(currentDate, currentDate))
+  }
+
+  await Promise.all(promises)
+  console.log('Все обновления завершены по лидам обновление')
+}
+
 function setTransfersCrone() {
   const cronHour = '0,30 * * * *'
   const cronMinute = '*/15 * * * *'
   const cronExpression = '*/5 * * * *'
 
-  // setTransfersToDB(new Date('2026-06-18'), new Date('2026-06-18'))
-  setTransfersToDB(new Date(), new Date())
+  setTransfersToDB(new Date('2026-06-20'), new Date('2026-06-20'))
+  // setLeadsInfoManyDays()
   
   crone.schedule(cronHour, () => {
     setTransfersToDB(new Date(), new Date())
