@@ -184,6 +184,27 @@ function calculateClearByUser(userObject, countUsers) {
     }
 }
 
+function getDistintBetweenUnUniqueLeads(lead) {
+    const leadDate = new Date(lead.lastPhoneCalled)
+    const now = new Date()
+
+    // Дата полгода назад
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(now.getMonth() - 6)
+
+    // Дата 3 месяца назад
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(now.getMonth() - 3)
+
+    if (leadDate > threeMonthsAgo) {
+        return 'beforeTreeMonths' // разница между меньше 3 месяцев
+    } else if (leadDate > sixMonthsAgo && leadDate <= threeMonthsAgo) {
+        return 'beforeZeroYear' // разница между от 3 месяцев до полгода
+    } else {
+        return 'aferZeroYear' // разница больше чем полгода назад был последний повтор лид
+    }
+}
+
 async function aggregateUsersLeads(array) {
 
     let arrayObject = {}
@@ -199,6 +220,9 @@ async function aggregateUsersLeads(array) {
             arrayObject[userIdString].countHolds += item.countHold
             arrayObject[userIdString].sumHold += item.price
             arrayObject[userIdString].countTargets += item.statusOKK === true ? 1 : 0
+            arrayObject[userIdString].countUniqueTargets += item.statusOKK === true && item.isUniquePhone === true ? 1 : 0
+            arrayObject[userIdString].countRetryTargets += item.statusOKK === true && item.isUniquePhone === false ? 1 : 0
+            arrayObject[userIdString].leadTargetsArray.push(getDistintBetweenUnUniqueLeads(item))
         } else {
             arrayObject[userIdString] = {
                 // userName: item.userName,
@@ -207,7 +231,11 @@ async function aggregateUsersLeads(array) {
                 // countHolds: allowedHolds.includes(item.residenceStatus) ? 1 : 0,
                 countHolds: item.countHold,
                 sumHold: item.price,
-                countTargets: item.statusOKK === true ? 1 : 0
+                countTargets: item.statusOKK === true ? 1 : 0,
+                countUniqueTargets: item.statusOKK === true && item.isUniquePhone === true ? 1 : 0,
+                countRetryTargets: item.statusOKK === true && item.isUniquePhone === false ? 1 : 0,
+                leadTargetsArray: [getDistintBetweenUnUniqueLeads(item)]
+                // TODO добавить логику функцию для определения как долго был последний лид до этого
             }
         }
     })

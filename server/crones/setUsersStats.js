@@ -24,6 +24,8 @@ async function setUsersStatsToDB(gte, lte) {
 
     const aggregatedUsersLeads = await aggregateUsersLeads(usersLeads)
 
+    console.log(aggregatedUsersLeads, '!!!!!!!')
+
     // for (let user of aggregatedUsersLeads) {
 
     //     let usersCallsObject = usersCalls.find((item) => {
