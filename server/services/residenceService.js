@@ -3,6 +3,7 @@ const axios = require('axios')
 const mongoose = require('mongoose')
 const crone = require('node-cron')
 const dotenv = require('dotenv')
+const https = require('https')
 
 dotenv.config()
 
@@ -11,6 +12,7 @@ const { residenceBaseUrl, residenceToken } = process.env
 async function getResidenceLeads(gte, lte) {
     try {
         const responseLeads = await axios.get(`${residenceBaseUrl}leads`, {
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
             headers: { Authorization: `Bearer ${residenceToken}` },
             params: {
                 startedAt: ['gte:' + dayjs(gte).format('YYYY-MM-DD'), 'lte:' + dayjs(lte).format('YYYY-MM-DD')],
@@ -30,7 +32,8 @@ async function getResidenceLeads(gte, lte) {
 async function getBrokers() {
     try {
         let brokers = []
-        const response = await axios.get('https://residence.hbnetwork.ru/api/users/', {
+        const response = await axios.get(`${residenceBaseUrl}users/`, {
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
             headers: { Authorization: `Bearer ${residenceToken}` },
             params: { 
                 _page: 1, 
@@ -65,7 +68,8 @@ async function getBrokers() {
 
 async function findAllCallsInResidence(gte, lte) {
     try {
-        const response = await axios.get('https://residence.hbnetwork.ru/api/calls', {
+        const response = await axios.get(`${residenceBaseUrl}calls`, {
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
             headers: { Authorization: `Bearer ${residenceToken}` },
             params: {
                 startedAt: ['gte:' + dayjs(gte).format('YYYY-MM-DD'), 'lte:' + dayjs(lte).format('YYYY-MM-DD')],

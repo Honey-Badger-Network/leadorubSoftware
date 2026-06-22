@@ -41,7 +41,9 @@ const leadsModel = new Schema({
         }],
         required: false,
         default: []
-    }
+    },
+    isUniquePhone: Boolean,
+    lastPhoneCalled: String,
 })
 
 module.exports = model('leadsModel', leadsModel);

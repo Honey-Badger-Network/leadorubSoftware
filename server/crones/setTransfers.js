@@ -10,7 +10,7 @@ const usersModel = require('../models/usersModel.js')
 const { getSkorozvonToken, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls } = require('../services/skorozvonService.js')
 const { getResidenceLeads, getLeadsOnePhone, defaineSelfLead, findAllCallsInResidence } = require('../services/residenceService.js')
 const { getAllUsers, getUserIdByName } = require('../services/usersService.js')
-const { upsertNewLeadsData } = require('../services/leadsService.js')
+const { upsertNewLeadsData, getInfoLeadIsUnique } = require('../services/leadsService.js')
 const { getUISCalls } = require('../services/uisService.js')
 
 function foundCallByLeadPhone(phone, callsArr) {
@@ -19,8 +19,6 @@ function foundCallByLeadPhone(phone, callsArr) {
   let broker = null
 
   if (callObjectsArr.length > 0) {
-
-    console.log(callObjectsArr, '!!!!! callObjectsArr !!!!!')
 
     for (const call of callObjectsArr) {
       if (call.broker !== null) {
@@ -43,9 +41,7 @@ async function setTransfersToDB(gte, lte) {
       }
 
       const allResidenceCalls = await findAllCallsInResidence(gte, lte)
-      const uisCallsData = await getUISCalls(gte, lte)
-
-      console.log(uisCallsData, 'uisCallsData uisCallsData uisCallsData!!!!!!')
+      // const uisCallsData = await getUISCalls(gte, lte)
 
       for (let lead of leadsToDate) {
         let leadUser = await getLeadTimeline(lead);
@@ -53,6 +49,8 @@ async function setTransfersToDB(gte, lte) {
         let leadAudioArray = await getLeadAudioUrls(lead);
         let userIdObject = await getUserIdByName(leadUser);
         let isSelfLead = await defaineSelfLead(gte, lte, lead.number.slice(1));
+
+        let infoByUniqueLead = await getInfoLeadIsUnique(lead.number.slice(1), gte, lte)
         
         if (!leadResidence.broker) {
           var brokerInCalls = foundCallByLeadPhone(lead.number, allResidenceCalls)

@@ -22,9 +22,6 @@ async function setUsersStatsToDB(gte, lte) {
 
     const usersLeads = await getLeadsToDate(gte, lte)
 
-    // TODO сделать чтобы сли с одного лиды выпало n холдов то считать вот так
-    // countLeads: 1,  countHolds: n,  sumHold: summ(hold.price.offer[i])[n]
-
     const aggregatedUsersLeads = await aggregateUsersLeads(usersLeads)
 
     // for (let user of aggregatedUsersLeads) {
@@ -93,7 +90,7 @@ async function setUsersStatsToDB(gte, lte) {
         let scriptBonus = 0
 
         // для новой мотивации бонус по кол-ву целевых убрать TODO если что потом раскоментить
-        // scriptBonus += await calculateBonusToTargetsLeadorub(user)
+        scriptBonus += await calculateBonusToTargetsLeadorub(user)
         scriptBonus += await calculateBonusToClearPrice(user)
 
         user.scriptBonus = scriptBonus
@@ -130,8 +127,8 @@ function setUsersStatsCrone() {
     const cronMinute = '*/15 * * * *'
     const cronExpression = '*/5 * * * *'
 
-    // setUsersStatsToDB(new Date(), new Date())
-    setUsersStatsByManyDays()
+    setUsersStatsToDB(new Date('2026-06-18'), new Date('2026-06-18'))
+    // setUsersStatsByManyDays()
   
     crone.schedule(cronHour, () => {
         setUsersStatsToDB(new Date(), new Date())

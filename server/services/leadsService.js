@@ -220,4 +220,28 @@ async function aggregateUsersLeads(array) {
     return aggregatedArr
 }
 
-module.exports = { upsertNewLeadsData, getLeadsToDate, aggregateUsersLeads, getLeadsByUser, calculateClearByUser }
+async function getInfoLeadIsUnique(phone, gte, lte) {
+    try {
+        
+        const allLeadsByPhone = await leadsModel.find({
+            phone: phone,
+            // чтобы не брать сегодняшниее лиды они и так могут быть в базе изза крона запущеным напрмиер 4 часа назад
+            $nor: [
+                { 
+                    date: { 
+                        $gte: dayjs(gte).format('YYYY-MM-DD'), 
+                        $lte: dayjs(lte).format('YYYY-MM-DD') 
+                    } 
+                }
+            ]
+        })
+
+        console.log(allLeadsByPhone, '!!!!!', allLeadsByPhone.length)
+
+    } catch (e) {
+        console.log(e.message)
+        return null
+    }
+}
+
+module.exports = { upsertNewLeadsData, getLeadsToDate, aggregateUsersLeads, getLeadsByUser, calculateClearByUser, getInfoLeadIsUnique }

@@ -38,8 +38,8 @@ function calculateBonusToClearPrice(userObject) {
 
     if (userObject.clear > 0) {
         // bonusToClear = Math.floor(userObject.clear * 0.1)
-        // TODO тоже меняется в тесте мотивации 20% от чистой бонус
-        bonusToClear = Math.floor(userObject.clear * 0.2)
+        // TODO тоже меняется в тесте мотивации 20% от чистой бонус (0.2 или 0.1)
+        bonusToClear = Math.floor(userObject.clear * 0.1)
     } else {
         bonusToClear = 0
     }
