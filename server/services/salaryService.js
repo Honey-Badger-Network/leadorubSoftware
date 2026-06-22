@@ -12,7 +12,7 @@ function calculateSalaryLeadorub(userObject) {
 
     const salaryToCalls = userObject.countCalls * 1
     const salaryToTargets = userObject.countTargets * 250
-    const salaryToHolds = userObject.countHolds * 250 // для новой мотивации добавить зп за холды
+    const salaryToHolds = userObject.countHolds * 0 // для новой мотивации добавить зп за холды (0 или 250)
 
     const leadorubSalary = salaryToCalls + salaryToTargets + salaryToHolds
     
@@ -37,7 +37,9 @@ function calculateBonusToClearPrice(userObject) {
     let bonusToClear
 
     if (userObject.clear > 0) {
-        bonusToClear = Math.floor(userObject.clear * 0.1)
+        // bonusToClear = Math.floor(userObject.clear * 0.1)
+        // TODO тоже меняется в тесте мотивации 20% от чистой бонус
+        bonusToClear = Math.floor(userObject.clear * 0.2)
     } else {
         bonusToClear = 0
     }

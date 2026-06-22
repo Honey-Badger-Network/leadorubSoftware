@@ -189,7 +189,8 @@ async function aggregateUsersLeads(array) {
 
         if (arrayObject[userIdString]) {
             arrayObject[userIdString].countLeads++
-            arrayObject[userIdString].countHolds += allowedHolds.includes(item.residenceStatus) ? 1 : 0
+            // arrayObject[userIdString].countHolds += allowedHolds.includes(item.residenceStatus) ? 1 : 0
+            arrayObject[userIdString].countHolds += item.countHold
             arrayObject[userIdString].sumHold += item.price
             arrayObject[userIdString].countTargets += item.statusOKK === true ? 1 : 0
         } else {
@@ -197,7 +198,8 @@ async function aggregateUsersLeads(array) {
                 // userName: item.userName,
                 userIdString,
                 countLeads: 1,
-                countHolds: allowedHolds.includes(item.residenceStatus) ? 1 : 0,
+                // countHolds: allowedHolds.includes(item.residenceStatus) ? 1 : 0,
+                countHolds: item.countHold,
                 sumHold: item.price,
                 countTargets: item.statusOKK === true ? 1 : 0
             }
