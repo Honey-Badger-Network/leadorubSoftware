@@ -7,7 +7,7 @@ const { Router } = require('express');
 
 const usersStatsModel = require('../models/usersStats.js')
 const { setUsersStatsToDB } = require('../crones/setUsersStats.js')
-
+const { getFullMonthClear } = require('../services/salaryService.js')
 
 const router = Router()
 
@@ -99,6 +99,11 @@ router.get('/api/salary/get', async (req, res) => {
 
         const todayStr = dayjs().format('YYYY-MM-DD')
 
+        const totalSummedClearData = await getFullMonthClear(gte, lte)
+    
+        console.log(totalSummedClearData, 'totalSummedClearData !!!@#@!#!@')
+        // TODO потом прикриптиь к этому бонус 10% от этих чистых
+
         const result = usersStatsData.map((item) => {
             let newItem = { ...item.toObject() };
             return newItem;
@@ -178,6 +183,7 @@ router.get('/api/salary/get', async (req, res) => {
             clear: 0,
             brokerSalary: 0,
             countCallsWithProfile: 0,
+            targetLeadsArray: []
         };
 
         resultObject.forEach(item => {

@@ -7,6 +7,7 @@ const dotenv = require('dotenv')
 
 const { getLeadsByUser } = require('../services/leadsService.js')
 
+const usersStatsModel = require('../models/usersStats.js')
 
 function calculateSalaryLeadorub(userObject) {
 
@@ -58,6 +59,34 @@ function calculateBonusToClearPrice(userObject) {
     return bonusToClear
 }
 
+async function getFullMonthClear(gte, lte) {
+    try {
+
+        const result = await usersStatsModel.aggregate([
+            {
+                $match: {
+                    date: { 
+                        $gte: dayjs(gte).startOf('month').format('YYYY-MM-DD'), 
+                        $lte: dayjs(lte).endOf('month').format('YYYY-MM-DD') 
+                    } // фильтр по дате за указанный месяц
+                }
+            },
+            {
+                $group: {
+                    _id: "$email", // группировка по имени пользователя
+                    totalClear: { $sum: "$clear" } // сумма поля clear для каждого пользователя
+                }
+            }
+        ]);
+
+        return result
+
+    } catch (e) {
+        console.log(e.message)
+        return null
+    }
+}
+
 async function calculateSalaryHoldorub(gte, lte, userObject) {
 
     const salaryToCalls = userObject.countCalls * 1
@@ -85,4 +114,4 @@ async function calculateSalaryHoldorub(gte, lte, userObject) {
     return holdorubSalary
 }
 
-module.exports = { calculateSalaryLeadorub, calculateSalaryHoldorub, calculateBonusToTargetsLeadorub, calculateBonusToClearPrice }
+module.exports = { calculateSalaryLeadorub, calculateSalaryHoldorub, calculateBonusToTargetsLeadorub, calculateBonusToClearPrice, getFullMonthClear }
