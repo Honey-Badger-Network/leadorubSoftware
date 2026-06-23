@@ -41,7 +41,8 @@ async function upserUsersStatsToDB(userObject) {
             brokerSalary: userObject.brokerSalary,
             scriptBonus: userObject.scriptBonus,
             date: userObject.date,
-            user: userObject._id
+            user: userObject._id,
+            targetLeadsArray: userObject.targetLeadsArray
         })
 
         await newEntry.save()

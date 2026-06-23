@@ -141,6 +141,7 @@ router.get('/api/salary/get', async (req, res) => {
                 resultObject[userIdString].scriptBonus += bonusByDate
                 resultObject[userIdString].clear += item.clear
                 resultObject[userIdString].brokerSalary += item.brokerSalary
+                resultObject[userIdString].targetLeadsArray.push(...item.targetLeadsArray)
             } else {
                 // resultObject[item.name] = {
                 resultObject[userIdString] = {
@@ -157,6 +158,7 @@ router.get('/api/salary/get', async (req, res) => {
                     scriptBonus: bonusByDate,
                     clear: item.clear,
                     brokerSalary: item.brokerSalary,
+                    targetLeadsArray: [...item.targetLeadsArray]
                 }
             }
         })

@@ -48,11 +48,20 @@
         <el-table-column :width="100" prop="countLeads" label="Лиды"></el-table-column>
         <el-table-column :width="100" prop="countTargets" label="Целевые"></el-table-column>
         <el-table-column :width="100" prop="countHolds" label="Холды"></el-table-column>
+
         <el-table-column :width="100" prop="countHolds" label="CTR">
             <template #default="{ row }">
                 <span>{{ Math.round(row.countHolds / row.countTargets * 100) || 0 }} %</span>
             </template>
         </el-table-column>
+
+        <el-table-column :width="150" v-if="userRole === 'admin'" prop="targetLeadsArray" label="лиды">
+            <template #default="{ row }">
+                <el-button type="success" v-if="row.targetLeadsArray.length > 0" plain @click="showLeadsByUser(row)">показать</el-button>
+                <span v-else>лидов нет</span>
+            </template>
+        </el-table-column>
+
         <el-table-column :width="100" v-if="userRole === 'admin'" prop="sumHold" label="Сумма холдов"></el-table-column>
         <el-table-column :width="100" prop="salary" label="Зарплата"></el-table-column>
         <el-table-column :width="100" prop="scriptBonus" label="Бонус"></el-table-column>
@@ -69,6 +78,17 @@
         <h3>За месяц <span>{{ monthToBestLidorub }}</span></h3>
         <p>Лучший Лидоруб: <strong>{{ bestLidorub.name }}</strong> чистая: <strong>{{ bestLidorub.clear }}</strong></p>
     </el-dialog>
+
+    <el-dialog :title="`лиды показать ЛД ${leadorubToShowModal}`" v-model="modalToShowLeads" width="500px">
+        <div class="leadCarder" v-for="(lead) in leadsToRequireShow">
+            <p>Состояние: <strong>{{ lead.dateState }}</strong></p>
+            <p>Целевой?: <strong>{{ lead.isTarget ? 'Целевой' : 'не целевой' }}</strong></p>
+            <p>Уникальный?: <strong>{{ lead.isUniquePhone }}</strong></p>
+            <p>Телефон: <strong>{{ lead.phone }}</strong></p>
+            <p>ЗП за лид: <strong>{{ lead.realSalaryToLead }}</strong></p>
+        </div>
+        <p>Общая зп за лиды по новой: {{ totalSalaryNewToLeads }}</p>
+    </el-dialog>
     
 </template>
 
@@ -78,6 +98,13 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.leadCarder {
+    border: solid 2px black;
+    margin-bottom: 10px;
+    padding-left: 10px;
+    border-radius: 20px;
 }
 
 </style>
@@ -105,7 +132,11 @@
                 userColumnWidth: 150,
                 bestLidorub: null,
                 monthToBestLidorub: null,
-                modalWithBestLidorub: false
+                modalWithBestLidorub: false,
+                modalToShowLeads: false,
+                leadsToRequireShow: [],
+                leadorubToShowModal: null,
+                totalSalaryNewToLeads: 0
             }
         },
         components: {
@@ -122,6 +153,15 @@
                     }
                 })
                 this.salaryTableData = response.data
+            },
+            showLeadsByUser(user) {
+                this.modalToShowLeads = true
+                this.leadsToRequireShow = user.targetLeadsArray
+                this.leadorubToShowModal = user.name
+
+                this.totalSalaryNewToLeads = user.targetLeadsArray.reduce((total, current) => {
+                    return total += current.realSalaryToLead
+                }, 0)
             },
             async getBestLidorub() {
                 try {

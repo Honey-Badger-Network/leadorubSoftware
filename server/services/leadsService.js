@@ -201,7 +201,7 @@ function getDistintBetweenUnUniqueLeads(lead) {
         dateState = 'Между 3 и 6 месяцами'
         salaryToLead = lead.isUniquePhone === true ? 250 : 50
     } else {
-        dateState = 'Менее 3 месяцев'
+        dateState = lead.isUniquePhone === false ? 'Менее 3 месяцев' : 'первый лид в базе'
         salaryToLead = lead.isUniquePhone === true ? 250 : 0
     }
 
