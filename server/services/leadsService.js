@@ -185,23 +185,35 @@ function calculateClearByUser(userObject, countUsers) {
 }
 
 function getDistintBetweenUnUniqueLeads(lead) {
-    const leadDate = new Date(lead.lastPhoneCalled)
-    const now = new Date()
+    const leadDate = dayjs(lead.lastPhoneCalled)
+    const now = dayjs()
 
-    // Дата полгода назад
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(now.getMonth() - 6)
+    const diffMonths = now.diff(leadDate, 'month')
 
-    // Дата 3 месяца назад
-    const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(now.getMonth() - 3)
+    let dateState
+    let salaryToLead
 
-    if (leadDate > threeMonthsAgo) {
-        return 'beforeTreeMonths' // разница между меньше 3 месяцев
-    } else if (leadDate > sixMonthsAgo && leadDate <= threeMonthsAgo) {
-        return 'beforeZeroYear' // разница между от 3 месяцев до полгода
+    // если что потом помеять если нужно кофициенты за цел лид salaryToLead
+    
+    if (diffMonths > 6) {
+        dateState = 'Больше полугода'
+        salaryToLead = lead.isUniquePhone === true ? 250 : 250
+    } else if (diffMonths >= 3 && diffMonths <= 6) {
+        dateState = 'Между 3 и 6 месяцами'
+        salaryToLead = lead.isUniquePhone === true ? 250 : 50
     } else {
-        return 'aferZeroYear' // разница больше чем полгода назад был последний повтор лид
+        dateState = 'Менее 3 месяцев'
+        salaryToLead = lead.isUniquePhone === true ? 250 : 0
+    }
+
+    let realSalaryToLead = lead.statusOKK === true ? salaryToLead : 0
+
+    return {
+        dateState,
+        realSalaryToLead,
+        phone: lead.phone,
+        isUniquePhone: lead.isUniquePhone,
+        isTarget: lead.statusOKK
     }
 }
 
@@ -244,6 +256,8 @@ async function aggregateUsersLeads(array) {
 
     for (let user of aggregatedArr) {
         let userObject = await usersModel.findById(user.userIdString)
+
+        console.log(user, '******')
 
         if (userObject) {
             user.userName = userObject.name

@@ -24,7 +24,7 @@ async function setUsersStatsToDB(gte, lte) {
 
     const aggregatedUsersLeads = await aggregateUsersLeads(usersLeads)
 
-    console.log(aggregatedUsersLeads, '!!!!!!!')
+    // console.log(aggregatedUsersLeads, '!!!!!!!')
 
     // for (let user of aggregatedUsersLeads) {
 
@@ -129,7 +129,7 @@ function setUsersStatsCrone() {
     const cronMinute = '*/15 * * * *'
     const cronExpression = '*/5 * * * *'
 
-    setUsersStatsToDB(new Date('2026-06-18'), new Date('2026-06-18'))
+    setUsersStatsToDB(new Date('2026-06-22'), new Date('2026-06-22'))
     // setUsersStatsByManyDays()
   
     crone.schedule(cronHour, () => {
