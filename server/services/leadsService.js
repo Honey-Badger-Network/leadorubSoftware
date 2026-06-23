@@ -69,8 +69,7 @@ async function removeDublicates(gte, lte, phone) {
 async function upsertNewLeadsData(lead) {
 
     try {
-
-        console.log(lead)
+        // console.log(lead)
 
         const entryFromDB = await leadsModel.findOne({
             date: lead.date,
@@ -212,7 +211,7 @@ function getDistintBetweenUnUniqueLeads(lead) {
         dateState,
         realSalaryToLead,
         phone: lead.phone,
-        isUniquePhone: lead.isUniquePhone,
+        isUniquePhone: lead.isUniquePhone ? 'уникальный' : 'повтор',
         isTarget: lead.statusOKK
     }
 }
@@ -228,7 +227,6 @@ async function aggregateUsersLeads(array) {
 
         if (arrayObject[userIdString]) {
             arrayObject[userIdString].countLeads++
-            // arrayObject[userIdString].countHolds += allowedHolds.includes(item.residenceStatus) ? 1 : 0
             arrayObject[userIdString].countHolds += item.countHold
             arrayObject[userIdString].sumHold += item.price
             arrayObject[userIdString].countTargets += item.statusOKK === true ? 1 : 0
@@ -237,10 +235,8 @@ async function aggregateUsersLeads(array) {
             arrayObject[userIdString].leadTargetsArray.push(getDistintBetweenUnUniqueLeads(item))
         } else {
             arrayObject[userIdString] = {
-                // userName: item.userName,
                 userIdString,
                 countLeads: 1,
-                // countHolds: allowedHolds.includes(item.residenceStatus) ? 1 : 0,
                 countHolds: item.countHold,
                 sumHold: item.price,
                 countTargets: item.statusOKK === true ? 1 : 0,
@@ -256,8 +252,6 @@ async function aggregateUsersLeads(array) {
 
     for (let user of aggregatedArr) {
         let userObject = await usersModel.findById(user.userIdString)
-
-        console.log(user, '******')
 
         if (userObject) {
             user.userName = userObject.name

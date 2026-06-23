@@ -56,12 +56,16 @@ async function setUsersStatsToDB(gte, lte) {
             user.countHolds = usersCallsObject.countHolds
             user.sumHold = usersCallsObject.sumHold
             user.countTargets = usersCallsObject.countTargets
+            user.countUniqueTargets = usersCallsObject.countUniqueTargets
+            user.targetLeadsArray = usersCallsObject.leadTargetsArray
         } else {
             user.userName = user.name
             user.countLeads = 0
             user.countHolds = 0
             user.sumHold = 0
             user.countTargets = 0
+            user.countUniqueTargets = 0
+            user.targetLeadsArray = []
         }
 
         // let userCallsInfoFromProfile = await getSkorozvonCallsFromProfile(gte, lte, user)

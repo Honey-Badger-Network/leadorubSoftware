@@ -19,7 +19,15 @@ const usersStats = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'usersModel',
         required: false
-    }
+    },
+    countUniqueTargets: Number,
+    targetLeadsArray: [{
+        dateState: String,
+        realSalaryToLead: Number,
+        phone: String,
+        isUniquePhone: String,
+        isTarget: Boolean
+    }]
 })
 
 module.exports = model('usersStats', usersStats);

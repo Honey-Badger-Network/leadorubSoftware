@@ -10,9 +10,20 @@ const { getLeadsByUser } = require('../services/leadsService.js')
 
 function calculateSalaryLeadorub(userObject) {
 
+    console.log(userObject, '&*%^(**&(*&^(^(*^(*^(*')
+
+
     const salaryToCalls = userObject.countCalls * 1
     const salaryToTargets = userObject.countTargets * 250
     const salaryToHolds = userObject.countHolds * 0 // для новой мотивации добавить зп за холды (0 или 250)
+
+    const summSalaryToTargets = userObject.targetLeadsArray.reduce((accumulator, item) => {
+        return accumulator + item.realSalaryToLead;
+    }, 0);
+
+    // TODO для новой мотивации потом как зп за целевые исопльзовать ту пременую summSalaryToTargets !!!!
+
+    console.log(summSalaryToTargets, '!!!!')
 
     const leadorubSalary = salaryToCalls + salaryToTargets + salaryToHolds
     
