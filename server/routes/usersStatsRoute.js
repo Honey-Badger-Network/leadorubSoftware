@@ -133,6 +133,16 @@ router.get('/api/salary/get', async (req, res) => {
             let userIdString = item.user.toString()
             let userName = item.name
 
+            let countTargetsAndUnique = 0
+            let countTargetsAndUnUnique = 0
+
+            item.targetLeadsArray.forEach((lead) => {
+                countTargetsAndUnique += lead.isTarget === true && lead.isUniquePhone === 'уникальный' ? 1 : 0
+                countTargetsAndUnUnique += lead.isTarget === true && lead.isUniquePhone !== 'уникальный' ? 1 : 0
+
+                console.log(item.name, countTargetsAndUnique, countTargetsAndUnUnique, lead, '!**!**!*!*!*!**!')
+            })
+
             // if (resultObject[item.name]) {
             if (resultObject[userIdString]) {
                 // resultObject[userIdString].countCallsWithProfile += item.countCallsWithProfile
@@ -147,6 +157,10 @@ router.get('/api/salary/get', async (req, res) => {
                 resultObject[userIdString].clear += item.clear
                 resultObject[userIdString].brokerSalary += item.brokerSalary
                 resultObject[userIdString].targetLeadsArray.push(...item.targetLeadsArray)
+
+                resultObject[userIdString].countTargetsAndUnique += countTargetsAndUnique
+                resultObject[userIdString].countTargetsAndUnUnique += countTargetsAndUnUnique
+
             } else {
                 // resultObject[item.name] = {
                 resultObject[userIdString] = {
@@ -163,7 +177,10 @@ router.get('/api/salary/get', async (req, res) => {
                     scriptBonus: bonusByDate,
                     clear: item.clear,
                     brokerSalary: item.brokerSalary,
-                    targetLeadsArray: [...item.targetLeadsArray]
+                    targetLeadsArray: [...item.targetLeadsArray],
+
+                    countTargetsAndUnique: countTargetsAndUnique,
+                    countTargetsAndUnUnique: countTargetsAndUnUnique
                 }
             }
         })
@@ -203,7 +220,7 @@ router.get('/api/salary/get', async (req, res) => {
             })
 
             if (lidorubObjectKey) {
-                item.bonusTenPercents = lidorubObjectKey.totalClear > 0 ? lidorubObjectKey.totalClear * 0.1 : 0
+                item.bonusTenPercents = lidorubObjectKey.totalClear > 0 ? lidorubObjectKey.totalClear * 0.2 : 0
             }
 
         });

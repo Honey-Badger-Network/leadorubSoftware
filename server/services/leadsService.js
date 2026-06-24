@@ -197,11 +197,11 @@ function getDistintBetweenUnUniqueLeads(lead) {
     if (diffMonths > 6) {
         dateState = 'Больше полугода'
         salaryToLead = lead.isUniquePhone === true ? 250 : 250
-    } else if (diffMonths >= 3 && diffMonths <= 6) {
-        dateState = 'Между 3 и 6 месяцами'
-        salaryToLead = lead.isUniquePhone === true ? 250 : 50
+    } else if (diffMonths >= 2 && diffMonths <= 6) {
+        dateState = 'Между 2 и 6 месяцами'
+        salaryToLead = lead.isUniquePhone === true ? 250 : 100
     } else {
-        dateState = lead.isUniquePhone === false ? 'Менее 3 месяцев' : 'первый лид в базе'
+        dateState = lead.isUniquePhone === false ? 'Менее 2 месяцев' : 'первый лид в базе'
         salaryToLead = lead.isUniquePhone === true ? 250 : 0
     }
 

@@ -46,7 +46,13 @@
         <el-table-column :width="100" prop="countCalls" label="Звонки"></el-table-column>
         <el-table-column :width="100" v-if="userRole === 'admin'" prop="countCallsWithProfile" label="Звонки из профиля"></el-table-column>
         <el-table-column :width="100" prop="countLeads" label="Лиды"></el-table-column>
-        <el-table-column :width="100" prop="countTargets" label="Целевые"></el-table-column>
+        <el-table-column :width="100" prop="countTargets" label="Целевые">
+            <template #default="{ row }">
+                <el-tooltip popper-class="comment-tooltip" :width="100" effect="dark" :content="`Целевые и уникальные: ${row.countTargetsAndUnique} Целевые и повторные: ${row.countTargetsAndUnUnique}`" placement="top">
+                    {{ row.countTargets }}
+                </el-tooltip>
+            </template>
+        </el-table-column>
         <el-table-column :width="100" prop="countHolds" label="Холды"></el-table-column>
 
         <el-table-column :width="100" prop="countHolds" label="CTR">
@@ -105,6 +111,11 @@
     margin-bottom: 10px;
     padding-left: 10px;
     border-radius: 20px;
+}
+
+.comment-tooltip {
+    max-width: 150px;
+    text-wrap: wrap;
 }
 
 </style>
