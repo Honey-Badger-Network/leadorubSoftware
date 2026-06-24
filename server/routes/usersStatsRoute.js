@@ -101,7 +101,7 @@ router.get('/api/salary/get', async (req, res) => {
 
         const totalSummedClearData = await getFullMonthClear(gte, lte)
     
-        console.log(totalSummedClearData, 'totalSummedClearData !!!@#@!#!@')
+        // console.log(totalSummedClearData, 'totalSummedClearData !!!@#@!#!@')
         // TODO потом прикриптиь к этому бонус 10% от этих чистых
 
         const result = usersStatsData.map((item) => {
@@ -197,6 +197,15 @@ router.get('/api/salary/get', async (req, res) => {
             total.scriptBonus += item.scriptBonus || 0;
             total.clear += item.clear || 0;
             total.brokerSalary += item.brokerSalary || 0;
+
+            let lidorubObjectKey = totalSummedClearData.find((user) => {
+                return item.email === user._id
+            })
+
+            if (lidorubObjectKey) {
+                item.bonusTenPercents = lidorubObjectKey.totalClear > 0 ? lidorubObjectKey.totalClear * 0.1 : 0
+            }
+
         });
 
         resultObject.push(total)
