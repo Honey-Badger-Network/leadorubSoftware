@@ -40,12 +40,12 @@
               <el-table-column :width="160" prop="selfLeadName" label="Сам перевел" />
 
               <!-- новые свойства рендерю в таблицу -->
-              <el-table-column :width="150" prop="isUniquePhone" label="Уникальный">
+              <el-table-column v-if="rankName === 'admin'" :width="150" prop="isUniquePhone" label="Уникальный">
                 <template #default="{ row }">
                   <span :style="{'color': row.isUniquePhone ? 'green' : 'red'}">{{ row.isUniquePhone ? 'Уникальный' : 'был повтор' }}</span>
                 </template>
               </el-table-column>
-              <el-table-column :width="150" prop="lastPhoneCalled" label="Последний звонок"></el-table-column>
+              <el-table-column v-if="rankName === 'admin'" :width="150" prop="lastPhoneCalled" label="Последний звонок"></el-table-column>
 
               <el-table-column :width="160" v-if="rankName === 'admin'" prop="broker" label="Брокер"></el-table-column>
               <el-table-column :width="160" prop="residenceStatus" label="Статус">

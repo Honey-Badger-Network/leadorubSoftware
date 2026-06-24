@@ -4,6 +4,8 @@ const mongoose = require('mongoose')
 const crone = require('node-cron')
 const dotenv = require('dotenv')
 const { Router } = require('express');
+const https = require('https')
+
 
 const leadsModel = require('../models/leadsModel')
 const usersStats = require('../models/usersStats.js')
@@ -18,6 +20,7 @@ router.get('/api/residence/brokersList', async (req, res) => {
     try {
 
         let response = await axios.get(`${residenceBaseUrl}users`, {
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
             params: {
                 _populate: 'rankId',
                 _limit: 0,
