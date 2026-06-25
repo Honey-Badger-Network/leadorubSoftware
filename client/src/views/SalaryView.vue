@@ -70,6 +70,8 @@
 
         <el-table-column :width="100" v-if="userRole === 'admin'" prop="sumHold" label="Сумма холдов"></el-table-column>
         <el-table-column :width="100" prop="salary" label="Зарплата"></el-table-column>
+        <!-- TODO вместо scriptBonus потом отрендерить bonusTenPercents он будет 0 или реал значение если lte ставится на последний день месяца -->
+        <!-- TODO это значение поставить перед новой мотивацией -->
         <el-table-column :width="100" prop="scriptBonus" label="Бонус"></el-table-column>
         <el-table-column :width="100" prop="salary + scriptBonus" label="Итого ЗП">
             <template #default="{ row }">

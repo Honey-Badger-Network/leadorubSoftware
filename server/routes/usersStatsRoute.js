@@ -139,8 +139,6 @@ router.get('/api/salary/get', async (req, res) => {
             item.targetLeadsArray.forEach((lead) => {
                 countTargetsAndUnique += lead.isTarget === true && lead.isUniquePhone === 'уникальный' ? 1 : 0
                 countTargetsAndUnUnique += lead.isTarget === true && lead.isUniquePhone !== 'уникальный' ? 1 : 0
-
-                console.log(item.name, countTargetsAndUnique, countTargetsAndUnUnique, lead, '!**!**!*!*!*!**!')
             })
 
             // if (resultObject[item.name]) {
@@ -156,6 +154,7 @@ router.get('/api/salary/get', async (req, res) => {
                 resultObject[userIdString].scriptBonus += bonusByDate
                 resultObject[userIdString].clear += item.clear
                 resultObject[userIdString].brokerSalary += item.brokerSalary
+
                 resultObject[userIdString].targetLeadsArray.push(...item.targetLeadsArray)
 
                 resultObject[userIdString].countTargetsAndUnique += countTargetsAndUnique
@@ -220,7 +219,14 @@ router.get('/api/salary/get', async (req, res) => {
             })
 
             if (lidorubObjectKey) {
-                item.bonusTenPercents = lidorubObjectKey.totalClear > 0 ? lidorubObjectKey.totalClear * 0.2 : 0
+
+                item.totalMonthClear = lidorubObjectKey.totalClear
+
+                if (dayjs(lte).format('YYYY-MM-DD') === dayjs(lte).endOf('month').format('YYYY-MM-DD')) {
+                    item.bonusTenPercents = lidorubObjectKey.totalClear > 0 ? lidorubObjectKey.totalClear * 0.2 : 0
+                } else {
+                    item.bonusTenPercents = 0
+                }
             }
 
         });
