@@ -72,10 +72,16 @@
         <el-table-column :width="100" prop="salary" label="Зарплата"></el-table-column>
         <!-- TODO вместо scriptBonus потом отрендерить bonusTenPercents он будет 0 или реал значение если lte ставится на последний день месяца -->
         <!-- TODO это значение поставить перед новой мотивацией -->
-        <el-table-column :width="100" prop="scriptBonus" label="Бонус"></el-table-column>
+        <!-- <el-table-column :width="100" prop="scriptBonus" label="Бонус"></el-table-column> -->
+        <el-table-column :width="100" prop="bonusTenPercents" label="Бонус">
+            <template #default="{ row }">
+                <p>{{ Math.round(row.bonusTenPercents) }}</p>
+            </template>
+        </el-table-column>
         <el-table-column :width="100" prop="salary + scriptBonus" label="Итого ЗП">
             <template #default="{ row }">
-                <p>{{ row.salary + row.scriptBonus }}</p>
+                <!-- <p>{{ row.salary + row.scriptBonus }}</p> -->
+                <p>{{ Math.round(row.salary + row.bonusTenPercents) }}</p>
             </template>
         </el-table-column>
         <el-table-column :width="100" prop="clear" label="Чистая"></el-table-column>

@@ -224,7 +224,7 @@ async function aggregateUsersLeads(array) {
 
     array.forEach((item) => {
 
-        let userIdString = item.user.toString()
+        let userIdString = item?.user?.toString() ?? null
 
         if (arrayObject[userIdString]) {
             arrayObject[userIdString].countLeads++
@@ -265,18 +265,14 @@ async function aggregateUsersLeads(array) {
 
 async function getInfoLeadIsUnique(phone, gte, lte) {
     try {
+        const todayStart = dayjs(lte).startOf('day').format('YYYY-MM-DD')
         
         const allLeadsByPhone = await leadsModel.find({
             phone: phone,
-            // чтобы не брать сегодняшниее лиды они и так могут быть в базе изза крона запущеным напрмиер 4 часа назад
-            $nor: [
-                { 
-                    date: { 
-                        $gte: dayjs(gte).format('YYYY-MM-DD'), 
-                        $lte: dayjs(lte).format('YYYY-MM-DD') 
-                    } 
-                }
-            ]
+            // исключаем лиды за сегодняшний и будущие дни
+            date: {
+                $lt: todayStart
+            }
         })
 
         let infoObject = {
@@ -286,7 +282,9 @@ async function getInfoLeadIsUnique(phone, gte, lte) {
 
         if (allLeadsByPhone.length > 0) {
             infoObject.isUniquePhone = false
-            infoObject.lastPhoneCalled = allLeadsByPhone[allLeadsByPhone.length - 1].date
+            // сортируем по дате, чтобы взять последнюю
+            const sortedLeads = allLeadsByPhone.sort((a, b) => new Date(a.date) - new Date(b.date))
+            infoObject.lastPhoneCalled = sortedLeads[sortedLeads.length - 1].date
         }
 
         return infoObject

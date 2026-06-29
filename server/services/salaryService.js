@@ -26,9 +26,11 @@ function calculateSalaryLeadorub(userObject) {
 
     console.log(summSalaryToTargets, '!!!!')
 
-    const leadorubSalary = salaryToCalls + salaryToTargets + salaryToHolds
+    const leadorubSalary = salaryToCalls + salaryToTargets + salaryToHolds // старая мотивация
+    const leadorubSalaryByNew = salaryToCalls + summSalaryToTargets // новая мотивация
     
-    return leadorubSalary
+    // return leadorubSalary
+    return leadorubSalaryByNew
 }
 
 function calculateBonusToTargetsLeadorub(userObject) {
