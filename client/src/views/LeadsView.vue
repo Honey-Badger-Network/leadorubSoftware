@@ -29,7 +29,11 @@
           <div class="table-data">
             <el-table :data="currentData" style="width: 100%">
               <el-table-column :width="100" prop="date" label="Дата"></el-table-column>
-              <el-table-column fixed="left" :width="110" prop="phone" label="Телефон"></el-table-column>
+              <el-table-column fixed="left" :width="110" prop="phone" label="Телефон">
+                <template #default="{ row }">
+                  <p>{{ renderPhoneNumber(row.phone) }}</p>
+                </template>
+              </el-table-column>
               <el-table-column :width="160" prop="userName" label="Имя"></el-table-column>
               <el-table-column :width="110" prop="statusOKK" label="Статус ОКК">
                 <template #default="{ row }">
@@ -315,6 +319,11 @@
           status: 'hold'
         })
         console.log(this.brokersList)
+      },
+      renderPhoneNumber(phone) {
+        let splicedPhone = phone.slice(-6)
+        let renderedPhone = this.rankName === 'admin' ? phone : splicedPhone
+        return renderedPhone
       },
       removeOffer(index) {
         this.isShowLeadObjectToModal.offersList.splice(index, 1)

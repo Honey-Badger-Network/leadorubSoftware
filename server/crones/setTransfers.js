@@ -120,7 +120,7 @@ function setTransfersCrone() {
   const cronMinute = '*/15 * * * *'
   const cronExpression = '*/5 * * * *'
 
-  setTransfersToDB(new Date(), new Date())
+  // setTransfersToDB(new Date(), new Date())
   // setLeadsInfoManyDays()
   
   crone.schedule(cronHour, () => {

@@ -11,9 +11,6 @@ const usersStatsModel = require('../models/usersStats.js')
 
 function calculateSalaryLeadorub(userObject) {
 
-    console.log(userObject, '&*%^(**&(*&^(^(*^(*^(*')
-
-
     const salaryToCalls = userObject.countCalls * 1
     const salaryToTargets = userObject.countTargets * 250
     const salaryToHolds = userObject.countHolds * 0 // для новой мотивации добавить зп за холды (0 или 250)
