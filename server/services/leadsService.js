@@ -86,14 +86,15 @@ async function upsertNewLeadsData(lead) {
                     { _id: entryFromDB._id },
                     {
                         $set: {
-                            broker: lead.broker,
-                            price: lead.price,
+                            // закоментил те свойства модели которые будут изменяться вручную чтобы не сбрасывалось
+                            // broker: lead.broker,
+                            // price: lead.price,
                             audioArray: lead.audioArray,
-                            residenceStatus: lead.residenceStatus,
+                            // residenceStatus: lead.residenceStatus,
                             selfLead: lead.selfLead,
                             selfLeadName: lead.selfLeadName,
-                            countHold: lead.countHold,
-                            offersList: lead.offersList,
+                            // countHold: lead.countHold,
+                            // offersList: lead.offersList,
                             isUniquePhone: lead.isUniquePhone,
                             lastPhoneCalled: lead.lastPhoneCalled
                         }
