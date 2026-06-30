@@ -20,7 +20,7 @@
         <!-- easy buttons -->
         <el-button @click="easyGetSalary('today')">сегодня</el-button>
         <el-button @click="easyGetSalary('yesterday')">вчера</el-button>
-        <el-button v-if="userRole === 'admin' && bestLidorub" @click="openModalWithBest">Лучший лидоруб</el-button>
+        <el-button v-if="userRole === 'admin' && leadorubsTop" @click="openModalWithBest">Лучший лидоруб</el-button>
     </div>
 
     <el-button @click="isShowClearCalculation = true" v-if="userRank === 'admin'">Проверить чистую</el-button>
@@ -44,7 +44,7 @@
         </el-table-column>
         <!-- <el-table-column prop="email" label="Логин"></el-table-column> -->
         <el-table-column :width="100" prop="countCalls" label="Звонки"></el-table-column>
-        <el-table-column :width="100" v-if="userRole === 'admin'" prop="countCallsWithProfile" label="Звонки из профиля"></el-table-column>
+        <!-- <el-table-column :width="100" v-if="userRole === 'admin'" prop="countCallsWithProfile" label="Звонки из профиля"></el-table-column> -->
         <el-table-column :width="100" prop="countLeads" label="Лиды"></el-table-column>
         <el-table-column :width="100" prop="countTargets" label="Целевые"></el-table-column>
         <el-table-column :width="100" prop="countHolds" label="Холды"></el-table-column>
@@ -55,7 +55,7 @@
             </template>
         </el-table-column>
 
-        <el-table-column :width="100" v-if="userRole === 'admin'" prop="salaryToLeads" label="ЗП за лиды"></el-table-column>
+        <el-table-column :width="100" prop="salaryToLeads" label="ЗП за лиды"></el-table-column>
 
         <el-table-column :width="100" v-if="userRole === 'admin'" prop="sumHold" label="Сумма холдов"></el-table-column>
         <el-table-column :width="100" prop="salary" label="Зарплата"></el-table-column>
@@ -72,9 +72,12 @@
         <!-- <el-table-column prop="brokerSalary" label="ЗП брокерам"></el-table-column> -->
     </el-table>
 
-    <el-dialog title="Лучший лидоруб" v-model="modalWithBestLidorub" width="500px">
-        <h3>За месяц <span>{{ monthToBestLidorub }}</span></h3>
-        <p>Лучший Лидоруб: <strong>{{ bestLidorub.name }}</strong> чистая: <strong>{{ bestLidorub.clear }}</strong></p>
+    <el-dialog title="Топ лидорубов" v-model="modalWithBestLidorub" width="500px">
+        <h3>Топ лидорубов за месяц <span>{{ monthToBestLidorub }}</span></h3>
+        <div v-for="(user, idx) in leadorubsTop" style="display: flex; align-items: center; border-bottom: solid 1px black;">
+            <h3 :style="{ 'color': user.color }">{{ idx + 1 }} место</h3>
+            <p style="margin-left: 20px;">{{ user.name }} - {{ user.clear }}</p>
+        </div>
     </el-dialog>
     
 </template>
@@ -122,7 +125,7 @@
                 showFullUserCol: true,
                 isMobile: false,
                 userColumnWidth: 150,
-                bestLidorub: null,
+                leadorubsTop: null,
                 monthToBestLidorub: null,
                 modalWithBestLidorub: false,
                 modalToShowLeads: false,
@@ -164,7 +167,7 @@
                         }
                     })
 
-                    this.bestLidorub = response.data
+                    this.leadorubsTop = response.data
                     this.monthToBestLidorub = dayjs(response.monthToBest).format('MMMM')
 
                 } catch (e) {
