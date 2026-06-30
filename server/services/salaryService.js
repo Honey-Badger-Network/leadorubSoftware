@@ -21,8 +21,6 @@ function calculateSalaryLeadorub(userObject) {
 
     // TODO для новой мотивации потом как зп за целевые исопльзовать ту пременую summSalaryToTargets !!!!
 
-    console.log(summSalaryToTargets, '!!!!')
-
     const leadorubSalary = salaryToCalls + salaryToTargets + salaryToHolds // старая мотивация
     const leadorubSalaryByNew = salaryToCalls + summSalaryToTargets // новая мотивация
     

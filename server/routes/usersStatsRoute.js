@@ -151,7 +151,7 @@ router.get('/api/salary/get', async (req, res) => {
                 resultObject[userIdString].countHolds += item.countHolds
                 resultObject[userIdString].sumHold += item.sumHold
                 resultObject[userIdString].salary += Math.round(item.salary)
-                resultObject[userIdString].scriptBonus += bonusByDate
+                // resultObject[userIdString].scriptBonus += bonusByDate
                 resultObject[userIdString].clear += item.clear
                 resultObject[userIdString].brokerSalary += item.brokerSalary
 
@@ -173,7 +173,7 @@ router.get('/api/salary/get', async (req, res) => {
                     countHolds: item.countHolds,
                     sumHold: item.sumHold,
                     salary: Math.round(item.salary),
-                    scriptBonus: bonusByDate,
+                    // scriptBonus: bonusByDate,
                     clear: item.clear,
                     brokerSalary: item.brokerSalary,
                     targetLeadsArray: [...item.targetLeadsArray],
@@ -210,7 +210,7 @@ router.get('/api/salary/get', async (req, res) => {
             total.countHolds += item.countHolds || 0;
             total.sumHold += item.sumHold || 0;
             total.salary += item.salary || 0;
-            total.scriptBonus += item.scriptBonus || 0;
+            // total.scriptBonus += item.scriptBonus || 0;
             total.clear += item.clear || 0;
             total.brokerSalary += item.brokerSalary || 0;
 
@@ -223,10 +223,12 @@ router.get('/api/salary/get', async (req, res) => {
                 item.totalMonthClear = lidorubObjectKey.totalClear
 
                 if (dayjs(lte).format('YYYY-MM-DD') === dayjs(lte).endOf('month').format('YYYY-MM-DD')) {
-                    item.bonusTenPercents = lidorubObjectKey.totalClear > 0 ? lidorubObjectKey.totalClear * 0.2 : 0
+                    item.scriptBonus = lidorubObjectKey.totalClear > 0 ? lidorubObjectKey.totalClear * 0.2 : 0
                 } else {
-                    item.bonusTenPercents = 0
+                    item.scriptBonus = 0
                 }
+
+                total.scriptBonus += item.scriptBonus
             }
 
         });

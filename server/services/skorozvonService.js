@@ -37,8 +37,6 @@ async function getDifferenceByCalls(gte, lte, user) {
 
     const uniquePhones = dataCallsByUser.filter(userCall => !adminDatesSet.has(userCall.date));
 
-    // console.log('from admin: ', dataCallsByAdmin.length, 'from account: ', dataCallsByUser.length, '!!!!', user.name, uniquePhones)
-
     return {
         userName: user.name,
         uniquePhones: uniquePhones

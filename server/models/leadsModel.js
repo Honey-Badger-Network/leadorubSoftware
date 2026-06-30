@@ -44,6 +44,9 @@ const leadsModel = new Schema({
     },
     isUniquePhone: Boolean,
     lastPhoneCalled: String,
+    // добавляю новые свойтса сюда лучше чем в зарплатной их держать
+    uniqueState: String,
+    leadSalaryPrice: Number
 })
 
 module.exports = model('leadsModel', leadsModel);

@@ -10,7 +10,7 @@ const usersModel = require('../models/usersModel.js')
 const { getSkorozvonToken, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls } = require('../services/skorozvonService.js')
 const { getResidenceLeads, getLeadsOnePhone, defaineSelfLead, findAllCallsInResidence } = require('../services/residenceService.js')
 const { getAllUsers, getUserIdByName } = require('../services/usersService.js')
-const { upsertNewLeadsData, getInfoLeadIsUnique } = require('../services/leadsService.js')
+const { upsertNewLeadsData, getInfoLeadIsUnique, getDistintBetweenUnUniqueLeads } = require('../services/leadsService.js')
 const { getUISCalls } = require('../services/uisService.js')
 
 function foundCallByLeadPhone(phone, callsArr) {
@@ -64,6 +64,10 @@ async function setTransfersToDB(gte, lte) {
           lead.isUniquePhone = true
           lead.lastPhoneCalled = 'first'
         }
+
+        let isUniqueOtherInfo = getDistintBetweenUnUniqueLeads(lead)
+
+        console.log(lead, '*&&^$&%**&%*&%*%&', isUniqueOtherInfo)
         
         if (!leadResidence.broker) {
           var brokerInCalls = foundCallByLeadPhone(lead.number, allResidenceCalls)
@@ -100,8 +104,8 @@ async function setTransfersToDB(gte, lte) {
 }
 
 async function setLeadsInfoManyDays() {
-  const startDate = '2026-05-01'
-  const endDate = '2026-05-31'
+  const startDate = '2026-06-01'
+  const endDate = '2026-06-30'
 
   const totalDays = dayjs(endDate).diff(dayjs(startDate), 'day') + 1
 
@@ -120,7 +124,7 @@ function setTransfersCrone() {
   const cronMinute = '*/15 * * * *'
   const cronExpression = '*/5 * * * *'
 
-  // setTransfersToDB(new Date(), new Date())
+  setTransfersToDB(new Date('2026-06-29'), new Date('2026-06-29'))
   // setLeadsInfoManyDays()
   
   crone.schedule(cronHour, () => {
