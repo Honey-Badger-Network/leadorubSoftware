@@ -210,7 +210,7 @@ router.get('/api/salary/get', async (req, res) => {
             if (lidorubObjectKey) {
                 item.totalMonthClear = lidorubObjectKey.totalClear
                 if (dayjs(lte).format('YYYY-MM-DD') === dayjs(lte).endOf('month').format('YYYY-MM-DD')) {
-                    item.scriptBonus = lidorubObjectKey.totalClear > 0 ? lidorubObjectKey.totalClear * 0.2 : 0
+                    item.scriptBonus = lidorubObjectKey.totalClear > 0 ? Math.round(lidorubObjectKey.totalClear * 0.2) : 0
                 } else {
                     item.scriptBonus = 0
                 }
