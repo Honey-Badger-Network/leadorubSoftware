@@ -295,4 +295,4 @@ async function getInfoLeadIsUnique(phone, gte, lte) {
     }
 }
 
-module.exports = { upsertNewLeadsData, getLeadsToDate, aggregateUsersLeads, getLeadsByUser, calculateClearByUser, getInfoLeadIsUnique }
+module.exports = { upsertNewLeadsData, getLeadsToDate, getDistintBetweenUnUniqueLeads, aggregateUsersLeads, getLeadsByUser, calculateClearByUser, getInfoLeadIsUnique }
