@@ -136,11 +136,6 @@ router.get('/api/salary/get', async (req, res) => {
             let countTargetsAndUnique = 0
             let countTargetsAndUnUnique = 0
 
-            item.targetLeadsArray.forEach((lead) => {
-                countTargetsAndUnique += lead.isTarget === true && lead.isUniquePhone === 'уникальный' ? 1 : 0
-                countTargetsAndUnUnique += lead.isTarget === true && lead.isUniquePhone !== 'уникальный' ? 1 : 0
-            })
-
             // if (resultObject[item.name]) {
             if (resultObject[userIdString]) {
                 // resultObject[userIdString].countCallsWithProfile += item.countCallsWithProfile
@@ -154,12 +149,7 @@ router.get('/api/salary/get', async (req, res) => {
                 // resultObject[userIdString].scriptBonus += bonusByDate
                 resultObject[userIdString].clear += item.clear
                 resultObject[userIdString].brokerSalary += item.brokerSalary
-
-                resultObject[userIdString].targetLeadsArray.push(...item.targetLeadsArray)
-
-                resultObject[userIdString].countTargetsAndUnique += countTargetsAndUnique
-                resultObject[userIdString].countTargetsAndUnUnique += countTargetsAndUnUnique
-
+                resultObject[userIdString].salaryToLeads += item.salaryToLeads
             } else {
                 // resultObject[item.name] = {
                 resultObject[userIdString] = {
@@ -176,10 +166,7 @@ router.get('/api/salary/get', async (req, res) => {
                     // scriptBonus: bonusByDate,
                     clear: item.clear,
                     brokerSalary: item.brokerSalary,
-                    targetLeadsArray: [...item.targetLeadsArray],
-
-                    countTargetsAndUnique: countTargetsAndUnique,
-                    countTargetsAndUnUnique: countTargetsAndUnUnique
+                    salaryToLeads: item.salaryToLeads
                 }
             }
         })
@@ -199,7 +186,8 @@ router.get('/api/salary/get', async (req, res) => {
             clear: 0,
             brokerSalary: 0,
             countCallsWithProfile: 0,
-            targetLeadsArray: []
+            targetLeadsArray: [],
+            salaryToLeads: 0
         };
 
         resultObject.forEach(item => {
@@ -213,21 +201,19 @@ router.get('/api/salary/get', async (req, res) => {
             // total.scriptBonus += item.scriptBonus || 0;
             total.clear += item.clear || 0;
             total.brokerSalary += item.brokerSalary || 0;
+            total.salaryToLeads += item.salaryToLeads || 0
 
             let lidorubObjectKey = totalSummedClearData.find((user) => {
                 return item.email === user._id
             })
 
             if (lidorubObjectKey) {
-
                 item.totalMonthClear = lidorubObjectKey.totalClear
-
                 if (dayjs(lte).format('YYYY-MM-DD') === dayjs(lte).endOf('month').format('YYYY-MM-DD')) {
                     item.scriptBonus = lidorubObjectKey.totalClear > 0 ? lidorubObjectKey.totalClear * 0.2 : 0
                 } else {
                     item.scriptBonus = 0
                 }
-
                 total.scriptBonus += item.scriptBonus
             }
 

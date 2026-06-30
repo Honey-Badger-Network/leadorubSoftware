@@ -42,7 +42,7 @@ async function upserUsersStatsToDB(userObject) {
             scriptBonus: userObject.scriptBonus,
             date: userObject.date,
             user: userObject._id,
-            targetLeadsArray: userObject.targetLeadsArray
+            salaryToLeads: userObject.leadSalaryPrice
         })
 
         await newEntry.save()

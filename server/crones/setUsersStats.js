@@ -32,6 +32,8 @@ async function setUsersStatsToDB(gte, lte) {
     //         return item.name === user.userName
     //     })
 
+    console.log(aggregatedUsersLeads, '!!!!!!')
+
     let allUsersInModel = await usersModel.find()
 
     for (let user of usersCallsWithoutZeroCalls) {
@@ -49,23 +51,19 @@ async function setUsersStatsToDB(gte, lte) {
         }
 
         if (usersCallsObject) {
-            // user.email = usersCallsObject.email
-            // user.countCalls = usersCallsObject.countCalls
             user.userName = usersCallsObject.userName
             user.countLeads = usersCallsObject.countLeads
             user.countHolds = usersCallsObject.countHolds
             user.sumHold = usersCallsObject.sumHold
             user.countTargets = usersCallsObject.countTargets
-            user.countUniqueTargets = usersCallsObject.countUniqueTargets
-            user.targetLeadsArray = usersCallsObject.leadTargetsArray
+            user.leadSalaryPrice = usersCallsObject.leadSalaryPrice
         } else {
             user.userName = user.name
             user.countLeads = 0
             user.countHolds = 0
             user.sumHold = 0
             user.countTargets = 0
-            user.countUniqueTargets = 0
-            user.targetLeadsArray = []
+            user.leadSalaryPrice = 0
         }
 
         // let userCallsInfoFromProfile = await getSkorozvonCallsFromProfile(gte, lte, user)
@@ -133,7 +131,7 @@ function setUsersStatsCrone() {
     const cronMinute = '*/15 * * * *'
     const cronExpression = '*/5 * * * *'
 
-    setUsersStatsToDB(new Date(), new Date())
+    setUsersStatsToDB(new Date('2026-06-19'), new Date('2026-06-19'))
     // setUsersStatsByManyDays()
   
     crone.schedule(cronHour, () => {

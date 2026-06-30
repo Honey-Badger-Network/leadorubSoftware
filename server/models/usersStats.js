@@ -20,14 +20,7 @@ const usersStats = new Schema({
         ref: 'usersModel',
         required: false
     },
-    countUniqueTargets: Number,
-    targetLeadsArray: [{
-        dateState: String,
-        realSalaryToLead: Number,
-        phone: String,
-        isUniquePhone: String,
-        isTarget: Boolean
-    }]
+    salaryToLeads: Number
 })
 
 module.exports = model('usersStats', usersStats);

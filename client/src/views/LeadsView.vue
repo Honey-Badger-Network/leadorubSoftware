@@ -50,6 +50,8 @@
                 </template>
               </el-table-column>
               <el-table-column v-if="rankName === 'admin'" :width="150" prop="lastPhoneCalled" label="Последний звонок"></el-table-column>
+              <el-table-column v-if="rankName === 'admin'" :width="150" prop="uniqueState" label="Насколько уникальный"></el-table-column>
+              <el-table-column v-if="rankName === 'admin'" :width="150" prop="leadSalaryPrice" label="ЗП за лид"></el-table-column>
 
               <el-table-column :width="160" v-if="rankName === 'admin'" prop="broker" label="Брокер"></el-table-column>
               <el-table-column :width="160" prop="residenceStatus" label="Статус">

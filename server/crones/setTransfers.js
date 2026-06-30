@@ -65,14 +65,9 @@ async function setTransfersToDB(gte, lte) {
           lead.isUniquePhone = true
           lead.lastPhoneCalled = 'first'
         }
-
-        let isUniqueOtherInfo = getDistintBetweenUnUniqueLeads(lead)
-
-        console.log(lead, '*&&^$&%**&%*&%*%&', isUniqueOtherInfo)
         
         if (!leadResidence.broker) {
           var brokerInCalls = foundCallByLeadPhone(lead.number, allResidenceCalls)
-          console.log(brokerInCalls, lead.number, '!!!! found broker in residence calls')
         }
 
         let leadInfo = {
@@ -125,7 +120,7 @@ function setTransfersCrone() {
   const cronMinute = '*/15 * * * *'
   const cronExpression = '*/5 * * * *'
 
-  setTransfersToDB(new Date('2026-06-29'), new Date('2026-06-29'))
+  setTransfersToDB(new Date('2026-06-19'), new Date('2026-06-19'))
   // setLeadsInfoManyDays()
   
   crone.schedule(cronHour, () => {

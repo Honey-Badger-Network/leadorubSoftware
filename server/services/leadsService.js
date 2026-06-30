@@ -78,6 +78,10 @@ async function upsertNewLeadsData(lead) {
 
         if (entryFromDB) {
 
+            
+            let isUniqueOtherInfo = getDistintBetweenUnUniqueLeads(entryFromDB)
+            console.log(entryFromDB.phone, '!!!!!!!', isUniqueOtherInfo)
+
             // вызвать функцию которая удалит дублируюзие (если они есть)
             let resultByDeleteDubles = await removeDublicates(lead.date, lead.date, lead.phone)
 
@@ -86,17 +90,13 @@ async function upsertNewLeadsData(lead) {
                     { _id: entryFromDB._id },
                     {
                         $set: {
-                            // закоментил те свойства модели которые будут изменяться вручную чтобы не сбрасывалось
-                            // broker: lead.broker,
-                            // price: lead.price,
                             audioArray: lead.audioArray,
-                            // residenceStatus: lead.residenceStatus,
                             selfLead: lead.selfLead,
                             selfLeadName: lead.selfLeadName,
-                            // countHold: lead.countHold,
-                            // offersList: lead.offersList,
                             isUniquePhone: lead.isUniquePhone,
-                            lastPhoneCalled: lead.lastPhoneCalled
+                            lastPhoneCalled: lead.lastPhoneCalled,
+                            uniqueState: isUniqueOtherInfo.dateState,
+                            leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead
                         }
                     }
                 );
@@ -123,7 +123,10 @@ async function upsertNewLeadsData(lead) {
                     isEdited: lead.isEdited,
                     offersList: lead.offersList,
                     isUniquePhone: lead.isUniquePhone,
-                    lastPhoneCalled: lead.lastPhoneCalled
+                    lastPhoneCalled: lead.lastPhoneCalled,
+                    // тут остаются теже жаные оп уникальности инфа
+                    uniqueState: isUniqueOtherInfo.dateState,
+                    leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead
                 })
         
                 await newEntry.save()
@@ -145,7 +148,9 @@ async function upsertNewLeadsData(lead) {
                 isEdited: lead.isEdited,
                 offersList: lead.offersList,
                 isUniquePhone: lead.isUniquePhone,
-                lastPhoneCalled: lead.lastPhoneCalled
+                lastPhoneCalled: lead.lastPhoneCalled,
+                uniqueState: isUniqueOtherInfo.dateState,
+                leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead
             })
     
             await newEntry.save()
@@ -231,9 +236,7 @@ async function aggregateUsersLeads(array) {
             arrayObject[userIdString].countHolds += item.countHold
             arrayObject[userIdString].sumHold += item.price
             arrayObject[userIdString].countTargets += item.statusOKK === true ? 1 : 0
-            arrayObject[userIdString].countUniqueTargets += item.statusOKK === true && item.isUniquePhone === true ? 1 : 0
-            arrayObject[userIdString].countRetryTargets += item.statusOKK === true && item.isUniquePhone === false ? 1 : 0
-            arrayObject[userIdString].leadTargetsArray.push(getDistintBetweenUnUniqueLeads(item))
+            arrayObject[userIdString].leadSalaryPrice += item.leadSalaryPrice
         } else {
             arrayObject[userIdString] = {
                 userIdString,
@@ -241,10 +244,7 @@ async function aggregateUsersLeads(array) {
                 countHolds: item.countHold,
                 sumHold: item.price,
                 countTargets: item.statusOKK === true ? 1 : 0,
-                countUniqueTargets: item.statusOKK === true && item.isUniquePhone === true ? 1 : 0,
-                countRetryTargets: item.statusOKK === true && item.isUniquePhone === false ? 1 : 0,
-                leadTargetsArray: [getDistintBetweenUnUniqueLeads(item)]
-                // TODO добавить логику функцию для определения как долго был последний лид до этого
+                leadSalaryPrice: item.leadSalaryPrice
             }
         }
     })
