@@ -108,8 +108,8 @@ async function setUsersStatsToDB(gte, lte) {
 
 
 async function setUsersStatsByManyDays() {
-    const startDate = '2026-06-15'
-    const endDate = '2026-06-21'
+    const startDate = '2026-06-08'
+    const endDate = '2026-06-14'
 
     const totalDays = dayjs(endDate).diff(dayjs(startDate), 'day') + 1
 
@@ -129,8 +129,8 @@ function setUsersStatsCrone() {
     const cronMinute = '*/15 * * * *'
     const cronExpression = '*/5 * * * *'
 
-    // setUsersStatsToDB(new Date(), new Date())
-    setUsersStatsByManyDays()
+    setUsersStatsToDB(new Date(), new Date())
+    // setUsersStatsByManyDays()
   
     crone.schedule(cronHour, () => {
         setUsersStatsToDB(new Date(), new Date())

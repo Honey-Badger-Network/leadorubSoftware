@@ -100,8 +100,8 @@ async function setTransfersToDB(gte, lte) {
 }
 
 async function setLeadsInfoManyDays() {
-  const startDate = '2026-06-15'
-  const endDate = '2026-06-21'
+  const startDate = '2026-06-08'
+  const endDate = '2026-06-14'
 
   const totalDays = dayjs(endDate).diff(dayjs(startDate), 'day') + 1
 
@@ -120,7 +120,7 @@ function setTransfersCrone() {
   const cronMinute = '*/15 * * * *'
   const cronExpression = '*/5 * * * *'
 
-  // setTransfersToDB(new Date(), new Date())
+  setTransfersToDB(new Date(), new Date())
   // setLeadsInfoManyDays()
   
   crone.schedule(cronHour, () => {
