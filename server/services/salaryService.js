@@ -16,8 +16,6 @@ function calculateSalaryLeadorub(userObject) {
     const salaryToHolds = userObject.countHolds * 0 // для новой мотивации добавить зп за холды (0 или 250)
     const salaryToTargetAndUniqueLeads = userObject.leadSalaryPrice // зп ЛД за каждый лид в суме всех его лидов за день
 
-    console.log(userObject, 'userObject userObject userObject userObject !!!!')
-
     // TODO для новой мотивации потом как зп за целевые исопльзовать ту пременую summSalaryToTargets !!!!
 
     // const leadorubSalary = salaryToCalls + salaryToTargets + salaryToHolds // старая мотивация

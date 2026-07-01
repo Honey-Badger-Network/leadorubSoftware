@@ -32,8 +32,6 @@ async function setUsersStatsToDB(gte, lte) {
     //         return item.name === user.userName
     //     })
 
-    console.log(aggregatedUsersLeads, '!!!!!!')
-
     let allUsersInModel = await usersModel.find()
 
     for (let user of usersCallsWithoutZeroCalls) {
@@ -110,8 +108,8 @@ async function setUsersStatsToDB(gte, lte) {
 
 
 async function setUsersStatsByManyDays() {
-    const startDate = '2026-06-01'
-    const endDate = '2026-06-30'
+    const startDate = '2026-06-15'
+    const endDate = '2026-06-21'
 
     const totalDays = dayjs(endDate).diff(dayjs(startDate), 'day') + 1
 
@@ -131,8 +129,8 @@ function setUsersStatsCrone() {
     const cronMinute = '*/15 * * * *'
     const cronExpression = '*/5 * * * *'
 
-    setUsersStatsToDB(new Date('2026-06-19'), new Date('2026-06-19'))
-    // setUsersStatsByManyDays()
+    // setUsersStatsToDB(new Date(), new Date())
+    setUsersStatsByManyDays()
   
     crone.schedule(cronHour, () => {
         setUsersStatsToDB(new Date(), new Date())

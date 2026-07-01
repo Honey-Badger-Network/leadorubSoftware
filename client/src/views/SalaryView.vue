@@ -148,6 +148,7 @@
                     }
                 })
                 this.salaryTableData = response.data
+                await this.getBestLidorub()
             },
             showLeadsByUser(user) {
                 this.modalToShowLeads = true
@@ -211,7 +212,6 @@
 
             await this.getSalaryData()
             await this.getUserStats()
-            await this.getBestLidorub()
         }
     }
 

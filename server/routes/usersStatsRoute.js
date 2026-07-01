@@ -68,10 +68,6 @@ router.get('/api/salary/bestLidorub', async (req, res) => {
         })
 
         const leadorubsTop = aggregatedMonthlyData.slice(0, 2)
-
-        leadorubsTop[0].color = 'green'
-        leadorubsTop[1].color = 'yellow'
-
         
         res.status(200).json({
             data: leadorubsTop,

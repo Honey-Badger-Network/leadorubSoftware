@@ -230,16 +230,35 @@ async function aggregateUsersLeads(array) {
     array.forEach((item) => {
 
         let userIdString = item?.user?.toString() ?? null
+        let userName = item?.userName ?? null
 
-        if (arrayObject[userIdString]) {
-            arrayObject[userIdString].countLeads++
-            arrayObject[userIdString].countHolds += item.countHold
-            arrayObject[userIdString].sumHold += item.price
-            arrayObject[userIdString].countTargets += item.statusOKK === true ? 1 : 0
-            arrayObject[userIdString].leadSalaryPrice += item.leadSalaryPrice
+        // if (arrayObject[userIdString]) {
+        //     arrayObject[userIdString].countLeads++
+        //     arrayObject[userIdString].countHolds += item.countHold
+        //     arrayObject[userIdString].sumHold += item.price
+        //     arrayObject[userIdString].countTargets += item.statusOKK === true ? 1 : 0
+        //     arrayObject[userIdString].leadSalaryPrice += item.leadSalaryPrice || 0
+        // } else {
+        //     arrayObject[userIdString] = {
+        //         userIdString,
+        //         countLeads: 1,
+        //         countHolds: item.countHold,
+        //         sumHold: item.price,
+        //         countTargets: item.statusOKK === true ? 1 : 0,
+        //         leadSalaryPrice: item.leadSalaryPrice
+        //     }
+        // }
+
+        if (arrayObject[userName]) {
+            arrayObject[userName].countLeads++
+            arrayObject[userName].countHolds += item.countHold
+            arrayObject[userName].sumHold += item.price
+            arrayObject[userName].countTargets += item.statusOKK === true ? 1 : 0
+            arrayObject[userName].leadSalaryPrice += item.leadSalaryPrice || 0
         } else {
-            arrayObject[userIdString] = {
+            arrayObject[userName] = {
                 userIdString,
+                userName,
                 countLeads: 1,
                 countHolds: item.countHold,
                 sumHold: item.price,
@@ -247,6 +266,7 @@ async function aggregateUsersLeads(array) {
                 leadSalaryPrice: item.leadSalaryPrice
             }
         }
+
     })
 
     let aggregatedArr = Object.values(arrayObject)
