@@ -8,44 +8,49 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, onlyAdmin: false }
     },
     {
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, onlyAdmin: false }
     },
     {
       path: '/leads',
       name: 'leads',
       component: () => import('../views/LeadsView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, onlyAdmin: false }
     },
     {
       path: '/login',
       name: "login",
-      component: () => import('../views/LoginView.vue')
+      component: () => import('../views/LoginView.vue'),
+      meta: { requiresAuth: true, onlyAdmin: false }
     },
     {
       path: '/users',
       name: "users",
-      component: () => import('../views/UsersView.vue')
+      component: () => import('../views/UsersView.vue'),
+      meta: { requiresAuth: true, onlyAdmin: true }
     },
     {
       path: '/salary',
       name: "salary",
-      component: () => import('../views/SalaryView.vue')
+      component: () => import('../views/SalaryView.vue'),
+      meta: { requiresAuth: true, onlyAdmin: false }
     },
     {
       path: '/okk',
       name: "okk",
-      component: () => import('../views/OKKView.vue')
+      component: () => import('../views/OKKView.vue'),
+      meta: { requiresAuth: true, onlyAdmin: true }
     },
     // {
     //   path: '/phones',
     //   name: "phones",
-    //   component: () => import('../views/PhonesView.vue')
+    //   component: () => import('../views/PhonesView.vue'),
+    //   meta: { requiresAuth: true }
     // }
   ],
 })
@@ -54,6 +59,9 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const userObject = JSON.parse(localStorage.getItem('userObject'));
   const authorized = !!userObject; // true, если есть пользователь
+  const rankName = userObject.rankName
+
+  console.log(rankName, 'rankName !!!!')
 
   // Если пользователь не авторизован и он не идет на страницу логина
   if (!authorized && to.path !== '/login') {
@@ -61,6 +69,15 @@ router.beforeEach((to, from, next) => {
     return;
   }
 
+  // Проверка на доступ только для админов
+  if (to.meta.onlyAdmin) {
+    if (rankName === 'admin') {
+      next();
+    } else {
+      next('/');
+    }
+    return;
+  }
   // Во всех остальных случаях — разрешаем переход
   next();
 });
