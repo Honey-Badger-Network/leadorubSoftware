@@ -4,7 +4,7 @@
         <p>Ранк: {{ userData.rankName }}</p>
     </div>
 
-    <ModalCreateTransferVue v-if="userData" :userName="userName"></ModalCreateTransferVue>
+    <!-- <ModalCreateTransferVue v-if="userData" :userName="userName"></ModalCreateTransferVue> -->
 
     <Statistics v-if="userData" :userName="userData.name"></Statistics>
 
