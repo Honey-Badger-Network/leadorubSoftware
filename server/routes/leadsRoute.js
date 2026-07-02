@@ -8,10 +8,11 @@ const { Router } = require('express');
 const leadsModel = require('../models/leadsModel')
 const usersStats = require('../models/usersStats.js')
 
-const { getLeadsToDate, aggregateUsersLeads, calculateClearByUser, getLeadsByUser } = require('../services/leadsService.js')
+const { getInfoLeadIsUnique, getLeadsByUser, getDistintBetweenUnUniqueLeads } = require('../services/leadsService.js')
 const { getDifferenceByCalls } = require('../services/skorozvonService.js')
 const { getUserIdByName } = require('../services/usersService')
 const { setUsersStatsToDB } = require('../crones/setUsersStats.js')
+
 
 const router = Router()
 
@@ -195,6 +196,23 @@ router.post('/api/leads/create', async (req, res) => {
 
         const userId = await getUserIdByName(leadObject.userName)
 
+        const infoByUniqueLead = await getInfoLeadIsUnique(leadObject.phone, leadObject.date, leadObject.date)
+
+        if (infoByUniqueLead) {
+            leadObject.isUniquePhone = infoByUniqueLead.isUniquePhone
+            leadObject.lastPhoneCalled = infoByUniqueLead.lastPhoneCalled
+        } else {
+            leadObject.isUniquePhone = true
+            leadObject.lastPhoneCalled = 'first'
+        }
+
+        let isUniqueOtherInfo = getDistintBetweenUnUniqueLeads(leadObject)
+
+        if (isUniqueOtherInfo) {
+            leadObject.uniqueState = isUniqueOtherInfo.dateState
+            leadObject.leadSalaryPrice = isUniqueOtherInfo.realSalaryToLead
+        }
+
         let selfLeadValue = false
 
         if (leadObject.selfLead === 'Сам') {
@@ -220,7 +238,13 @@ router.post('/api/leads/create', async (req, res) => {
             userName: leadObject.userName,
             countHold: leadObject.countHold,
             isEdited: true,
+            isUniquePhone: leadObject.isUniquePhone,
+            lastPhoneCalled: leadObject.lastPhoneCalled,
+            uniqueState: leadObject.uniqueState,
+            leadSalaryPrice: leadObject.leadSalaryPrice,
         })
+
+        console.log(newLeadObject, 'newLeadObject !!!!!')
 
         const result = await newLeadObject.save()
 

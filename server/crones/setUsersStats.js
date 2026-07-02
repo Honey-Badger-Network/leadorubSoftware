@@ -50,11 +50,11 @@ async function setUsersStatsToDB(gte, lte) {
 
         if (usersCallsObject) {
             user.userName = usersCallsObject.userName
-            user.countLeads = usersCallsObject.countLeads
-            user.countHolds = usersCallsObject.countHolds
-            user.sumHold = usersCallsObject.sumHold
-            user.countTargets = usersCallsObject.countTargets
-            user.leadSalaryPrice = usersCallsObject.leadSalaryPrice
+            user.countLeads = usersCallsObject.countLeads || 0
+            user.countHolds = usersCallsObject.countHolds || 0
+            user.sumHold = usersCallsObject.sumHold || 0
+            user.countTargets = usersCallsObject.countTargets || 0
+            user.leadSalaryPrice = usersCallsObject.leadSalaryPrice || 0
         } else {
             user.userName = user.name
             user.countLeads = 0
