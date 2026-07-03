@@ -77,10 +77,8 @@ async function upsertNewLeadsData(lead) {
         })
 
         if (entryFromDB) {
-
             
             let isUniqueOtherInfo = getDistintBetweenUnUniqueLeads(entryFromDB)
-            console.log(entryFromDB.phone, '!!!!!!!', isUniqueOtherInfo)
 
             // вызвать функцию которая удалит дублируюзие (если они есть)
             let resultByDeleteDubles = await removeDublicates(lead.date, lead.date, lead.phone)
@@ -132,6 +130,9 @@ async function upsertNewLeadsData(lead) {
                 await newEntry.save()
             }
         } else {
+
+            let isUniqueOtherInfo = getDistintBetweenUnUniqueLeads(lead)
+
             const newEntry = new leadsModel({
                 date: lead.date,
                 phone: lead.phone,

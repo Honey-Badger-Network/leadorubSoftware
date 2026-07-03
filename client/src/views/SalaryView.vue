@@ -51,7 +51,8 @@
 
         <el-table-column :width="100" prop="countHolds" label="CTR">
             <template #default="{ row }">
-                <span>{{ Math.round(row.countHolds / row.countTargets * 100) || 0 }} %</span>
+                <span v-if="row.countHolds > 0 && row.countTargets > 0">{{ Math.round(row.countHolds / row.countTargets * 100) || 0 }} %</span>
+                <span v-else>0 %</span>
             </template>
         </el-table-column>
 
