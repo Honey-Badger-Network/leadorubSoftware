@@ -509,7 +509,7 @@
       await this.fetchAllUsers()
 
       this.userObject = this.$store.getters['getUserObject']
-      this.rankName = this.userObject.rankName
+      this.rankName = this.userObject?.rankName ?? null
     }
   }
 </script>

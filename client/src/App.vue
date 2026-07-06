@@ -162,8 +162,8 @@ export default {
   async beforeMount() {
     this.route = this.$router.currentRoute
     this.userObject = this.$store.getters['getUserObject']
-    this.rankName = this.userObject.rankName
-    this.userName = this.userObject.name
+    this.rankName = this.userObject?.rankName ?? null
+    this.userName = this.userObject?.name ?? null
     this.initializeMenu()
     console.log(this.userObject)
     this.isLoading = false

@@ -201,7 +201,7 @@
             },
             async getUserStats() {
                 this.userObject = this.$store.getters['getUserObject']
-                this.userRole = this.userObject.rankName
+                this.userRole = this.userObject?.rankName ?? null
             },
             openModalWithBest() {
                 this.modalWithBestLidorub = true

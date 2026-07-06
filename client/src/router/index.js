@@ -59,7 +59,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const userObject = JSON.parse(localStorage.getItem('userObject'));
   const authorized = !!userObject; // true, если есть пользователь
-  const rankName = userObject.rankName
+  const rankName = userObject?.rankName || null
 
   console.log(rankName, 'rankName !!!!')
 

@@ -64,7 +64,7 @@
       if (userObjectString) {
         this.userData = JSON.parse(userObjectString);
         this.userName = this.userData.name,
-        this.userRank = this.userData.rankName
+        this.userRank = this.userData?.rankName ?? null
 
         this.isAdmin = this.userRank === 'admin' ? true : false
       }
