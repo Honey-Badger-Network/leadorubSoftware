@@ -88,9 +88,15 @@ async function upsertNewLeadsData(lead) {
                     { _id: entryFromDB._id },
                     {
                         $set: {
+                            // TODO лучше тут не убирать upsert set свойства если чтот оимзенить то вручную и ночью следующего дня
+                            broker: lead.broker,
+                            price: lead.price,
                             audioArray: lead.audioArray,
+                            residenceStatus: lead.residenceStatus,
                             selfLead: lead.selfLead,
                             selfLeadName: lead.selfLeadName,
+                            countHold: lead.countHold,
+                            offersList: lead.offersList,
                             isUniquePhone: lead.isUniquePhone,
                             lastPhoneCalled: lead.lastPhoneCalled,
                             uniqueState: isUniqueOtherInfo.dateState,
