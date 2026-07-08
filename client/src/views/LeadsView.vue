@@ -14,6 +14,19 @@
           <el-option v-for="user in usersArray" :label="user.name" :value="user.name" :key="user._id"></el-option>
         </el-select>
 
+        <el-select v-if="activeTab === 'leads'" style="margin-top:10px" v-model="filterOkk" placeholder="статус ОКК">
+          <!-- <el-option label="все" value="all"></el-option> -->
+          <el-option label="целевые" :value="true"></el-option>
+          <el-option label="Нецелевые" :value="false"></el-option>
+        </el-select>
+
+        <el-select v-if="activeTab === 'leads'" style="margin-top:10px" v-model="filterUnique" placeholder="уникальность">
+          <!-- <el-option label="все" value="all"></el-option> -->
+          <el-option label="уникальные" :value="true"></el-option>
+          <el-option label="повторные" :value="false"></el-option>
+        </el-select>
+
+
         <div style="display: flex; gap: 10px; margin-top: 10px;">
           <el-button @click="fetchLeads()" type="info">Применить</el-button>
           <el-button @click="resetFilters()" type="warning">Сбросить</el-button>
@@ -272,6 +285,11 @@
         usersArray: [],
         selectedStatuses: null,
         selectedUsers: null,
+
+        // TODO: тут потом тоже разбит ьв 1 обхект filters все для фильтра selected и тд
+        filterOkk: null,
+        filterUnique: null,
+
         isShowModalCreateLead: false,
         isShowModalLeadInfo: false,
         newLeadsObject: {
@@ -416,6 +434,8 @@
           gte: this.gte,
           lte: this.lte,
           statuses: this.selectedStatuses,
+          statusOKK: this.filterOkk,
+          isUnique: this.filterUnique,
           users: this.selectedUsers
         };
   
@@ -499,6 +519,8 @@
       async resetFilters() {
         this.selectedStatuses = null
         this.selectedUsers = null
+        this.filterOkk = null
+        this.filterUnique = null
         this.gte = dayjs().format('YYYY-MM-DD')
         this.lte = dayjs().format('YYYY-MM-DD')
         await this.fetchLeads()

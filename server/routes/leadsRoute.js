@@ -18,7 +18,7 @@ const router = Router()
 
 router.get('/api/leads/get', async (req, res) => {
     try {
-        const { gte, lte } = req.query
+        const { gte, lte, statusOKK, isUnique } = req.query
 
         const statuses = req.query['statuses[]'];
         const users = req.query['users[]']
@@ -31,6 +31,18 @@ router.get('/api/leads/get', async (req, res) => {
                 $lte: lte
             }
         }
+
+        // TODO: потом подумать как и переделать логику фильтра
+
+        if (statusOKK) {
+            // тогда либо true или false
+            filter.statusOKK = statusOKK 
+        }
+
+        if (isUnique) {
+            // тогда либо true или false
+            filter.isUniquePhone = isUnique
+        }
   
         if (users) {
             const usersFilter = Array.isArray(users) ? users : [users];
@@ -41,6 +53,8 @@ router.get('/api/leads/get', async (req, res) => {
             const statusesFilter = Array.isArray(statuses) ? statuses : [statuses];
             filter.residenceStatus = { $in: statusesFilter };
         }
+
+        console.log(filter, 'filter filter')
   
         const leadsData = await leadsModel.find(filter);
   
