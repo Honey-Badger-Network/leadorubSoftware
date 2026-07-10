@@ -23,7 +23,7 @@
         <!-- <el-table-column prop="userName" label="Имя"></el-table-column> -->
         <el-table-column :width="170" label="Лидоруб">
             <template #default="{ row }">
-                <FormItemSelect v-if="usersList" v-model="row.userName" :options="usersList" />
+                <FormItemSelect v-if="usersList" v-model="row.userName" :options="usersList" @change="(value) => handleUserNameChange(row, value)" />
             </template>
         </el-table-column>
         <el-table-column :width="100" label="Запись">
@@ -293,6 +293,13 @@
         setNewStatus(status, lead) {
             
         },
+        handleUserNameChange(row, newUserName) {
+            const newUserIdByNewUserName = this.usersList.find((user) => {
+                return user.label === newUserName
+            })._id
+
+            row.user = newUserIdByNewUserName
+        },
         openAllAudio(lead) {
             this.allLeadAudioArray = lead.audioArray
             this.showModalToAudio = true
@@ -347,7 +354,8 @@
                 const response = await this.$store.dispatch('getDataList', { col: 'api/users/getList' })
                 this.usersList = response.data.map(user => ({
                     value: user.name,
-                    label: user.name
+                    label: user.name,
+                    _id: user._id
                 }));
             } catch (e) {
                 console.log(e.message)
