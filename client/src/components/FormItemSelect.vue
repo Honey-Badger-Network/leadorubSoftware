@@ -2,6 +2,7 @@
     <el-select
       v-model="innerValue"
       filterable
+      :multiple="multipleMode"
       :placeholder="placeholder"
       @filter-method="filterMethod"
       @change="handleChange"
@@ -39,6 +40,10 @@
       labelKey: {
         type: String,
         default: 'label'
+      },
+      multipleMode: {
+        type: Boolean,
+        default: false
       }
     },
     emits: ['update:modelValue'],

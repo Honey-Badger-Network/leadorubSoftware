@@ -10,9 +10,11 @@
           <el-option v-for="status in statusesArray" :label="status" :value="status" :key="status"></el-option>
         </el-select>
 
-        <el-select v-if="activeTab === 'leads'" style="margin-top:10px" v-model="selectedUsers" multiple placeholder="Выбрать юзера">
+        <!-- <el-select v-if="activeTab === 'leads'" style="margin-top:10px" v-model="selectedUsers" multiple placeholder="Выбрать юзера">
           <el-option v-for="user in usersArray" :label="user.name" :value="user.name" :key="user._id"></el-option>
-        </el-select>
+        </el-select> -->
+
+        <FormItemSelect style="margin-top: 10px" v-if="activeTab === 'leads' && usersArray.length > 0" v-model="selectedUsers" labelKey="name" valueKey="name" :multipleMode="true" placeholder="Лидорубы" :options="usersArray" />
 
         <el-select v-if="activeTab === 'leads'" style="margin-top:10px" v-model="filterOkk" placeholder="статус ОКК">
           <!-- <el-option label="все" value="all"></el-option> -->
