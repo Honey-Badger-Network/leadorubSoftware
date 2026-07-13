@@ -135,6 +135,6 @@ function setUsersStatsCrone() {
     crone.schedule(cronHour, () => {
         setUsersStatsToDB(new Date(), new Date())
     })
-  }
+}
 
 module.exports = { setUsersStatsCrone, setUsersStatsToDB }

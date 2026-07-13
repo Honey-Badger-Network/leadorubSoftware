@@ -10,6 +10,7 @@ const cors = require('cors');
 const { setTransfersCrone } = require('./crones/setTransfers.js')
 const { setUsersStatsCrone } = require('./crones/setUsersStats.js')
 const { updateTransfersCrone } = require('./crones/updateUsersTransfers.js')
+const { setBonusesDataCron } = require('./crones/setBonuses.js')
 
 const usersRoute = require('./routes/usersRoute.js')
 const leadsRoute = require('./routes/leadsRoute.js')
@@ -17,6 +18,7 @@ const usersStatsRoute = require('./routes/usersStatsRoute.js')
 const transfersRoute = require('./routes/transfersRoute.js')
 const residenceRoute = require('./routes/residenceRoute.js')
 
+setBonusesDataCron()
 setTransfersCrone()
 setUsersStatsCrone()
 updateTransfersCrone()
