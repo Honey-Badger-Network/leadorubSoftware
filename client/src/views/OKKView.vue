@@ -56,6 +56,16 @@
             </template>
         </el-table-column>
 
+        <el-table-column :width="150" label="успех перевода ?">
+            <template #default="{ row }">
+                <span>{{ row.isSuccessTransfer === true ? 'успешно' : 'обрыв' }}</span>
+                <el-icon style="margin-left: 10px; height: 20px;">
+                    <Check style="color: green;" v-if="row.isSuccessTransfer === true"></Check>
+                    <Close style="color: red;" v-else></Close>
+                </el-icon>
+            </template>
+        </el-table-column>
+
         <el-table-column prop="selfLeadName" :width="110" label="Сам перевел" />
         <el-table-column prop="broker" :width="140" label="Брокер"></el-table-column>
         <!-- <el-table-column :width="150" prop="commentOKK" label="Коментарий">
@@ -180,6 +190,10 @@
         <el-form :model="isEditedLeadObject" label-width="150px" label-position="left">
             <el-form-item label="Цена офера" prop="price">
                 <el-input v-model="isEditedLeadObject.price" placeholder="Введите цену"></el-input>
+            </el-form-item>
+
+            <el-form-item label="ЗП за лид" prop="leadSalaryPrice">
+                <el-input v-model="isEditedLeadObject.leadSalaryPrice" placeholder="ЗП за лид"></el-input>
             </el-form-item>
     
             <el-form-item label="Статус резиденции" prop="residenceStatus">

@@ -336,24 +336,28 @@ async function getLeadTimeline(transfer) {
 
         const leads = response.data.data;
 
-        let leadPhoneInfo = []
-
-        // console.log(leads, '(((((((')
+        let leadPhoneInfo = {
+            isAttemptTransfer: false,
+            transferId: null,
+            seconds: '0',
+            isSuccessTransfer: false
+        }
 
         for (let lead of leads.data) {
             let user = lead.called_user || lead.manager;
-            let isSuccessTrasnfer = lead.transfered
+            let isAttemptTransfer = lead.transfered
             let transferId = lead.id
             let result = lead.result
             let seconds = lead.seconds
 
-            leadPhoneInfo.push({
-                isSuccessTransfer: isSuccessTrasnfer,
-                transferId: transferId,
-                result: result,
-                seconds: seconds,
-                user: user
-            })
+            if (transfer.id === lead.id) {
+                leadPhoneInfo = {
+                    isAttemptTransfer: isAttemptTransfer,
+                    transferId: transferId,
+                    seconds: seconds,
+                    isSuccessTransfer: isAttemptTransfer === 't' && seconds !== '0' ? true : false
+                }
+            }
 
             if (user) {
                 userName = user;

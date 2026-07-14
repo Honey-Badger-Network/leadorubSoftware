@@ -90,6 +90,7 @@ async function upsertNewLeadsData(lead) {
                         $set: {
                             // TODO лучше тут не убирать upsert set свойства если чтот оимзенить то вручную и ночью следующего дня
                             skorozvonLeadId: lead.skorozvonLeadId,
+                            isSuccessTransfer: lead.isSuccessTransfer,
                             broker: lead.broker,
                             price: lead.price,
                             audioArray: lead.audioArray,
@@ -117,6 +118,7 @@ async function upsertNewLeadsData(lead) {
                     date: lead.date,
                     phone: lead.phone,
                     skorozvonLeadId: lead.skorozvonLeadId,
+                    isSuccessTransfer: lead.isSuccessTransfer,
                     userName: lead.userName,
                     broker: lead.broker,
                     price: lead.price,
@@ -146,6 +148,7 @@ async function upsertNewLeadsData(lead) {
                 date: lead.date,
                 phone: lead.phone,
                 skorozvonLeadId: lead.skorozvonLeadId,
+                isSuccessTransfer: lead.isSuccessTransfer,
                 userName: lead.userName,
                 broker: lead.broker,
                 price: lead.price,

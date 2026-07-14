@@ -53,14 +53,12 @@ async function setTransfersToDB(gte, lte) {
         let leadUser = leadUserInfo.userName
         let leadInfoPoints = leadUserInfo.leadPhoneInfo
 
-        console.log(lead.number, lead.id, '!!!!!!!!!', leadInfoPoints, '************')
-
         // TODO дальеш что нужно сделать
         // из несколько одинаковых лидов (пока трансферов)
         // определить какой и них успешный
         // трнасфер это когда trasnfered: 't' была попытака если transfered: 'f' не было попытки к каждому их них есть id
         // по нему этому id можно делать сопоставления если несколько разных трансферов за сегодня с одинаковым phone
-        // и после этого еще оталкиватсья от seconds 
+        // и после этого еще оталкиватсья от seconds
 
         let leadResidence = await getLeadsOnePhone(gte, lte, lead.number.slice(1));
         let leadAudioArray = await getLeadAudioUrls(lead);
@@ -89,6 +87,7 @@ async function setTransfersToDB(gte, lte) {
           price: leadResidence.price,
           phone: lead.number.slice(1),
           skorozvonLeadId: lead.id,
+          isSuccessTransfer: leadInfoPoints.isSuccessTransfer,
           audioArray: leadAudioArray,
           residenceStatus: leadResidence.status,
           statusOKK: false,
@@ -134,8 +133,7 @@ function setTransfersCrone() {
   const cronMinute = '*/15 * * * *'
   const cronExpression = '*/5 * * * *'
 
-  setTransfersToDB(new Date('2026-07-13'), new Date('2026-07-13'))
-  // setTransfersToDB(new Date(), new Date())
+  setTransfersToDB(new Date(), new Date())
   // setLeadsInfoManyDays()
   
   crone.schedule(cronHour, () => {
