@@ -75,6 +75,7 @@ async function setTransfersToDB(gte, lte) {
           broker: leadResidence.broker || brokerInCalls,
           price: leadResidence.price,
           phone: lead.number.slice(1),
+          skorozvonLeadId: lead.id,
           audioArray: leadAudioArray,
           residenceStatus: leadResidence.status,
           statusOKK: false,
@@ -120,7 +121,7 @@ function setTransfersCrone() {
   const cronMinute = '*/15 * * * *'
   const cronExpression = '*/5 * * * *'
 
-  // setTransfersToDB(new Date('2026-07-09'), new Date('2026-07-09'))
+  // setTransfersToDB(new Date('2026-07-13'), new Date('2026-07-13'))
   setTransfersToDB(new Date(), new Date())
   // setLeadsInfoManyDays()
   

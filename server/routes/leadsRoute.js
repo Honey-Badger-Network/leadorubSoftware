@@ -73,13 +73,15 @@ router.post('/api/leads/upsert', async (req, res) => {
     try {
         const { leadsData, date } = req.body
 
+        console.log(leadsData, 'leadsData leadsData leadsData')
+
         for (let lead of leadsData) {
             
             const updateData = { ...lead };
             delete updateData._id;
 
             const result = await leadsModel.findOneAndUpdate(
-                { phone: lead.phone, date: lead.date },
+                { phone: lead.phone, date: lead.date, skorozvonLeadId: lead.skorozvonLeadId },
                 { $set: updateData },
                 { upsert: true, returnDocument: 'after' }
             );

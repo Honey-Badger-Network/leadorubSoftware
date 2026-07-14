@@ -5,6 +5,7 @@ const leadsModel = new Schema({
     broker: String,
     price: Number,
     phone: String,
+    skorozvonLeadId: Number,
     audioArray: Array,
     residenceStatus: String,
     statusOKK: Boolean,
