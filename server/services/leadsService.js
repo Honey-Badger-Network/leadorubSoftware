@@ -70,8 +70,6 @@ async function removeDublicates(gte, lte, phone, skorozvonLeadId) {
 async function upsertNewLeadsData(lead) {
 
     try {
-        console.log(lead)
-
         const entryFromDB = await leadsModel.findOne({
             date: lead.date,
             phone: lead.phone,
