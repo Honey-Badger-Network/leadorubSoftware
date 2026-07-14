@@ -33,14 +33,13 @@ async function getLeadsToDate(gte, lte) {
 }
 
 
-async function removeDublicates(gte, lte, phone, skorozvonLeadId) {
+async function removeDublicates(gte, lte, phone, ) {
     let leadsToDateAndPhone = await leadsModel.find({
         date: {
             $gte: gte,
             $lte: lte
         },
         phone: phone,
-        skorozvonLeadId: skorozvonLeadId
     });
   
     if (leadsToDateAndPhone.length > 1) {
@@ -73,7 +72,7 @@ async function upsertNewLeadsData(lead) {
         const entryFromDB = await leadsModel.findOne({
             date: lead.date,
             phone: lead.phone,
-            skorozvonLeadId: lead.skorozvonLeadId
+            // skorozvonLeadId: lead.skorozvonLeadId
         })
 
         if (entryFromDB) {
@@ -81,7 +80,7 @@ async function upsertNewLeadsData(lead) {
             let isUniqueOtherInfo = getDistintBetweenUnUniqueLeads(entryFromDB)
 
             // вызвать функцию которая удалит дублируюзие (если они есть)
-            let resultByDeleteDubles = await removeDublicates(lead.date, lead.date, lead.phone, lead.skorozvonLeadId)
+            let resultByDeleteDubles = await removeDublicates(lead.date, lead.date, lead.phone)
 
             if (entryFromDB.isEdited === true) {
                 await leadsModel.updateOne(
@@ -89,8 +88,8 @@ async function upsertNewLeadsData(lead) {
                     {
                         $set: {
                             // TODO лучше тут не убирать upsert set свойства если чтот оимзенить то вручную и ночью следующего дня
-                            skorozvonLeadId: lead.skorozvonLeadId,
-                            isSuccessTransfer: lead.isSuccessTransfer,
+                            // skorozvonLeadId: lead.skorozvonLeadId,
+                            // isSuccessTransfer: lead.isSuccessTransfer,
                             broker: lead.broker,
                             price: lead.price,
                             audioArray: lead.audioArray,
@@ -111,14 +110,14 @@ async function upsertNewLeadsData(lead) {
                 const oldEntry = await leadsModel.findOneAndDelete({
                     date: lead.date,
                     phone: lead.phone,
-                    skorozvonLeadId: lead.skorozvonLeadId
+                    // skorozvonLeadId: lead.skorozvonLeadId
                 })
         
                 const newEntry = new leadsModel({
                     date: lead.date,
                     phone: lead.phone,
-                    skorozvonLeadId: lead.skorozvonLeadId,
-                    isSuccessTransfer: lead.isSuccessTransfer,
+                    // skorozvonLeadId: lead.skorozvonLeadId,
+                    // isSuccessTransfer: lead.isSuccessTransfer,
                     userName: lead.userName,
                     broker: lead.broker,
                     price: lead.price,
@@ -147,8 +146,8 @@ async function upsertNewLeadsData(lead) {
             const newEntry = new leadsModel({
                 date: lead.date,
                 phone: lead.phone,
-                skorozvonLeadId: lead.skorozvonLeadId,
-                isSuccessTransfer: lead.isSuccessTransfer,
+                // skorozvonLeadId: lead.skorozvonLeadId,
+                // isSuccessTransfer: lead.isSuccessTransfer,
                 userName: lead.userName,
                 broker: lead.broker,
                 price: lead.price,
