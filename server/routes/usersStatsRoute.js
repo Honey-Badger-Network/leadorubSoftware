@@ -1,9 +1,10 @@
 const dayjs = require('dayjs')
+const isoWeek = require('dayjs/plugin/isoWeek')
 const axios = require('axios')
 const mongoose = require('mongoose')
 const crone = require('node-cron')
 const dotenv = require('dotenv')
-const { Router } = require('express');
+const { Router } = require('express')
 
 const usersStatsModel = require('../models/usersStats.js')
 const { setUsersStatsToDB } = require('../crones/setUsersStats.js')
@@ -11,6 +12,8 @@ const { getFullMonthClear } = require('../services/salaryService.js')
 
 const router = Router()
 
+
+dayjs.extend(isoWeek)
 
 router.get('/api/salary/updateInfo', async (req, res) => {
 
@@ -90,6 +93,11 @@ router.get('/api/salary/get', async (req, res) => {
 
         const usersStatsArray = []
 
+        /**
+         * херня
+         */
+        const dateType = 'isoWeek' // может быть month или isoWeek или дргой
+
         const usersStatsData = await usersStatsModel.find({
             date: {
                 $gte: gte,
@@ -99,7 +107,7 @@ router.get('/api/salary/get', async (req, res) => {
 
         const todayStr = dayjs().format('YYYY-MM-DD')
 
-        const totalSummedClearData = await getFullMonthClear(gte, lte)
+        const totalSummedClearData = await getFullMonthClear(gte, lte, dateType)
     
         // console.log(totalSummedClearData, 'totalSummedClearData !!!@#@!#!@')
         // TODO потом прикриптиь к этому бонус 10% от этих чистых
@@ -209,7 +217,7 @@ router.get('/api/salary/get', async (req, res) => {
 
             if (lidorubObjectKey) {
                 item.totalMonthClear = lidorubObjectKey.totalClear
-                if (dayjs(lte).format('YYYY-MM-DD') === dayjs(lte).endOf('month').format('YYYY-MM-DD')) {
+                if (dayjs(lte).format('YYYY-MM-DD') === dayjs(gte).endOf(dateType).format('YYYY-MM-DD')) {
                     item.scriptBonus = lidorubObjectKey.totalClear > 0 ? Math.round(lidorubObjectKey.totalClear * 0.2) : 0
                 } else {
                     item.scriptBonus = 0

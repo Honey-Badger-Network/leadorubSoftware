@@ -58,7 +58,7 @@ function setBonusesDataCron() {
     const cronMinute = '*/15 * * * *'
     const cronExpression = '*/5 * * * *'
 
-    // upsertBonusDataByUsers(new Date('2026-07-06'), new Date('2026-07-10'))
+    // upsertBonusDataByUsers(new Date('2026-07-09'), new Date('2026-07-09'))
     upsertBonusDataByUsers(new Date(), new Date())
   
     crone.schedule(cronHour, () => {

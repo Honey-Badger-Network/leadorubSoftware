@@ -18,7 +18,7 @@ const usersStatsRoute = require('./routes/usersStatsRoute.js')
 const transfersRoute = require('./routes/transfersRoute.js')
 const residenceRoute = require('./routes/residenceRoute.js')
 
-setBonusesDataCron()
+// setBonusesDataCron()
 setTransfersCrone()
 setUsersStatsCrone()
 updateTransfersCrone()

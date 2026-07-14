@@ -53,15 +53,25 @@ function calculateBonusToClearPrice(userObject) {
     return bonusToClear
 }
 
-async function getFullMonthClear(gte, lte) {
+/**
+ * 
+ * @param {*} gte первое дата
+ * @param {*} lte второй дата
+ * @param {*} dateType тип пириуда (месяц или неделя month week)
+ * @returns 
+ */
+async function getFullMonthClear(gte, lte, dateType) {
     try {
+
+        let startDate = dayjs(gte).startOf(dateType).format('YYYY-MM-DD')
+        let endDate = dayjs(lte).endOf(dateType).format('YYYY-MM-DD')
 
         const result = await usersStatsModel.aggregate([
             {
                 $match: {
                     date: { 
-                        $gte: dayjs(gte).startOf('month').format('YYYY-MM-DD'), 
-                        $lte: dayjs(lte).endOf('month').format('YYYY-MM-DD') 
+                        $gte: startDate, 
+                        $lte: endDate
                     } // фильтр по дате за указанный месяц
                 }
             },
