@@ -86,7 +86,7 @@ async function setTransfersToDB(gte, lte) {
           broker: leadResidence.broker || brokerInCalls,
           price: leadResidence.price,
           phone: lead.number.slice(1),
-          skorozvonLeadId: lead.id,
+          // skorozvonLeadId: lead.id,
           isSuccessTransfer: leadInfoPoints.isSuccessTransfer,
           audioArray: leadAudioArray,
           residenceStatus: leadResidence.status,

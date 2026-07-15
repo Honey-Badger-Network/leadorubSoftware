@@ -22,7 +22,7 @@ const skorozvonRoute = require('./routes/skorozvonRoute.js')
 // setBonusesDataCron()
 setTransfersCrone()
 setUsersStatsCrone()
-updateTransfersCrone()
+// updateTransfersCrone()
 
 dotenv.config()
 

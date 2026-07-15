@@ -101,7 +101,7 @@ async function upsertNewLeadsData(lead) {
                             isUniquePhone: lead.isUniquePhone,
                             lastPhoneCalled: lead.lastPhoneCalled,
                             uniqueState: isUniqueOtherInfo.dateState,
-                            // leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
+                            leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
                             // isBreakedStatus: lead.isBreakedStatus
                         }
                     }

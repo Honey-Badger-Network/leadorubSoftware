@@ -321,7 +321,7 @@ async function getLeadAudioUrls(transfer) {
     }
 }
 
-async function getLeadTimeline(transfer) {
+async function getLeadTimeline(transfer, onlyTransfers = false) {
     try {
         const token = await getSkorozvonToken();
         const leadURL = `https://pod5-shard2-lb1.skorozvon.ru/${transfer.lead_url}/history`;
@@ -348,10 +348,8 @@ async function getLeadTimeline(transfer) {
         }
 
         leads.data.forEach((lead) => {
-            let user = lead.called_user || lead.manager
             let isAttemptTransfer = lead.transfered
             let transferId = lead.id
-            let result = lead.result
             let seconds = lead.seconds
 
             leadPhoneInfo.push({
@@ -359,15 +357,16 @@ async function getLeadTimeline(transfer) {
                 transferId: transferId,
                 seconds: seconds,
                 isSuccessTransfer: isAttemptTransfer === 't' && seconds !== '0' ? true : false,
-                timestamp: lead.timestamp,
-                call_project: lead.call_project,
                 time: lead.time,
-                date: lead.date,
-                userName: user
+                date: lead.date
             })
         })
 
-        return { userName, leadPhoneInfo }
+        if (onlyTransfers === true) {
+            return leadPhoneInfo
+        } else {
+            return { userName, leadPhoneInfo }
+        }
 
     } catch (e) {
         console.log(e.message);

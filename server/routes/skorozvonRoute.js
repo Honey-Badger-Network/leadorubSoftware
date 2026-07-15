@@ -18,18 +18,29 @@ router.get('/api/skorozvon/allTransfers', async (req, res) => {
     try {
         const { gte, lte } = req.query
         const data = await getLeadsToOneDay(gte, lte)
-        res.status(200).json({ data: data })
-    } catch (e) {
-        console.log(e.message)
-        res.status(500).json({ err: e.message })
-    }
-})
 
-router.post('/api/skorozvon/transferInfo', async (req, res) => {
-    try {
-        const { transfer } = req.body
-        const data = await getLeadTimeline(transfer)
-        res.status(200).json({ data: data })
+        let transfersTableData = []
+
+        for (let lead of data) {
+
+            console.log(lead, '!!!!!')
+
+            let transferArray = await getLeadTimeline(lead, onlyTransfers = true)
+
+            transferArray.forEach((item) => {
+                item.phone = lead.number.slice(1)
+                transfersTableData.push(item)
+            })
+        }
+
+        // console.log(transfersTableData, '!!!!!')
+
+        transfersTableData = transfersTableData.filter((item) => {
+            return item.isSuccessTransfer === true
+        })
+
+        res.status(200).json({ data: transfersTableData })
+
     } catch (e) {
         console.log(e.message)
         res.status(500).json({ err: e.message })

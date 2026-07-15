@@ -7,28 +7,15 @@
         <el-button type="primary" plain class="input-my-btn" @click="fetchSkorozvonTransfers">применить</el-button>
     </div>
 
-    <div class="main-container">
-        <div class="left-list">
-            <h3>Трансферы</h3>
-            <div class="transfers-list">
-                <button v-for="(transfer, idx) in transfersList" type="success" @click="fetchTransferTimeline(transfer)" plain>{{ transfer.number }}</button>
-            </div>
-        </div>
-        <div class="right-block" v-if="transferTimelineObj">
-            <h4>Таймлайн: {{ transferTimelineObj.userName }} {{ checkedPhone }}</h4>
-            <el-timeline>
-                <el-timeline-item v-for="(item, index) in transferTimelineObj.leadPhoneInfo" :key="index" :timestamp="item.timestamp">
-                    <div class="timeline-item-content">
-                        <p>попытка перевода <strong>{{ item.isAttemptTransfer === 't' ? 'была' : 'не была' }}</strong></p>
-                        <p>успешность перевода <strong>{{ item.isSuccessTransfer === true ? 'успешно' : 'обрыв' }}</strong></p>
-                        <p>время разговора в попытке <strong>{{ item.seconds }} sec</strong></p>
-                        <p>время звонка <strong>{{ item.time }} ({{ item.date }})</strong></p>
-                        <p>проект лида <strong>{{ item.call_project }}</strong></p>
-                        <p>лидоруб <strong>{{ item.userName ? item.userName : 'без ответсвеного' }}</strong></p>
-                    </div>
-                </el-timeline-item>
-            </el-timeline>
-        </div>
+    <div>
+        <el-table :data="transfersList">
+            <el-table-column prop="phone" label="phone"></el-table-column>
+            <el-table-column prop="date" label="date"></el-table-column>
+            <el-table-column prop="isAttemptTransfer" label="isAttemptTransfer"></el-table-column>
+            <el-table-column prop="isSuccessTransfer" label="isSuccessTransfer"></el-table-column>
+            <el-table-column prop="seconds" label="seconds"></el-table-column>
+            <el-table-column prop="time" label="time"></el-table-column>
+        </el-table>
     </div>
 
 </template>
@@ -110,8 +97,6 @@
                 gte: dayjs(new Date).format('YYYY-MM-DD'),
                 lte: dayjs(new Date).format('YYYY-MM-DD'),
                 transfersList: [],
-                transferTimelineObj: null,
-                checkedPhone: null
             }
         },
         methods: {
@@ -125,22 +110,6 @@
                         }
                     })
                     this.transfersList = response.data
-                } catch (e) {
-                    console.log(e.message)
-                }
-            },
-            async fetchTransferTimeline(transfer) {
-
-                this.checkedPhone = transfer.number
-
-                try {
-                    const response = await this.$store.dispatch('createDataList', {
-                        col: 'api/skorozvon/transferInfo',
-                        data: {
-                            transfer: transfer
-                        }
-                    })
-                    this.transferTimelineObj = response.data
                 } catch (e) {
                     console.log(e.message)
                 }
