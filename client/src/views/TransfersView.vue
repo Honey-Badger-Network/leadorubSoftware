@@ -9,19 +9,13 @@
 
     <div class="main-container">
         <div class="left-list">
-            <h3>Трансферы:</h3>
-            <div class="cards-container">
-                <el-card v-for="(transfer, idx) in transfersList" :key="idx" class="transfer-card" shadow="hover">
-                    <div>
-                        <h4>{{ transfer.number }}</h4>
-                        <!-- <p><strong>Дата:</strong> {{ transfer.date }}</p> -->
-                        <el-button type="success" @click="fetchTransferTimeline(transfer)" plain>расскрыть</el-button>
-                    </div>
-                </el-card>
+            <h3>Трансферы</h3>
+            <div class="transfers-list">
+                <button v-for="(transfer, idx) in transfersList" type="success" @click="fetchTransferTimeline(transfer)" plain>{{ transfer.number }}</button>
             </div>
         </div>
         <div class="right-block" v-if="transferTimelineObj">
-            <h4>Таймлайн: {{ transferTimelineObj.userName }}</h4>
+            <h4>Таймлайн: {{ transferTimelineObj.userName }} {{ checkedPhone }}</h4>
             <el-timeline>
                 <el-timeline-item v-for="(item, index) in transferTimelineObj.leadPhoneInfo" :key="index" :timestamp="item.timestamp">
                     <div class="timeline-item-content">
@@ -62,28 +56,26 @@
 }
   
 .left-list {
-    flex: 0 0 45%;
     max-width: 30%;
     display: flex;
     flex-direction: column;
 }
-  
-.cards-container {
+
+.transfers-list {
+    padding: 0px;
+    margin: 0px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    max-height: 400px;
-    overflow-y: auto;
-    padding: 10px;
-    box-sizing: border-box;
-}
-  
-.transfer-card {
-    width: 100%;
-    box-sizing: border-box;
-    min-height: 150px;
+    gap: 5px;
 }
 
+.transfers-list button {
+    background-color: rgb(66, 67, 68);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 20px;
+}
 
 .timeline-item-content {
     padding-top: 10px;
@@ -118,7 +110,8 @@
                 gte: dayjs(new Date).format('YYYY-MM-DD'),
                 lte: dayjs(new Date).format('YYYY-MM-DD'),
                 transfersList: [],
-                transferTimelineObj: null
+                transferTimelineObj: null,
+                checkedPhone: null
             }
         },
         methods: {
@@ -137,6 +130,9 @@
                 }
             },
             async fetchTransferTimeline(transfer) {
+
+                this.checkedPhone = transfer.number
+
                 try {
                     const response = await this.$store.dispatch('createDataList', {
                         col: 'api/skorozvon/transferInfo',
