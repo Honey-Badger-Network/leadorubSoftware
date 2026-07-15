@@ -11,9 +11,21 @@
         <el-table :data="transfersList">
             <el-table-column prop="phone" label="phone"></el-table-column>
             <el-table-column prop="date" label="date"></el-table-column>
-            <el-table-column prop="isAttemptTransfer" label="isAttemptTransfer"></el-table-column>
-            <el-table-column prop="isSuccessTransfer" label="isSuccessTransfer"></el-table-column>
-            <el-table-column prop="seconds" label="seconds"></el-table-column>
+            <el-table-column prop="isAttemptTransfer" label="isAttemptTransfer">
+                <template #default="{ row }">
+                    <span>{{ row.isAttemptTransfer === 't' ? 'перевод' : 'обрыв' }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="isSuccessTransfer" label="isSuccessTransfer">
+                <template #default="{ row }">
+                    <span>{{ row.isSuccessTransfer ? 'успешно' : 'обрыв' }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column prop="seconds" label="seconds">
+                <template #default="{ row }">
+                    <span>{{ row.seconds }} sec</span>
+                </template>
+            </el-table-column>
             <el-table-column prop="time" label="time"></el-table-column>
         </el-table>
     </div>

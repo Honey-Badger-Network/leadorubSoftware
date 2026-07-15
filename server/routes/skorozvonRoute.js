@@ -23,13 +23,14 @@ router.get('/api/skorozvon/allTransfers', async (req, res) => {
 
         for (let lead of data) {
 
-            console.log(lead, '!!!!!')
-
             let transferArray = await getLeadTimeline(lead, onlyTransfers = true)
 
             transferArray.forEach((item) => {
                 item.phone = lead.number.slice(1)
                 transfersTableData.push(item)
+
+                console.log(item, '!!!!')
+
             })
         }
 
