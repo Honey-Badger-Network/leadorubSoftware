@@ -10,6 +10,9 @@
     <div>
         <el-table :data="transfersList">
             <el-table-column prop="phone" label="phone"></el-table-column>
+            <el-table-column prop="user" label="user"></el-table-column>
+            <el-table-column prop="broker" label="broker"></el-table-column>
+            <el-table-column prop="countCallsByBroker" label="countCallsByBroker"></el-table-column>
             <el-table-column prop="date" label="date"></el-table-column>
             <el-table-column prop="isAttemptTransfer" label="isAttemptTransfer">
                 <template #default="{ row }">

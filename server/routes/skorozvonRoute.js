@@ -10,6 +10,7 @@ dotenv.config()
 
 const { skorozvonAPI, skorozvonUSER, skorozvonID, skorozvonSecret } = process.env
 const { getSkorozvonToken, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls } = require('../services/skorozvonService.js')
+const { findAllCallsInResidence } = require('../services/residenceService.js')
 
 
 const router = Router()
@@ -21,6 +22,8 @@ router.get('/api/skorozvon/allTransfers', async (req, res) => {
 
         let transfersTableData = []
 
+        let dataCalls = await findAllCallsInResidence(gte, lte)
+
         for (let lead of data) {
 
             let transferArray = await getLeadTimeline(lead, onlyTransfers = true)
@@ -29,15 +32,25 @@ router.get('/api/skorozvon/allTransfers', async (req, res) => {
                 item.phone = lead.number.slice(1)
                 transfersTableData.push(item)
 
-                console.log(item, '!!!!')
+                let phonesToTransfer = dataCalls.filter((row) => {
+                    return row.phone === item.phone
+                })
+
+                if (phonesToTransfer) {
+                    item.broker = phonesToTransfer[0].broker
+                    item.countCallsByBroker = phonesToTransfer.length
+                }
+
+                console.log(item, '!!!!!!*&!%@*&#%!&%@#&%!@*&#%')
 
             })
         }
 
         // console.log(transfersTableData, '!!!!!')
 
+        // TODO если что раскоментить для фильтрации от неудачны пеерводов
         transfersTableData = transfersTableData.filter((item) => {
-            return item.isSuccessTransfer === true
+            return item.isAttemptTransfer === 't'
         })
 
         res.status(200).json({ data: transfersTableData })

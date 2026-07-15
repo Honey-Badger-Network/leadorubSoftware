@@ -347,10 +347,22 @@ async function getLeadTimeline(transfer, onlyTransfers = false) {
             }
         }
 
+        var currentUser = null
+
+        leads.data.forEach((lead) => {
+            let user = lead.called_user || lead.manager;
+
+            if (user) {
+                currentUser = user
+            }
+        })
+
         leads.data.forEach((lead) => {
             let isAttemptTransfer = lead.transfered
             let transferId = lead.id
             let seconds = lead.seconds
+            
+            // TODO те которые не сегодняшней даты их не пушить в масив 
 
             leadPhoneInfo.push({
                 isAttemptTransfer: isAttemptTransfer,
@@ -358,7 +370,8 @@ async function getLeadTimeline(transfer, onlyTransfers = false) {
                 seconds: seconds,
                 isSuccessTransfer: isAttemptTransfer === 't' && seconds !== '0' ? true : false,
                 time: lead.time,
-                date: lead.date
+                date: lead.date,
+                user: currentUser
             })
         })
 
