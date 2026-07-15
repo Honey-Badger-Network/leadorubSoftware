@@ -56,7 +56,7 @@
             </template>
         </el-table-column>
 
-        <el-table-column :width="150" label="успех перевода ?">
+        <!-- <el-table-column :width="150" label="успех перевода ?">
             <template #default="{ row }">
                 <span>{{ row.isSuccessTransfer === true ? 'успешно' : 'обрыв' }}</span>
                 <el-icon style="margin-left: 10px; height: 20px;">
@@ -64,7 +64,7 @@
                     <Close style="color: red;" v-else></Close>
                 </el-icon>
             </template>
-        </el-table-column>
+        </el-table-column> -->
 
         <el-table-column prop="selfLeadName" :width="110" label="Сам перевел" />
         <el-table-column prop="broker" :width="140" label="Брокер"></el-table-column>

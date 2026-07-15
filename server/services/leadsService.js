@@ -101,7 +101,8 @@ async function upsertNewLeadsData(lead) {
                             isUniquePhone: lead.isUniquePhone,
                             lastPhoneCalled: lead.lastPhoneCalled,
                             uniqueState: isUniqueOtherInfo.dateState,
-                            leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead
+                            // leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
+                            // isBreakedStatus: lead.isBreakedStatus
                         }
                     }
                 );
@@ -134,7 +135,8 @@ async function upsertNewLeadsData(lead) {
                     lastPhoneCalled: lead.lastPhoneCalled,
                     // тут остаются теже жаные оп уникальности инфа
                     uniqueState: isUniqueOtherInfo.dateState,
-                    leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead
+                    leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
+                    isBreakedStatus: lead.isBreakedStatus
                 })
         
                 await newEntry.save()
@@ -163,7 +165,8 @@ async function upsertNewLeadsData(lead) {
                 isUniquePhone: lead.isUniquePhone,
                 lastPhoneCalled: lead.lastPhoneCalled,
                 uniqueState: isUniqueOtherInfo.dateState,
-                leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead
+                leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
+                isBreakedStatus: lead.isBreakedStatus
             })
     
             await newEntry.save()

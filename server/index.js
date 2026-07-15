@@ -17,6 +17,7 @@ const leadsRoute = require('./routes/leadsRoute.js')
 const usersStatsRoute = require('./routes/usersStatsRoute.js')
 const transfersRoute = require('./routes/transfersRoute.js')
 const residenceRoute = require('./routes/residenceRoute.js')
+const skorozvonRoute = require('./routes/skorozvonRoute.js')
 
 // setBonusesDataCron()
 setTransfersCrone()
@@ -74,6 +75,7 @@ app.use(leadsRoute)
 app.use(usersStatsRoute)
 app.use(transfersRoute)
 app.use(residenceRoute)
+app.use(skorozvonRoute)
 
 
 async function startConnectToDB() {

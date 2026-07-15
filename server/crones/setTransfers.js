@@ -100,7 +100,8 @@ async function setTransfersToDB(gte, lte) {
           commentOKK: "",
           offersList: leadResidence.offersList,
           isUniquePhone: lead.isUniquePhone,
-          lastPhoneCalled: lead.lastPhoneCalled
+          lastPhoneCalled: lead.lastPhoneCalled,
+          isBreakedStatus: false
         };
   
         const result = await upsertNewLeadsData(leadInfo);

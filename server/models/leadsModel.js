@@ -48,7 +48,8 @@ const leadsModel = new Schema({
     lastPhoneCalled: String,
     // добавляю новые свойтса сюда лучше чем в зарплатной их держать
     uniqueState: String,
-    leadSalaryPrice: Number
+    leadSalaryPrice: Number,
+    isBreakedStatus: Boolean // если это был обрыв (true) то не считать в зарплатной и окк (PS позже дообсудить это)
 })
 
 module.exports = model('leadsModel', leadsModel);
