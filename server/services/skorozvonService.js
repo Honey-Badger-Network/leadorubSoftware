@@ -362,6 +362,7 @@ async function getLeadTimeline(transfer) {
                 timestamp: lead.timestamp,
                 call_project: lead.call_project,
                 time: lead.time,
+                date: lead.date,
                 userName: user
             })
         })

@@ -23,16 +23,18 @@
         <div class="right-block" v-if="transferTimelineObj">
             <h4>Таймлайн: {{ transferTimelineObj.userName }}</h4>
             <el-timeline>
-              <el-timeline-item v-for="(item, index) in transferTimelineObj.leadPhoneInfo" :key="index" :timestamp="item.timestamp">
-                <p>попытка перевода <strong>{{ item.isAttemptTransfer === 't' ? 'была' : 'не была' }}</strong></p>
-                <p>успешность перевода <strong>{{ item.isSuccessTransfer === true ? 'успешно' : 'обрыв' }}</strong></p>
-                <p>время разговора в попытке <strong>{{ item.seconds }} sec</strong></p>
-                <p>время звонка <strong>{{ item.time }}</strong></p>
-                <p>проект лида <strong>{{ item.call_project }}</strong></p>
-                <p>лидоруб <strong>{{ item.userName ? item.userName : 'без ответсвеного' }}</strong></p>
-              </el-timeline-item>
+                <el-timeline-item v-for="(item, index) in transferTimelineObj.leadPhoneInfo" :key="index" :timestamp="item.timestamp">
+                    <div class="timeline-item-content">
+                        <p>попытка перевода <strong>{{ item.isAttemptTransfer === 't' ? 'была' : 'не была' }}</strong></p>
+                        <p>успешность перевода <strong>{{ item.isSuccessTransfer === true ? 'успешно' : 'обрыв' }}</strong></p>
+                        <p>время разговора в попытке <strong>{{ item.seconds }} sec</strong></p>
+                        <p>время звонка <strong>{{ item.time }} ({{ item.date }})</strong></p>
+                        <p>проект лида <strong>{{ item.call_project }}</strong></p>
+                        <p>лидоруб <strong>{{ item.userName ? item.userName : 'без ответсвеного' }}</strong></p>
+                    </div>
+                </el-timeline-item>
             </el-timeline>
-          </div>
+        </div>
     </div>
 
 </template>
@@ -80,6 +82,12 @@
     width: 100%;
     box-sizing: border-box;
     min-height: 150px;
+}
+
+
+.timeline-item-content {
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 @media (max-width: 480px) {
