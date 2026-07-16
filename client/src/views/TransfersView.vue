@@ -7,12 +7,12 @@
         <el-button type="primary" plain class="input-my-btn" @click="fetchSkorozvonTransfers">применить</el-button>
     </div>
 
-    <div>
+    <div v-if="!isLoadingData" style="margin-top: 20px;">
         <el-table :data="transfersList">
             <el-table-column prop="phone" label="phone"></el-table-column>
             <el-table-column prop="user" label="user"></el-table-column>
             <el-table-column prop="broker" label="broker"></el-table-column>
-            <el-table-column prop="countCallsByBroker" label="countCallsByBroker"></el-table-column>
+            <el-table-column prop="countCallsByBroker" label="countCalls"></el-table-column>
             <el-table-column prop="date" label="date"></el-table-column>
             <el-table-column prop="isAttemptTransfer" label="isAttemptTransfer">
                 <template #default="{ row }">
@@ -21,7 +21,7 @@
             </el-table-column>
             <el-table-column prop="isSuccessTransfer" label="isSuccessTransfer">
                 <template #default="{ row }">
-                    <span>{{ row.isSuccessTransfer ? 'успешно' : 'обрыв' }}</span>
+                    <span :style="{'color': row.isSuccessTransfer ? 'green' : 'red'}">{{ row.isSuccessTransfer ? 'успешно' : 'обрыв' }}</span>
                 </template>
             </el-table-column>
             <el-table-column prop="seconds" label="seconds">
@@ -31,6 +31,10 @@
             </el-table-column>
             <el-table-column prop="time" label="time"></el-table-column>
         </el-table>
+    </div>
+
+    <div v-if="isLoadingData" style="margin-top: 20px;">
+        <el-skeleton :rows="4"></el-skeleton>
     </div>
 
 </template>
@@ -50,40 +54,6 @@
     margin-top: 20px;
 }
 
-.main-container {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    justify-content: space-between;
-}
-  
-.left-list {
-    max-width: 30%;
-    display: flex;
-    flex-direction: column;
-}
-
-.transfers-list {
-    padding: 0px;
-    margin: 0px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.transfers-list button {
-    background-color: rgb(66, 67, 68);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 10px;
-    font-size: 20px;
-}
-
-.timeline-item-content {
-    padding-top: 10px;
-    padding-bottom: 10px;
-}
-
 @media (max-width: 480px) {
 
     .input-my {
@@ -92,10 +62,6 @@
 
     .input-my-btn {
         width: 100%;
-    }
-
-    .left-list {
-        min-width: 100%;
     }
 
 }
@@ -112,11 +78,13 @@
                 gte: dayjs(new Date).format('YYYY-MM-DD'),
                 lte: dayjs(new Date).format('YYYY-MM-DD'),
                 transfersList: [],
+                isLoadingData: false
             }
         },
         methods: {
             async fetchSkorozvonTransfers() {
                 try {
+                    this.isLoadingData = true
                     const response = await this.$store.dispatch('getDataList', {
                         col: 'api/skorozvon/allTransfers',
                         params: {
@@ -125,6 +93,7 @@
                         }
                     })
                     this.transfersList = response.data
+                    this.isLoadingData = false
                 } catch (e) {
                     console.log(e.message)
                 }
