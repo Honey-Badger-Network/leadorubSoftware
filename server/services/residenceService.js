@@ -102,25 +102,30 @@ async function findAllCallsInResidence(gte, lte) {
 
 async function defaineSelfLead(gte, lte, phone) {
 
-    const allowedUsers = ['Владимир Медоед', 'Наташа Юрист ']
+    try {
+        const allowedUsers = ['Владимир Медоед', 'Наташа Юрист ']
 
-    const allLeadsToDate = await getResidenceLeads(gte, lte)
-    const allLeadsData = allLeadsToDate.data
-    const leadsByPhone = allLeadsData.filter((item) => {
-        return item.phone === phone
-    })
+        const allLeadsToDate = await getResidenceLeads(gte, lte)
+        const allLeadsData = allLeadsToDate.data
+        const leadsByPhone = allLeadsData.filter((item) => {
+            return item.phone === phone
+        })
 
-    let selfLead = false
+        let selfLead = false
 
-    if (leadsByPhone) {
-        for (let lead of leadsByPhone) {
-            if (allowedUsers.includes(lead.userId.name)) {
-                selfLead = true
-                break
+        if (leadsByPhone) {
+            for (let lead of leadsByPhone) {
+                if (allowedUsers.includes(lead.userId.name)) {
+                    selfLead = true
+                    break
+                }
             }
         }
+        return selfLead
+    } catch (e) {
+        console.log(e.message)
+        return false
     }
-    return selfLead
 }
 
 // получить лиды резиденции по одному телефону

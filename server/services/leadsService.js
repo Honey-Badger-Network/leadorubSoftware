@@ -34,35 +34,41 @@ async function getLeadsToDate(gte, lte) {
 
 
 async function removeDublicates(gte, lte, phone, ) {
-    let leadsToDateAndPhone = await leadsModel.find({
-        date: {
-            $gte: gte,
-            $lte: lte
-        },
-        phone: phone,
-    });
+    try {
+    
+        let leadsToDateAndPhone = await leadsModel.find({
+            date: {
+                $gte: gte,
+                $lte: lte
+            },
+            phone: phone,
+        });
   
-    if (leadsToDateAndPhone.length > 1) {
+        if (leadsToDateAndPhone.length > 1) {
 
-        console.log('Найден дубликат ')
+            console.log('Найден дубликат ')
 
-        const editedLeads = leadsToDateAndPhone.filter((lead) => lead.isEdited === true);
-  
-        let leadToKeep;
-  
-        if (editedLeads.length > 0) {
-            leadToKeep = editedLeads[0];
-        } else {
-            leadToKeep = leadsToDateAndPhone[0];
+            const editedLeads = leadsToDateAndPhone.filter((lead) => lead.isEdited === true);
+    
+            let leadToKeep;
+    
+            if (editedLeads.length > 0) {
+                leadToKeep = editedLeads[0];
+            } else {
+                leadToKeep = leadsToDateAndPhone[0];
+            }
+
+            const idsToDelete = leadsToDateAndPhone
+                .filter((lead) => lead._id.toString() !== leadToKeep._id.toString())
+                .map((lead) => lead._id);
+    
+            if (idsToDelete.length > 0) {
+                await leadsModel.deleteMany({ _id: { $in: idsToDelete } });
+            }
         }
 
-        const idsToDelete = leadsToDateAndPhone
-            .filter((lead) => lead._id.toString() !== leadToKeep._id.toString())
-            .map((lead) => lead._id);
-  
-        if (idsToDelete.length > 0) {
-            await leadsModel.deleteMany({ _id: { $in: idsToDelete } });
-        }
+    } catch (e) {
+        console.log(e.message)
     }
 }
 
@@ -179,16 +185,19 @@ async function upsertNewLeadsData(lead) {
 }
 
 async function getLeadsByUser(gte, lte, name) {
+    try {
+        const usersLeadsToDate = await leadsModel.find({
+            date: {
+                $gte: dayjs(gte).format('YYYY-MM-DD'),
+                $lte: dayjs(lte).format('YYYY-MM-DD')
+            },
+            userName: name
+        })
 
-    const usersLeadsToDate = await leadsModel.find({
-        date: {
-            $gte: dayjs(gte).format('YYYY-MM-DD'),
-            $lte: dayjs(lte).format('YYYY-MM-DD')
-        },
-        userName: name
-    })
-
-    return usersLeadsToDate
+        return usersLeadsToDate
+    } catch (e) {
+        console.log(e.message)
+    }
 }
 
 function calculateClearByUser(userObject, countUsers) {

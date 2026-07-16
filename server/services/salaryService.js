@@ -93,29 +93,36 @@ async function getFullMonthClear(gte, lte, dateType) {
 
 async function calculateSalaryHoldorub(gte, lte, userObject) {
 
-    const salaryToCalls = userObject.countCalls * 1
+    try {
 
-    const leadsOfUsers = await getLeadsByUser(gte, lte, userObject.userName)
-    const allowedHolds = ['hold', 'confirmed', 'refused']
-    let salaryToHold = 0
+        const salaryToCalls = userObject.countCalls * 1
 
-    const onlyHoldsArray = leadsOfUsers.filter((lead) => {
-        return allowedHolds.includes(lead.residenceStatus)
-    })
+        const leadsOfUsers = await getLeadsByUser(gte, lte, userObject.userName)
+        const allowedHolds = ['hold', 'confirmed', 'refused']
+        let salaryToHold = 0
 
-    onlyHoldsArray.forEach((hold) => {
+        const onlyHoldsArray = leadsOfUsers.filter((lead) => {
+            return allowedHolds.includes(lead.residenceStatus)
+        })
 
-        if (hold.selfLead === false) {
-            salaryToHold += 250
-        } else if (hold.selfLead === true) {
-            salaryToHold += hold.price * 15 / 100
-        }
+        onlyHoldsArray.forEach((hold) => {
 
-    })
+            if (hold.selfLead === false) {
+                salaryToHold += 250
+            } else if (hold.selfLead === true) {
+                salaryToHold += hold.price * 15 / 100
+            }
 
-    const holdorubSalary = salaryToCalls + salaryToHold
+        })
 
-    return holdorubSalary
+        const holdorubSalary = salaryToCalls + salaryToHold
+
+        return holdorubSalary
+    
+    } catch (e) {
+        console.log(e.message)
+        return 0
+    }
 }
 
 module.exports = { calculateSalaryLeadorub, calculateSalaryHoldorub, calculateBonusToTargetsLeadorub, calculateBonusToClearPrice, getFullMonthClear }

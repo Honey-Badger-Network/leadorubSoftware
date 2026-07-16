@@ -155,96 +155,104 @@ async function getSkorozvonCallsFromProfile(gte, lte, user) {
 
 async function getSkorozvonCallsByUser(gte, lte, user, countCalls) {
 
+    try {
 
-    let countPages = Math.ceil(countCalls / 100)
-    let callsArray = []
+        let countPages = Math.ceil(countCalls / 100)
+        let callsArray = []
 
-    const token = await getSkorozvonToken()
+        const token = await getSkorozvonToken()
 
-    const usersList = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/settings/team.json', {
-        headers: { 
-            Authorization: `Bearer ${token}` 
-        }
-    }).then( res => res.data.data.team )
-
-    let userObject = usersList.find((item) => {
-        return item.email === user.email
-    })
-
-
-    for (let i = 1; i <= countPages; i++) {
-
-        const responseCalls = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/calls', {
-            headers: { Authorization: `Bearer ${token}` },
-            params: {
-                limit: 100,
-                'date[from]': dayjs(gte).format('YYYY-MM-DD'),
-                'date[to]': dayjs(lte).format('YYYY-MM-DD'),
-                'duration[from]': 1,
-                type: 'all',
-                offset: i * 100,
-                users: userObject.id,
-                _page: i
+        const usersList = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/settings/team.json', {
+            headers: { 
+                Authorization: `Bearer ${token}` 
             }
+        }).then( res => res.data.data.team )
+
+        let userObject = usersList.find((item) => {
+            return item.email === user.email
         })
 
-        // крч скорозвон (скатина неблагодарная почему то ей поебать на page и _page и она мне тупо каждый раз с первой станицы отдает данные и похуй что page уже дргуой)
-        let callsData = responseCalls.data.data.calls
 
+        for (let i = 1; i <= countPages; i++) {
 
-        callsData.forEach((call) => {
-            // callsArray.push(call.number.slice(1))
-            callsArray.push({
-                phone: call.number.slice(1),
-                date: call.date
+            const responseCalls = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/calls', {
+                headers: { Authorization: `Bearer ${token}` },
+                params: {
+                    limit: 100,
+                    'date[from]': dayjs(gte).format('YYYY-MM-DD'),
+                    'date[to]': dayjs(lte).format('YYYY-MM-DD'),
+                    'duration[from]': 1,
+                    type: 'all',
+                    offset: i * 100,
+                    users: userObject.id,
+                    _page: i
+                }
             })
-        })
 
+            let callsData = responseCalls.data.data.calls
+
+            callsData.forEach((call) => {
+                // callsArray.push(call.number.slice(1))
+                callsArray.push({
+                    phone: call.number.slice(1),
+                    date: call.date
+                })
+            })
+
+        }
+
+        return callsArray
+    
+    } catch (e) {
+        console.log(e.message)
+        return []
     }
-
-    return callsArray
 }
 
 async function getSkorozvonCalls(gte, lte) {
 
-    const params = {
-        limit: 100,
-        'date[from]': dayjs(gte).format('YYYY-MM-DD'),
-        'date[to]': dayjs(lte).format('YYYY-MM-DD'),
-        'duration[from]': 1,
-        type: 'all',
-        page: 1,
-        offset: 0,
-    };
+    try {
+        const params = {
+            limit: 100,
+            'date[from]': dayjs(gte).format('YYYY-MM-DD'),
+            'date[to]': dayjs(lte).format('YYYY-MM-DD'),
+            'duration[from]': 1,
+            type: 'all',
+            page: 1,
+            offset: 0,
+        };
 
-    const token = await getSkorozvonToken()
+        const token = await getSkorozvonToken()
 
-    let usersCallsArray = []
+        let usersCallsArray = []
 
-    const usersList = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/settings/team.json', {
-        headers: { 
-            Authorization: `Bearer ${token}` 
+        const usersList = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/settings/team.json', {
+            headers: { 
+                Authorization: `Bearer ${token}` 
+            }
+        }).then( res => res.data.data.team )
+
+
+        for (let user of usersList) {
+            const userParams = { ...params, users: user.id };
+            const responseCalls = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/calls', {
+                headers: { Authorization: `Bearer ${token}` },
+                params: userParams,
+            });
+
+            usersCallsArray.push({
+                email: user.email,
+                name: user.name,
+                countCalls: responseCalls.data.data.total
+            })
         }
-    }).then( res => res.data.data.team )
-
-
-    for (let user of usersList) {
-        const userParams = { ...params, users: user.id };
-        const responseCalls = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/calls', {
-            headers: { Authorization: `Bearer ${token}` },
-            params: userParams,
-        });
-
-        usersCallsArray.push({
-            email: user.email,
-            name: user.name,
-            countCalls: responseCalls.data.data.total
-        })
-
-        let callsFullDataArray = []
-
+        
+        return usersCallsArray
+    
+    } catch (e) {
+        console.log(e.message)
+        return []
     }
-    return usersCallsArray
 }
 
 
