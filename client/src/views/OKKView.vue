@@ -189,11 +189,11 @@
     <el-dialog title="Редактирование лида" v-model="isEditLeadInfo" width="700px">
         <el-form :model="isEditedLeadObject" label-width="150px" label-position="left">
             <el-form-item label="Цена офера" prop="price">
-                <el-input v-model="isEditedLeadObject.price" placeholder="Введите цену"></el-input>
+                <el-input v-model="isEditedLeadObject.price" type="number" placeholder="Введите цену"></el-input>
             </el-form-item>
 
             <el-form-item label="ЗП за лид" prop="leadSalaryPrice">
-                <el-input v-model="isEditedLeadObject.leadSalaryPrice" placeholder="ЗП за лид"></el-input>
+                <el-input v-model="isEditedLeadObject.leadSalaryPrice" type="number" placeholder="ЗП за лид"></el-input>
             </el-form-item>
     
             <el-form-item label="Статус резиденции" prop="residenceStatus">

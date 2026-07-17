@@ -107,7 +107,9 @@ async function upsertNewLeadsData(lead) {
                             isUniquePhone: lead.isUniquePhone,
                             lastPhoneCalled: lead.lastPhoneCalled,
                             uniqueState: isUniqueOtherInfo.dateState,
-                            leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
+                            // TODO НЕЕЕЕТ эта херня пуская не переобновляется
+                            // TODO позе передумаю модель сущности и логики как сэйфить по номральному
+                            // leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
                             // isBreakedStatus: lead.isBreakedStatus
                         }
                     }

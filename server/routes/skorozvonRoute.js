@@ -10,7 +10,9 @@ dotenv.config()
 
 const { skorozvonAPI, skorozvonUSER, skorozvonID, skorozvonSecret } = process.env
 const { getSkorozvonToken, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls } = require('../services/skorozvonService.js')
-const { findAllCallsInResidence } = require('../services/residenceService.js')
+const { findAllCallsInResidence, getResidenceLeads } = require('../services/residenceService.js')
+const { getUISCalls } = require('../services/uisService.js')
+
 
 
 const router = Router()
@@ -22,7 +24,8 @@ router.get('/api/skorozvon/allTransfers', async (req, res) => {
 
         let transfersTableData = []
 
-        let dataCalls = await findAllCallsInResidence(gte, lte)
+        // let dataCalls = await findAllCallsInResidence(gte, lte)
+        let uisCalls = await getUISCalls(gte, lte)
 
         for (let lead of data) {
 
@@ -31,18 +34,26 @@ router.get('/api/skorozvon/allTransfers', async (req, res) => {
             transferArray.forEach((item) => {
                 item.phone = lead.number.slice(1)
                 transfersTableData.push(item)
+                item.countCallsByBroker = 0
 
-                let phonesToTransfer = dataCalls.filter((row) => {
-                    return row.phone === item.phone
+                // let phonesToTransfer = dataCalls.filter((row) => {
+                //     return row.phone === item.phone
+                // })
+
+                // if (phonesToTransfer) {
+                //     item.broker = phonesToTransfer[0].broker
+                //     item.countCallsByBroker = phonesToTransfer.length
+                // }
+
+                let brokersByPhone = uisCalls.data.filter((call) => {
+                    return call.phone === item.phone
                 })
 
-                if (phonesToTransfer) {
-                    item.broker = phonesToTransfer[0].broker
-                    item.countCallsByBroker = phonesToTransfer.length
+                if (brokersByPhone) {
+                    item.broker = brokersByPhone[0].broker
+                    item.countCallsByBroker = brokersByPhone.length
                 }
-
-                console.log(item, '!!!!!!*&!%@*&#%!&%@#&%!@*&#%')
-
+                // console.log(item, '!!!!!!*&!%@*&#%!&%@#&%!@*&#%')
             })
         }
 
