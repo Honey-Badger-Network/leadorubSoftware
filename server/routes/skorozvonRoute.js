@@ -25,6 +25,7 @@ router.get('/api/skorozvon/allTransfers', async (req, res) => {
         let transfersTableData = []
 
         // let dataCalls = await findAllCallsInResidence(gte, lte)
+        let residenceLeads = await getResidenceLeads(gte, lte)
         let uisCalls = await getUISCalls(gte, lte)
 
         for (let lead of data) {
@@ -34,26 +35,22 @@ router.get('/api/skorozvon/allTransfers', async (req, res) => {
             transferArray.forEach((item) => {
                 item.phone = lead.number.slice(1)
                 transfersTableData.push(item)
-                item.countCallsByBroker = 0
 
-                // let phonesToTransfer = dataCalls.filter((row) => {
-                //     return row.phone === item.phone
-                // })
-
-                // if (phonesToTransfer) {
-                //     item.broker = phonesToTransfer[0].broker
-                //     item.countCallsByBroker = phonesToTransfer.length
-                // }
-
-                let brokersByPhone = uisCalls.data.filter((call) => {
+                let brokerFromResidence = residenceLeads.data.find((call) => {
                     return call.phone === item.phone
                 })
 
-                if (brokersByPhone) {
-                    item.broker = brokersByPhone[0].broker
-                    item.countCallsByBroker = brokersByPhone.length
+                let brokersByPhone = uisCalls.find((call) => {
+                    return call.phone === item.phone
+                })
+
+                if (brokerFromResidence) {
+                    item.broker = brokerFromResidence?.userId?.name ?? null
+                } else {
+                    if (brokersByPhone) {
+                        item.broker = brokersByPhone.broker
+                    }
                 }
-                // console.log(item, '!!!!!!*&!%@*&#%!&%@#&%!@*&#%')
             })
         }
 

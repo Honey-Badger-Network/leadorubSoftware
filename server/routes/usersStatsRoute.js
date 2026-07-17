@@ -9,6 +9,7 @@ const { Router } = require('express')
 const usersStatsModel = require('../models/usersStats.js')
 const { setUsersStatsToDB } = require('../crones/setUsersStats.js')
 const { getFullMonthClear } = require('../services/salaryService.js')
+const { setTransfersToDB } = require('../crones/setTransfers.js')
 
 const router = Router()
 
@@ -19,12 +20,17 @@ router.get('/api/salary/updateInfo', async (req, res) => {
 
     try {
 
-        const { gte } = req.query
+        const { gte, mode } = req.query
 
-        let resultByUpdateStats = await setUsersStatsToDB(gte, gte)
+        if (mode === 'updateLeads') {
+            let resultByUpdateStats = await setTransfersToDB(gte, gte)
+        } else if (mode === 'updateSalary') {
+            let resultByUpdateStats = await setUsersStatsToDB(gte, gte)
+        }
+
 
         res.status(200).json({
-            msg: `статистика юзера успешно обновлена за ${dayjs(gte).format('YYYY-MM-DD')}`
+            msg: `${mode} успешно обновлена за ${dayjs(gte).format('YYYY-MM-DD')}`
         })
 
     } catch (e) {

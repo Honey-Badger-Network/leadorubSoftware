@@ -142,4 +142,4 @@ function setTransfersCrone() {
   })
 }
 
-module.exports = { setTransfersCrone }
+module.exports = { setTransfersCrone, setTransfersToDB }

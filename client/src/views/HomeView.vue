@@ -4,7 +4,8 @@
 
   <div v-if="isAdmin">
     <el-input :disabled="isLoading" style="width: 50%;" v-model="gte" type="date"></el-input><br>
-    <el-button :disabled="isLoading" style="margin-top: 10px;" type="success" plain @click="startUpdateUsersStats">Обновить данные</el-button>
+    <el-button :disabled="isLoading" style="margin-top: 10px;" type="success" plain @click="startUpdateUsersStats('updateSalary')">Обновить зарплатную</el-button>
+    <el-button :disabled="isLoading" style="margin-top: 10px;" type="success" plain @click="startUpdateUsersStats('updateLeads')">Обновить лиды</el-button>
   </div>
 
 </template>
@@ -28,7 +29,7 @@
       }
     },
     methods: {
-      async startUpdateUsersStats() {
+      async startUpdateUsersStats(mode) {
         try {
 
           this.isLoading = true
@@ -36,14 +37,16 @@
           const response = await this.$store.dispatch('getDataList', {
             col: 'api/salary/updateInfo',
             params: {
-              gte: this.gte
+              gte: this.gte,
+              mode: mode
             }
           })
 
           this.isLoading = false
 
           ElMessage({
-            message: `Статистика юзеров обновилась за ${dayjs(this.gte).format('YYYY-MM-DD')}`,
+            // message: `Статистика юзеров обновилась за ${dayjs(this.gte).format('YYYY-MM-DD')}`,
+            message: response.msg,
             type: 'success',
           });
 
