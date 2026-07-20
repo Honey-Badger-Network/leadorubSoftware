@@ -33,7 +33,7 @@ async function getLeadsToDate(gte, lte) {
 }
 
 
-async function removeDublicates(gte, lte, phone, ) {
+async function removeDublicates(gte, lte, phone) {
     try {
     
         let leadsToDateAndPhone = await leadsModel.find({
