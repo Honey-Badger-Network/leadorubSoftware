@@ -21,7 +21,14 @@ async function upserUsersStatsToDB(userObject) {
 
     try {
 
-        const oldEntry = await usersStats.findOneAndDelete({
+        // const oldEntry = await usersStats.findOneAndDelete({
+        //     date: userObject.date,
+        //     email: userObject.email,
+        // })
+
+        // TODO лучше удалять все потмоу что может быть глюк и какойо не удалится и тогда будет дубли !!!
+
+        const resultByDeleteOldEntryes = await usersStats.deleteMany({
             date: userObject.date,
             email: userObject.email,
         })
