@@ -57,4 +57,47 @@ router.get('/api/residence/brokersList', async (req, res) => {
     }
 })
 
+router.get('/api/residence/offersList', async (req, res) => {
+    try {
+
+        const response = await axios.get(`${residenceBaseUrl}offers`, {
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+            params: {
+                _page: 1,
+                _limit: 0,
+                _populate: ['regionId'],
+                _select: ['companyId name regionId'],
+                status: ['confirmed']
+            },
+            headers: {
+                'Content-Type' : 'application/json',
+                'Authorization': `Bearer ${residenceToken}`
+            }
+        })
+
+        let offersObject = {}
+
+        response.data.data.forEach((offer) => {
+            if (offersObject[offer?.regionId?.name]) {
+                offersObject[offer?.regionId?.name].countOffers += 1
+            } else {
+                offersObject[offer?.regionId?.name] = {
+                    region: offer?.regionId?.name,
+                    countOffers: 1,
+                }
+            }
+        })
+
+        let offersArray = Object.values(offersObject)
+
+        console.log(offersArray, '!!!!!')
+
+        res.status(200).json({ data: offersArray })
+
+    } catch (e) {
+        console.log(`ошибка получение офферов из residence ${e.message}`)
+        res.status(500).json({ err: e.message })
+    }
+})
+
 module.exports = router

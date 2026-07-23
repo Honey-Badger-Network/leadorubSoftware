@@ -6,6 +6,7 @@
                     <Menu />
                 </el-icon>
             </el-button>
+            <el-button type="warning" plain @click="isShowModalOffers =! isShowModalOffers">активные регионы</el-button>
         </div>
         <div>
           <el-dropdown placement="bottom-end" trigger="click">
@@ -28,6 +29,14 @@
           </el-dropdown>
         </div>
     </div>
+
+    <el-dialog title="Список активных регионов" v-model="isShowModalOffers" width="500px">
+        <div v-for="(offer, idx) in offersList" :key="idx" style="display: flex; margin-bottom: 10px; justify-content: space-between;">
+            <span>{{ offer.region }}</span>
+            <el-badge :value="offer.countOffers" :type="getColorType(offer.countOffers)"></el-badge>
+        </div>
+    </el-dialog>
+
 </template>
 
 
@@ -45,6 +54,14 @@
 .navbar-collapse {
     margin-top: -5px;
 }
+
+.offers-container {
+    display: flex;
+    text-wrap: wrap;
+    color: black;
+    font-size: 10px;
+}
+
 </style>
 
 
@@ -56,7 +73,8 @@
     export default {
         data() {
             return {
-                title: 'appLayout'
+                title: 'appLayout',
+                isShowModalOffers: false
             }
         },
         components: {
@@ -71,6 +89,11 @@
             },
             onClickMenu: {
                 type: Function
+            },
+            offersList: {
+                type: Array,
+                required: false,
+                default: null
             }
         },
         methods: {
@@ -79,6 +102,15 @@
             },
             logout() {
                 this.$router.push('/login')
+            },
+            getColorType(count) {
+                if (count >= 10) {
+                    return 'success'
+                } else if (count > 5 && count < 10) {
+                    return 'warning'
+                } else if (count <= 5) {
+                    return 'danger'
+                }
             }
         }
     }

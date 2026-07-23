@@ -33,7 +33,7 @@
     </el-aside>
 
     <el-main style="height: 100%;" v-if="showNotMobileFull">
-      <AppHeader v-if="showSidebar" :userRole="rankName" :userName="userName" :onClickMenu="collapse" />
+      <AppHeader v-if="showSidebar" :userRole="rankName" :userName="userName" :offersList="activeOffersArr" :onClickMenu="collapse" />
       <router-view></router-view>
     </el-main>
   </el-container>
@@ -84,6 +84,7 @@ export default {
       isLoading: true,
       isMobile: true,
       isShowMenu: false, // переменая для коллапса сайдбара
+      activeOffersArr: null
     }
   },
   components: {
@@ -162,6 +163,17 @@ export default {
         // }
       ]
     },
+    async fetchResidenceOffers() {
+      try {
+        const response = await this.$store.dispatch('getDataList', {
+          col: 'api/residence/offersList',
+          params: {}
+        })
+        this.activeOffersArr = response.data
+      } catch (e) {
+        console.log(e.message)
+      }
+    },
     collapse() {
       this.isShowMenu =! this.isShowMenu
     }
@@ -174,6 +186,8 @@ export default {
     this.initializeMenu()
     console.log(this.userObject)
     this.isLoading = false
+
+    this.fetchResidenceOffers()
 
     this.isMobile = window.innerWidth < 480 ? true : false
 
