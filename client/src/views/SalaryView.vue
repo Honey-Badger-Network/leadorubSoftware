@@ -20,6 +20,11 @@
         <!-- easy buttons -->
         <el-button @click="easyGetSalary('today')">сегодня</el-button>
         <el-button @click="easyGetSalary('yesterday')">вчера</el-button>
+        <el-button @click="easyGetSalary('week')">неделя</el-button>
+        <el-button @click="easyGetSalary('prevWeek')">прошлая неделя</el-button>
+        <el-button @click="easyGetSalary('month')">месяц</el-button>
+        <el-button @click="easyGetSalary('prevMonth')">прошлый месяц</el-button>
+
         <el-button v-if="userRole === 'admin' && leadorubsTop" @click="openModalWithBest">Лучший лидоруб</el-button>
     </div>
 
@@ -194,6 +199,18 @@
                 } else if (dayMode === 'yesterday') {
                     this.gte = dayjs(new Date).subtract(1, 'day').format('YYYY-MM-DD')
                     this.lte = dayjs(new Date).subtract(1, 'day').format('YYYY-MM-DD')
+                } else if (dayMode === 'week') {
+                    this.gte = dayjs(new Date).startOf('week').format('YYYY-MM-DD')
+                    this.lte = dayjs(new Date).endOf('week').format('YYYY-MM-DD')
+                } else if (dayMode === 'prevWeek') {
+                    this.gte = dayjs(new Date).subtract(1, 'week').startOf('week').format('YYYY-MM-DD')
+                    this.lte = dayjs(new Date).subtract(1, 'week').endOf('week').format('YYYY-MM-DD')
+                } else if (dayMode === 'month') {
+                    this.gte = dayjs(new Date).startOf('month').format('YYYY-MM-DD')
+                    this.lte = dayjs(new Date).endOf('month').format('YYYY-MM-DD')
+                } else if (dayMode === 'prevMonth') {
+                    this.gte = dayjs(new Date).subtract(1, 'month').startOf('month').format('YYYY-MM-DD')
+                    this.lte = dayjs(new Date).subtract(1, 'month').endOf('month').format('YYYY-MM-DD')
                 }
 
                 await this.getSalaryData()
