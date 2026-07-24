@@ -19,6 +19,9 @@ async function upsertBonusDataByUsers(date) {
 
         console.log(dayOfStartWeek, 'START DATE', dayOfEndWeek, 'END DATE')
 
+
+        // TODO тут добавить еще логику на то чтобы срвнивать что субота И время больше 9 вечера или 10 тут уже неважно
+
         if (nowDate === dayOfEndWeek) {
             // если этот сркипт включился в суботу
 
