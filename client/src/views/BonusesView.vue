@@ -21,12 +21,17 @@
     <el-dialog title="Создать ручной бонус" v-model="isShowModalToBonus" width="500px">
         
         <el-input v-model="newHandBonus.bonusDate" type="date"></el-input>
+
         <el-select v-model="newHandBonus.bonusText" style="margin-top: 10px">
             <el-option v-for="(type, index) in allBonusTexts" :label="type" :value="type"></el-option>
         </el-select>
-        <el-select v-model="newHandBonus.bonusUserName" style="margin-top: 10px">
+
+        <!-- <el-select v-model="newHandBonus.bonusUserName" style="margin-top: 10px">
             <el-option v-for="(user, idx) in usersList" :label="user.name" :value="user.name"></el-option>
-        </el-select>
+        </el-select> -->
+
+        <FormItemSelect v-if="usersList.length > 0" v-model="newHandBonus.bonusUserName" :options="usersList" valueKey="name" labelKey="name" />
+
         <el-input v-model="newHandBonus.bonusValue" style="margin-top: 10px" type="number"></el-input>
     
         <el-button @click="createNewHandBonus" style="margin-top: 10px" type="success" plain>Создать новый бонус</el-button>
@@ -40,6 +45,7 @@
     import dayjs from 'dayjs';
 
     import { ElMessage } from 'element-plus';
+    import FormItemSelect from '../components/FormItemSelect.vue'
 
 
     export default {
@@ -63,6 +69,9 @@
                     userEmail: null,
                 }
             }
+        },
+        components: {
+            FormItemSelect
         },
         methods: {
             async fetchBonuses() {

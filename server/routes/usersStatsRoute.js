@@ -272,6 +272,10 @@ router.get('/api/salary/get', async (req, res) => {
 
         });
 
+        resultObject = resultObject.sort((a, b) => {
+            return b.clear - a.clear
+        })
+
         resultObject.push(total)
 
         res.status(200).json({
