@@ -8,11 +8,11 @@ const BonusesModel = new Schema({
     },
     bonusType: {
         type: String,
-        enum: ['clearBonus']
+        enum: ['clearBonus', 'handBonus']
     },
     bonusText: {
         type: String,
-        enum: ['бонус за чистую']
+        enum: ['бонус за чистую', 'Ручной бонус']
     },
     bonusValue: {
         type: Number,
@@ -26,7 +26,7 @@ const BonusesModel = new Schema({
     bonusUserName: {
         type: String,
         required: true
-    }
+    },
 })
 
 

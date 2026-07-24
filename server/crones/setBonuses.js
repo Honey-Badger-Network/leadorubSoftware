@@ -9,43 +9,67 @@ const usersModel = require('../models/usersModel.js')
 const usersStatsModel = require('../models/usersStats.js')
 const bonusesModel = require('../models/bonusesModel.js')
 
-async function upsertBonusDataByUsers(gte, lte) {
+async function upsertBonusDataByUsers(date) {
     try {
 
-        let startDate = dayjs(gte).startOf('week').format('YYYY-MM-DD')
-        let endDate = dayjs(lte).endOf('week').add(1, 'day').format('YYYY-MM-DD')
+        let nowDate = dayjs(date).format('YYYY-MM-DD')
 
-        const usersStatsDataWeek = await usersStatsModel.find({
-            date: {
-                $gte: startDate,
-                $lte: endDate
-            }
-        })
+        let dayOfStartWeek = dayjs(date).startOf('week').format('YYYY-MM-DD')
+        let dayOfEndWeek = dayjs(date).endOf('week').format('YYYY-MM-DD')
 
-        let aggregatedUsersStatsObject = {}
+        console.log(dayOfStartWeek, 'START DATE', dayOfEndWeek, 'END DATE')
 
-        usersStatsDataWeek.forEach((user) => {
-            if (aggregatedUsersStatsObject[user.email]) {
-                aggregatedUsersStatsObject[user.email].clear += user.clear
-            } else {
-                aggregatedUsersStatsObject[user.email] = {
-                    email: user.email,
-                    clear: user.clear,
-                    bonusUserId: user._id,
-                    bonusUserName: user.name,
-                    bonusDate: endDate
+        if (nowDate === dayOfEndWeek) {
+            // если этот сркипт включился в суботу
+
+            // получить статистику за всю неделю юзеров зарплатной
+            const usersStatsDataWeek = await usersStatsModel.find({
+                date: {
+                    $gte: dayOfStartWeek,
+                    $lte: dayOfEndWeek
+                }
+            })
+
+
+
+            let aggregatedUsersStatsObject = {}
+
+            // перебор статистика и агрегация
+            usersStatsDataWeek.forEach((user) => {
+                if (aggregatedUsersStatsObject[user.email]) {
+                    aggregatedUsersStatsObject[user.email].clear += user.clear
+                } else {
+                    aggregatedUsersStatsObject[user.email] = {
+                        email: user.email,
+                        clear: user.clear,
+                        bonusUserId: user._id,
+                        bonusUserName: user.name,
+                        bonusDate: dayOfEndWeek
+                    }
+                }
+            })
+
+            
+            let aggregatedUsersStatsArrat = Object.values(aggregatedUsersStatsObject)
+
+            // формирование бонуса
+            for (let user of aggregatedUsersStatsArrat) {
+
+                if (user.clear > 0) {
+                    user.bonusValue = Math.ceil(user.clear * 0.2)
+                    user.bonusType = 'clearBonus'
+                    user.bonusText = 'бонус за чистую'
+                    // console.log(user, '!!!!*(@^#*^!@(*#^!')
+                    // заливка бонусов в БД
+                    const result = await bonusesModel.updateBonusData(user)
+                } else {
+                    // если условиее по чистой не совопадает (чистая меньше 0)
+                    // console.log(user, '*!^@*(#^!@*(^#(* this user many clear !!!!!!')
                 }
             }
-        })
 
-        let aggregatedUsersStatsArrat = Object.values(aggregatedUsersStatsObject)
-
-        for (let user of aggregatedUsersStatsArrat) {
-            user.bonusValue = user.clear > 0 ? Math.ceil(user.clear * 0.2) : 0
-            user.bonusType = 'clearBonus'
-            user.bonusText = 'бонус за чистую'
-
-            const result = await bonusesModel.updateBonusData(user)
+        } else {
+            console.log('bonuses cron script не запущен в суботу !!! о не забьет даные', nowDate, dayOfEndWeek)
         }
 
     } catch (e) {
@@ -58,11 +82,10 @@ function setBonusesDataCron() {
     const cronMinute = '*/15 * * * *'
     const cronExpression = '*/5 * * * *'
 
-    // upsertBonusDataByUsers(new Date('2026-07-09'), new Date('2026-07-09'))
-    upsertBonusDataByUsers(new Date(), new Date())
+    upsertBonusDataByUsers(new Date('2026-07-18'))
   
     crone.schedule(cronHour, () => {
-        upsertBonusDataByUsers(new Date(), new Date())
+        upsertBonusDataByUsers(new Date())
     })
 }
 

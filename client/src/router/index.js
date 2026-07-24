@@ -52,6 +52,12 @@ const router = createRouter({
       component: () => import('../views/TransfersView.vue'),
       meta: { requiresAuth: true, onlyAdmin: true }
     },
+    {
+      path: '/bonuses',
+      name: "bonuses",
+      component: () => import('../views/BonusesView.vue'),
+      meta: { requiresAuth: true, onlyAdmin: true }
+    },
     // {
     //   path: '/phones',
     //   name: "phones",
