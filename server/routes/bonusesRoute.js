@@ -34,5 +34,21 @@ router.get('/api/bonuses/getAll', async (req, res) => {
     }
 })
 
+router.post('/api/bonuses/createHand', async (req, res) => {
+    try {
+        const { newHandBonus } = req.body
+
+        let newBonusObject = new bonusesModel(newHandBonus)
+
+        await newBonusObject.save()
+
+        res.status(200).json({
+            msg: 'bonus has been successfule created'
+        })
+
+    } catch (e) {
+        console.log(e.message)
+    }
+})
 
 module.exports = router
