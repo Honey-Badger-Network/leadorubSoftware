@@ -119,6 +119,16 @@
                 </el-button>
             </template>
         </el-table-column>
+        
+
+        <!-- TODO потом обсудить этот момент -->
+
+        <el-table-column :width="400" label="Явно сохранить">
+            <template #default="{ row }">
+                <FormItemSelect multipleMode v-model="row.savedParametrs" :options="savedParams" valueKey="value" labelKey="name" />
+            </template>
+        </el-table-column>
+
     </el-table>
 
     <el-button type="success" style="margin-top: 30px" @click="saveLeadsData">Сохранить данные</el-button>
@@ -285,6 +295,15 @@
             allLeadAudioArray: null,
             showModalToAudio: false,
             isAudioLoading: false,
+            savedParams: [
+                {name: 'Лидоруб', value: 'user'},
+                {name: 'Статус ОКК', value: 'statusOKK'},
+                {name: 'Комент ОКК', value: 'commentOKK'},
+                {name: 'Брокер', value: 'broker'},
+                {name: 'Статус резиденции', value: 'residenceStatus'},
+                {name: 'Проверен', value: 'isEdited'},
+                {name: 'ЗП за лид', value: 'leadSalaryPrice'},
+            ]
         }
     },
     computed: {
