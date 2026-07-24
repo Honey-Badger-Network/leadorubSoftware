@@ -27,6 +27,10 @@ const BonusesModel = new Schema({
         type: String,
         required: true
     },
+    userEmail: {
+        type: String,
+        required: true
+    }
 })
 
 
@@ -39,7 +43,8 @@ BonusesModel.statics.updateBonusData = async function(bonusObject) {
                     bonusType: bonusObject.bonusType,
                     bonusText: bonusObject.bonusText,
                     bonusValue: bonusObject.bonusValue,
-                    bonusUserName: bonusObject.bonusUserName
+                    bonusUserName: bonusObject.bonusUserName,
+                    userEmail: bonusObject.email
                 }
             },
             { returnDocument: 'after', upsert: true }

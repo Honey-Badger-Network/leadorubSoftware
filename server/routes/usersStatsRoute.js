@@ -7,6 +7,8 @@ const dotenv = require('dotenv')
 const { Router } = require('express')
 
 const usersStatsModel = require('../models/usersStats.js')
+const bonusesModel = require('../models/bonusesModel.js')
+
 const { setUsersStatsToDB } = require('../crones/setUsersStats.js')
 const { getFullMonthClear } = require('../services/salaryService.js')
 const { setTransfersToDB } = require('../crones/setTransfers.js')
@@ -110,6 +112,33 @@ router.get('/api/salary/get', async (req, res) => {
                 $lte: lte
             }
         })
+
+
+        const bonusesData = await bonusesModel.find({
+            bonusDate: {
+                $gte: dayjs(gte).format('YYYY-MM-DD'),
+                $lte: dayjs(lte).format('YYYY-MM-DD'),
+            }
+        })
+
+        let aggregatedBonusesObject = {}
+
+        bonusesData.forEach((bonus) => {
+            if (aggregatedBonusesObject[bonus.bonusUserName]) {
+                aggregatedBonusesObject[bonus.bonusUserName].sumBonus += bonus.bonusValue
+            } else {
+                aggregatedBonusesObject[bonus.bonusUserName] = {
+                    userName: bonus.bonusUserName,
+                    sumBonus: bonus.bonusValue,
+                    email: bonus.userEmail
+                }
+            }
+        })
+
+        let aggregatedBonusesArray = Object.values(aggregatedBonusesObject)
+
+        console.log(aggregatedBonusesArray, 'aggregatedBonusesArray aggregatedBonusesArray aggregatedBonusesArray')
+
 
         const todayStr = dayjs().format('YYYY-MM-DD')
 
@@ -217,18 +246,28 @@ router.get('/api/salary/get', async (req, res) => {
             total.brokerSalary += item.brokerSalary || 0;
             total.salaryToLeads += item.salaryToLeads || 0
 
-            let lidorubObjectKey = totalSummedClearData.find((user) => {
-                return item.email === user._id
+            // let lidorubObjectKey = totalSummedClearData.find((user) => {
+            //     return item.email === user._id
+            // })
+
+            // if (lidorubObjectKey) {
+            //     item.totalMonthClear = lidorubObjectKey.totalClear
+            //     if (dayjs(lte).format('YYYY-MM-DD') === dayjs(gte).endOf(dateType).format('YYYY-MM-DD')) {
+            //         item.scriptBonus = lidorubObjectKey.totalClear > 0 ? Math.round(lidorubObjectKey.totalClear * 0.2) : 0
+            //     } else {
+            //         item.scriptBonus = 0
+            //     }
+            //     total.scriptBonus += item.scriptBonus
+            // }
+
+            let lidorubObjectKey = aggregatedBonusesArray.find((user) => {
+                return user.email === item.email
             })
 
             if (lidorubObjectKey) {
-                item.totalMonthClear = lidorubObjectKey.totalClear
-                if (dayjs(lte).format('YYYY-MM-DD') === dayjs(gte).endOf(dateType).format('YYYY-MM-DD')) {
-                    item.scriptBonus = lidorubObjectKey.totalClear > 0 ? Math.round(lidorubObjectKey.totalClear * 0.2) : 0
-                } else {
-                    item.scriptBonus = 0
-                }
-                total.scriptBonus += item.scriptBonus
+                item.scriptBonus = lidorubObjectKey.sumBonus
+            } else {
+                item.scriptBonus = 0
             }
 
         });

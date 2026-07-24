@@ -64,7 +64,7 @@ async function setTransfersToDB(gte, lte) {
         let leadAudioArray = await getLeadAudioUrls(lead);
         let userIdObject = await getUserIdByName(leadUser);
         let isSelfLead = await defaineSelfLead(gte, lte, lead.number.slice(1));
-        let infoByUniqueLead = await getInfoLeadIsUnique(lead.number.slice(1), gte, lte)
+        let infoByUniqueLead = await getInfoLeadIsUnique(lead.number.slice(1), gte, lte, leadUser)
         // TODO: на будущее есть эта функция будет слишком мног овремнеи жрать то попробовтаь сделать 1 зарпос к БД
         // получить все лиды по всем нмоерам телефонов и дальше через .filter искать уникальные и повторящии пока ждому лиду его номер телефону
         // сделать масив всех нмоеров телефонов по лидам котоыре получены этим кроном из сокрозвона

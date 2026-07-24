@@ -309,7 +309,7 @@ async function aggregateUsersLeads(array) {
     return aggregatedArr
 }
 
-async function getInfoLeadIsUnique(phone, gte, lte) {
+async function getInfoLeadIsUnique(phone, gte, lte, userName) {
     try {
         const todayStart = dayjs(lte).startOf('day').format('YYYY-MM-DD')
         
@@ -318,7 +318,8 @@ async function getInfoLeadIsUnique(phone, gte, lte) {
             // исключаем лиды за сегодняшний и будущие дни
             date: {
                 $lt: todayStart
-            }
+            },
+            userName: userName
         })
 
         let infoObject = {
