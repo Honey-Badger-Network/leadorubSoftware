@@ -3,7 +3,8 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
+import 'element-plus/dist/index.css' // Основные стили
+import 'element-plus/theme-chalk/dark/css-vars.css' // Стили темной темы
 
 // Импорт локализации
 import localeRU from 'element-plus/dist/locale/ru'

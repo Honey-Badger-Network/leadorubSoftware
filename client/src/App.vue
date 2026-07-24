@@ -32,14 +32,19 @@
       </el-menu>
     </el-aside>
 
-    <el-main style="height: 100%;" v-if="showNotMobileFull">
-      <AppHeader v-if="showSidebar" :userRole="rankName" :userName="userName" :offersList="activeOffersArr" :onClickMenu="collapse" />
+    <el-main :class="{ 'dark': isDark }" style="height: 100%;" v-if="showNotMobileFull">
+      <AppHeader v-if="showSidebar" @updateTheme="updateTheme" :userRole="rankName" :userName="userName" :offersList="activeOffersArr" :onClickMenu="collapse" />
       <router-view></router-view>
     </el-main>
   </el-container>
 </template>
 
 <style>
+
+.el-header {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
 
 .collapse-btn {
   margin-top: auto;
@@ -84,7 +89,8 @@ export default {
       isLoading: true,
       isMobile: true,
       isShowMenu: false, // переменая для коллапса сайдбара
-      activeOffersArr: null
+      activeOffersArr: null,
+      isDark: false
     }
   },
   components: {
@@ -168,6 +174,14 @@ export default {
         //   condition: () => this.rankName === 'admin'
         // }
       ]
+    },
+    updateTheme() {
+      this.isDark = !this.isDark;
+      if (this.isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     },
     async fetchResidenceOffers() {
       try {

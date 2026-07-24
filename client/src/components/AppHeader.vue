@@ -8,25 +8,27 @@
             </el-button>
             <el-button type="warning" plain @click="isShowModalOffers =! isShowModalOffers">активные регионы</el-button>
         </div>
+        
         <div>
-          <el-dropdown placement="bottom-end" trigger="click">
-            <div>
-              <div>
-                <el-button>
-                  <el-icon style="vertical-align: middle" :size="20">
-                    <User />
-                  </el-icon>
-                  <span>{{ userName || 'user' }}</span>
-                </el-button>
-              </div>
-            </div>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="userView" :icon="iconUser">Профиль</el-dropdown-item>
-                <el-dropdown-item @click="logout" :icon="iconClose">Выйти</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+            <el-switch v-model="isDark" @change="onThemeChange" active-text="dark" inactive-text="light" style="margin-right: 30px;"></el-switch>
+            <el-dropdown placement="bottom-end" trigger="click">
+                <div>
+                    <div>
+                        <el-button>
+                            <el-icon style="vertical-align: middle" :size="20">
+                                <User />
+                            </el-icon>
+                            <span>{{ userName || 'user' }}</span>
+                        </el-button>
+                    </div>
+                </div>
+                <template #dropdown>
+                    <el-dropdown-menu>
+                        <el-dropdown-item @click="userView" :icon="iconUser">Профиль</el-dropdown-item>
+                        <el-dropdown-item @click="logout" :icon="iconClose">Выйти</el-dropdown-item>
+                    </el-dropdown-menu>
+                </template>
+            </el-dropdown>
         </div>
     </div>
 
@@ -74,7 +76,8 @@
         data() {
             return {
                 title: 'appLayout',
-                isShowModalOffers: false
+                isShowModalOffers: false,
+                isDark: false
             }
         },
         components: {
@@ -94,6 +97,9 @@
                 type: Array,
                 required: false,
                 default: null
+            },
+            updateTheme: {
+                type: Function
             }
         },
         methods: {
@@ -111,6 +117,9 @@
                 } else if (count <= 5) {
                     return 'danger'
                 }
+            },
+            onThemeChange(val) {
+                this.$emit('update-theme', val)
             }
         }
     }
