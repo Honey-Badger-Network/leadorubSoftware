@@ -20,12 +20,13 @@
     <el-table :data="tableData" style="width: 100%">
         <el-table-column :width="100" prop="date" label="Дата"></el-table-column>
         <el-table-column :width="120" prop="phone" label="Телефон"></el-table-column>
-        <!-- <el-table-column prop="userName" label="Имя"></el-table-column> -->
+
         <el-table-column :width="170" label="Лидоруб">
             <template #default="{ row }">
                 <FormItemSelect v-if="usersList" v-model="row.userName" :options="usersList" @change="(value) => handleUserNameChange(row, value)" />
             </template>
         </el-table-column>
+
         <el-table-column :width="100" label="Запись">
             <template #default="{ row }">
                 <div class="buttons-container">
@@ -38,6 +39,7 @@
                 </div>
             </template>
         </el-table-column>
+        
         <el-table-column :width="150" label="Установить ОКК">
             <template #default="{ row }">
               <el-select v-model="row.statusOKK" placeholder="Выберите статус" style="width: 120px;">
@@ -56,32 +58,8 @@
             </template>
         </el-table-column>
 
-        <!-- <el-table-column :width="150" label="успех перевода ?">
-            <template #default="{ row }">
-                <span>{{ row.isSuccessTransfer === true ? 'успешно' : 'обрыв' }}</span>
-                <el-icon style="margin-left: 10px; height: 20px;">
-                    <Check style="color: green;" v-if="row.isSuccessTransfer === true"></Check>
-                    <Close style="color: red;" v-else></Close>
-                </el-icon>
-            </template>
-        </el-table-column> -->
-
         <el-table-column prop="selfLeadName" :width="110" label="Сам перевел" />
         <el-table-column prop="broker" :width="140" label="Брокер"></el-table-column>
-        <!-- <el-table-column :width="150" prop="commentOKK" label="Коментарий">
-            <template #default="{ row }">
-                <el-input v-model="row.commentOKK"></el-input>
-            </template>
-        </el-table-column> -->
-
-
-        <!-- <el-table-column prop="residenceStatus" :width="100" label="Статус">
-            <template #default="{ row }">
-                <div class="custom-div" :style="{ 'background-color' : getTypeOfBadge(row.residenceStatus)}">
-                    {{ row.residenceStatus }}
-                </div>
-            </template>
-        </el-table-column> -->
 
         <el-table-column prop="residenceStatus" :width="200" label="Статус">
             <template #default="{ row }">
@@ -110,6 +88,7 @@
                 <el-checkbox v-model="row.isEdited"></el-checkbox>
             </template>
         </el-table-column>
+
         <el-table-column :width="140" label="Изменить">
             <template #default="{ row }">
                 <el-button circle plain type="primary" @click="openEditModal(row)">
@@ -117,15 +96,6 @@
                         <Edit />
                     </el-icon>
                 </el-button>
-            </template>
-        </el-table-column>
-        
-
-        <!-- TODO потом обсудить этот момент -->
-
-        <el-table-column :width="400" label="Явно сохранить">
-            <template #default="{ row }">
-                <FormItemSelect multipleMode v-model="row.savedParametrs" :options="savedParams" valueKey="value" labelKey="name" />
             </template>
         </el-table-column>
 
@@ -295,15 +265,6 @@
             allLeadAudioArray: null,
             showModalToAudio: false,
             isAudioLoading: false,
-            savedParams: [
-                {name: 'Лидоруб', value: 'user'},
-                {name: 'Статус ОКК', value: 'statusOKK'},
-                {name: 'Комент ОКК', value: 'commentOKK'},
-                {name: 'Брокер', value: 'broker'},
-                {name: 'Статус резиденции', value: 'residenceStatus'},
-                {name: 'Проверен', value: 'isEdited'},
-                {name: 'ЗП за лид', value: 'leadSalaryPrice'},
-            ]
         }
     },
     computed: {

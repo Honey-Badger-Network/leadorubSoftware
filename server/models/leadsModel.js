@@ -5,8 +5,6 @@ const leadsModel = new Schema({
     broker: String,
     price: Number,
     phone: String,
-    // skorozvonLeadId: Number,
-    // isSuccessTransfer: Boolean,
     audioArray: Array,
     residenceStatus: String,
     statusOKK: Boolean,
@@ -50,10 +48,6 @@ const leadsModel = new Schema({
     uniqueState: String,
     leadSalaryPrice: Number,
     isBreakedStatus: Boolean, // если это был обрыв (true) то не считать в зарплатной и окк (PS позже дообсудить это)
-    savedParametrs: {
-        type: Array,
-        required: false
-    }
 })
 
 module.exports = model('leadsModel', leadsModel);

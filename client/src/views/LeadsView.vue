@@ -66,7 +66,8 @@
               </el-table-column>
               <el-table-column :width="150" prop="lastPhoneCalled" label="Последний звонок"></el-table-column>
               <el-table-column :width="150" prop="uniqueState" label="Насколько уникальный"></el-table-column>
-              <el-table-column :width="150" prop="leadSalaryPrice" label="ЗП за лид"></el-table-column>
+
+              <el-table-column :width="150" prop="leadSalaryPrice" label="Цена лида"></el-table-column>
 
               <el-table-column :width="160" prop="broker" label="Брокер"></el-table-column>
               <el-table-column :width="160" prop="residenceStatus" label="Статус">

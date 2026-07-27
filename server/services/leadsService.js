@@ -78,7 +78,6 @@ async function upsertNewLeadsData(lead) {
         const entryFromDB = await leadsModel.findOne({
             date: lead.date,
             phone: lead.phone,
-            // skorozvonLeadId: lead.skorozvonLeadId
         })
 
         if (entryFromDB) {
@@ -93,23 +92,18 @@ async function upsertNewLeadsData(lead) {
                     { _id: entryFromDB._id },
                     {
                         $set: {
-                            // TODO лучше тут не убирать upsert set свойства если чтот оимзенить то вручную и ночью следующего дня
-                            // skorozvonLeadId: lead.skorozvonLeadId,
-                            // isSuccessTransfer: lead.isSuccessTransfer,
                             broker: lead.broker,
                             price: lead.price,
                             audioArray: lead.audioArray,
                             residenceStatus: lead.residenceStatus,
-                            selfLead: lead.selfLead,
-                            selfLeadName: lead.selfLeadName,
+                            // selfLead: lead.selfLead,
+                            // selfLeadName: lead.selfLeadName,
                             countHold: lead.countHold,
                             offersList: lead.offersList,
-                            isUniquePhone: lead.isUniquePhone,
-                            lastPhoneCalled: lead.lastPhoneCalled,
+                            // isUniquePhone: lead.isUniquePhone,
+                            // lastPhoneCalled: lead.lastPhoneCalled,
                             uniqueState: isUniqueOtherInfo.dateState,
-                            // это тоже не вариант убирать из аптоапдейта 
-                            leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
-                            // isBreakedStatus: lead.isBreakedStatus
+                            // leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
                         }
                     }
                 );
@@ -118,31 +112,27 @@ async function upsertNewLeadsData(lead) {
                 const oldEntry = await leadsModel.findOneAndDelete({
                     date: lead.date,
                     phone: lead.phone,
-                    // skorozvonLeadId: lead.skorozvonLeadId
                 })
         
                 const newEntry = new leadsModel({
                     date: lead.date,
                     phone: lead.phone,
-                    // skorozvonLeadId: lead.skorozvonLeadId,
-                    // isSuccessTransfer: lead.isSuccessTransfer,
                     userName: lead.userName,
                     broker: lead.broker,
                     price: lead.price,
                     audioArray: lead.audioArray,
                     residenceStatus: lead.residenceStatus,
                     statusOKK: lead.statusOKK,
-                    selfLead: lead.selfLead,
-                    selfLeadName: lead.selfLeadName,
+                    // selfLead: lead.selfLead,
+                    // selfLeadName: lead.selfLeadName,
                     user: lead.user,
                     countHold: lead.countHold,
                     isEdited: lead.isEdited,
                     offersList: lead.offersList,
-                    isUniquePhone: lead.isUniquePhone,
-                    lastPhoneCalled: lead.lastPhoneCalled,
-                    // тут остаются теже жаные оп уникальности инфа
+                    // isUniquePhone: lead.isUniquePhone,
+                    // lastPhoneCalled: lead.lastPhoneCalled,
                     uniqueState: isUniqueOtherInfo.dateState,
-                    leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
+                    // leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
                     isBreakedStatus: lead.isBreakedStatus
                 })
         
@@ -155,8 +145,6 @@ async function upsertNewLeadsData(lead) {
             const newEntry = new leadsModel({
                 date: lead.date,
                 phone: lead.phone,
-                // skorozvonLeadId: lead.skorozvonLeadId,
-                // isSuccessTransfer: lead.isSuccessTransfer,
                 userName: lead.userName,
                 broker: lead.broker,
                 price: lead.price,
@@ -237,7 +225,9 @@ function getDistintBetweenUnUniqueLeads(lead) {
         salaryToLead = lead.isUniquePhone === true ? 250 : 0
     }
 
-    let realSalaryToLead = lead.statusOKK === true ? salaryToLead : 0
+    // у лидов будет стоять зп за лид зависить только от его уникальности 
+    // то что он целевой или не целевой это смотреть имено в кроне на зарплатную в кроне
+    let realSalaryToLead = salaryToLead
 
     return {
         dateState,
@@ -280,7 +270,9 @@ async function aggregateUsersLeads(array) {
             arrayObject[userName].countHolds += item.countHold
             arrayObject[userName].sumHold += item.price
             arrayObject[userName].countTargets += item.statusOKK === true ? 1 : 0
-            arrayObject[userName].leadSalaryPrice += item.leadSalaryPrice || 0
+            // arrayObject[userName].leadSalaryPrice += item.leadSalaryPrice || 0
+            // тут добавляю проверку на то что он целевой
+            arrayObject[userName].leadSalaryPrice += item.statusOKK === true ? item.leadSalaryPrice : 0
         } else {
             arrayObject[userName] = {
                 userIdString,
@@ -289,7 +281,9 @@ async function aggregateUsersLeads(array) {
                 countHolds: item.countHold,
                 sumHold: item.price,
                 countTargets: item.statusOKK === true ? 1 : 0,
-                leadSalaryPrice: item.leadSalaryPrice
+                // leadSalaryPrice: item.leadSalaryPrice
+                // тут добавляю проверку на то что он целевой
+                leadSalaryPrice: item.statusOKK === true ? item.leadSalaryPrice : 0
             }
         }
 
