@@ -12,7 +12,7 @@
           <el-input v-model="lte" type="date" style="width: 200px"/>
         </el-form-item>
         <el-form-item>
-            <el-button type="success" @click="getSalaryData">Применить</el-button>
+            <el-button type="success" plain @click="getSalaryData">Применить</el-button>
         </el-form-item>
     </el-form>
 

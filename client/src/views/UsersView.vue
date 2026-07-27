@@ -10,12 +10,12 @@
         <el-table-column prop="password" label="Пароль"></el-table-column>
         <el-table-column label="Удалить">
             <template #default="{ row }">
-                <el-button type="danger" @click="deleteUser(row._id)">Удалить</el-button>
+                <el-button type="danger" plain @click="deleteUser(row._id)">Удалить</el-button>
             </template>
         </el-table-column>
         <el-table-column label="Редактировать">
             <template #default="{ row }">
-                <el-button type="success" @click="editUser(row)">Редактировать</el-button>
+                <el-button type="success" plain @click="editUser(row)">Редактировать</el-button>
             </template>
         </el-table-column>
     </el-table>

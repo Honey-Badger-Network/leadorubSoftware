@@ -30,8 +30,8 @@
 
 
         <div style="display: flex; gap: 10px; margin-top: 10px;">
-          <el-button @click="fetchLeads()" type="info">Применить</el-button>
-          <el-button @click="resetFilters()" type="warning">Сбросить</el-button>
+          <el-button @click="fetchLeads()" type="info" plain>Применить</el-button>
+          <el-button @click="resetFilters()" type="warning" plain>Сбросить</el-button>
         </div>
       </div>
 

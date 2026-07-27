@@ -6,7 +6,7 @@
           <el-input v-model="gte" type="date" style="width: 200px"/>
         </el-form-item>
         <el-form-item>
-            <el-button type="success" @click="fetchLeads">Применить</el-button>
+            <el-button type="success" plain @click="fetchLeads">Применить</el-button>
         </el-form-item>
     </el-form>
 
