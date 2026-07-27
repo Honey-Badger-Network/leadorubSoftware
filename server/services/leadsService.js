@@ -100,8 +100,8 @@ async function upsertNewLeadsData(lead) {
                             // selfLeadName: lead.selfLeadName,
                             countHold: lead.countHold,
                             offersList: lead.offersList,
-                            // isUniquePhone: lead.isUniquePhone,
-                            // lastPhoneCalled: lead.lastPhoneCalled,
+                            isUniquePhone: lead.isUniquePhone,
+                            lastPhoneCalled: lead.lastPhoneCalled,
                             uniqueState: isUniqueOtherInfo.dateState,
                             // leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
                         }
@@ -129,10 +129,10 @@ async function upsertNewLeadsData(lead) {
                     countHold: lead.countHold,
                     isEdited: lead.isEdited,
                     offersList: lead.offersList,
-                    // isUniquePhone: lead.isUniquePhone,
-                    // lastPhoneCalled: lead.lastPhoneCalled,
+                    isUniquePhone: lead.isUniquePhone,
+                    lastPhoneCalled: lead.lastPhoneCalled,
                     uniqueState: isUniqueOtherInfo.dateState,
-                    // leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
+                    leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
                     isBreakedStatus: lead.isBreakedStatus
                 })
         

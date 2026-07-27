@@ -144,7 +144,7 @@
         <!-- прочитать инфу о оферах лида -->
         <ul v-if="!isLeadOffersEdit && !leadUpdatedLoading" style="list-style: none; padding: 0;">
           <li v-for="(item, index) in isShowLeadObjectToModal.offersList" :key="index" style="margin-bottom: 12px;">
-            <el-card shadow="hover" style="background-color: #f5f5f5; border-radius: 8px; padding: 12px;">
+            <el-card shadow="hover" style="border-radius: 8px; padding: 12px;">
               <p><strong>Оффер:</strong> {{ item.offerName }}</p>
               <p><strong>Цена:</strong> {{ item.price }}</p>
               <p><strong>Брокер:</strong> {{ item.broker }}</p>
