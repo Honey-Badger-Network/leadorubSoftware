@@ -26,6 +26,9 @@ coverage
 
 *.tsbuildinfo
 
+*.pem
+nginx.prod.conf
+
 .eslintcache
 
 # Cypress
