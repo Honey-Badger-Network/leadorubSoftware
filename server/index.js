@@ -41,6 +41,8 @@ app.use(express.json({ limit: '10mb' }))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
+app.use('/public', express.static('public'))
+
 app.use(
     session({
         secret: 'qwertyuiop123A',

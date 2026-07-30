@@ -4,7 +4,16 @@
     <el-button plain type="warning" @click="visibleModalCreateUser = true">Создать пользователя</el-button>
 
     <el-table :data="usersArray" style="width: 100%; margin-top: 20px;">
-        <el-table-column prop="email" label="Логин"></el-table-column>
+
+        <el-table-column prop="email" label="Логин">
+            <template #default="{ row }">
+                <div class="login-container">
+                    <img v-if="row.avatar" class="user-avatar" :src="`http://localhost:3000/public/avatars/${row.avatar}`">
+                    <span>{{ row.email }}</span>
+                </div>
+            </template>
+        </el-table-column>
+
         <el-table-column prop="name" label="Имя"></el-table-column>
         <el-table-column prop="rankName" label="Ранк"></el-table-column>
         <el-table-column prop="password" label="Пароль"></el-table-column>
@@ -104,6 +113,19 @@
   height: 100px;
   object-fit: cover;
   border-radius: 50%;
+}
+
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.login-container {
+    display: flex;
+    align-items: center;
 }
 
 </style>
