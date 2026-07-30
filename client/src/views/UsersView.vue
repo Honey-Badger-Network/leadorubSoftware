@@ -8,7 +8,8 @@
         <el-table-column prop="email" label="Логин">
             <template #default="{ row }">
                 <div class="login-container">
-                    <img v-if="row.avatar" class="user-avatar" :src="`http://localhost:3000/public/avatars/${row.avatar}`">
+                    <!-- сдесь apiBase для того чтобы если прод то дргуой или локалхост то тоже другой базоый АйПи будет -->
+                    <img v-if="row.avatar" class="user-avatar" :src="`${apiBase}public/avatars/${row.avatar}`">
                     <span>{{ row.email }}</span>
                 </div>
             </template>
@@ -152,10 +153,12 @@
                 visibleModalToAvatar: false,
                 userForAvatar: null,
                 avatarFile: null,
-                avatarUrl: ''
+                avatarUrl: '',
+                apiBase: null
             }
         },
         async beforeMount() {
+            this.apiBase = this.$store.getters['getApiBaseURL']
             await this.getUsersList()
         },
         methods: {
@@ -239,15 +242,36 @@
                     alert('Пожалуйста, выберите файл')
                     return
                 }
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('avatar', this.avatarFile)
+                    formData.append('userId', this.userForAvatar._id)
 
-                const formData = new FormData();
-                formData.append('avatar', this.avatarFile)
-                formData.append('userId', this.userForAvatar._id)
+                    await this.$store.dispatch('createDataList', {
+                        col: 'api/users/upload-avatar',
+                        data: formData
+                    })
 
-                await this.$store.dispatch('createDataList', {
-                    col: 'api/users/upload-avatar',
-                    data: formData
-                })
+                    this.visibleModalToAvatar = false
+
+                    ElMessage({
+                        message: 'Аватар успешно обновлен',
+                        type: 'success',
+                    })
+
+                    await this.getUsersList()
+                
+                } catch (e) {
+                    console.log(e.message)
+
+                    this.visibleModalToAvatar = false
+
+                    ElMessage({
+                        message: `ошибка обновления аватара ${e.message}`,
+                        type: 'success',
+                    })
+                }
             },
             async saveUser() {
                 const result = await this.$store.dispatch('createDataList', {
