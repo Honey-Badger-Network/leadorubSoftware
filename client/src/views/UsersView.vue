@@ -3,7 +3,7 @@
 
     <el-button plain type="warning" @click="visibleModalCreateUser = true">Создать пользователя</el-button>
 
-    <el-table :data="usersArray" style="width: 100%">
+    <el-table :data="usersArray" style="width: 100%; margin-top: 20px;">
         <el-table-column prop="email" label="Логин"></el-table-column>
         <el-table-column prop="name" label="Имя"></el-table-column>
         <el-table-column prop="rankName" label="Ранк"></el-table-column>
@@ -18,32 +18,38 @@
                 <el-button type="success" plain @click="editUser(row)">Редактировать</el-button>
             </template>
         </el-table-column>
+        <el-table-column label="Загрузить аватар">
+            <template #default="{ row }">
+                <el-button type="primary" plain @click="openModalToAvatar(row)">Загрузить</el-button>
+            </template>
+        </el-table-column>
     </el-table>
 
 
     <el-dialog title="Создание пользователя" v-model="visibleModalCreateUser" width="500px">
         <el-form :model="newCreatedUser" label-width="120px">
-          <el-form-item label="Логин" prop="email">
-            <el-input v-model="newCreatedUser.email"></el-input>
-          </el-form-item>
-          <el-form-item label="Имя" prop="name">
-            <el-input v-model="newCreatedUser.name"></el-input>
-          </el-form-item>
-          <el-form-item label="Ранк" prop="rankName">
-            <el-input v-model="newCreatedUser.rankName"></el-input>
-          </el-form-item>
-          <el-form-item label="Пароль" prop="password">
-            <el-input v-model="newCreatedUser.password"></el-input>
-          </el-form-item>
-          <el-form-item label="skorozvonId" prop="skorozvonId">
-            <el-input type="number" v-model="newCreatedUser.skorozvonId"></el-input>
-          </el-form-item>
+            <el-form-item label="Логин" prop="email">
+                <el-input v-model="newCreatedUser.email"></el-input>
+            </el-form-item>
+            <el-form-item label="Имя" prop="name">
+                <el-input v-model="newCreatedUser.name"></el-input>
+            </el-form-item>
+            <el-form-item label="Ранк" prop="rankName">
+                <el-input v-model="newCreatedUser.rankName"></el-input>
+            </el-form-item>
+            <el-form-item label="Пароль" prop="password">
+                <el-input v-model="newCreatedUser.password"></el-input>
+            </el-form-item>
+            <el-form-item label="skorozvonId" prop="skorozvonId">
+                <el-input type="number" v-model="newCreatedUser.skorozvonId"></el-input>
+            </el-form-item>
         </el-form>
+
         <div slot="footer" class="dialog-footer">
-          <el-button @click="visibleModalCreateUser = false">Отмена</el-button>
-          <el-button type="primary" @click="createNewUser">Сохранить</el-button>
+            <el-button @click="visibleModalCreateUser = false">Отмена</el-button>
+            <el-button type="primary" @click="createNewUser">Сохранить</el-button>
         </div>
-      </el-dialog>
+    </el-dialog>
 
 
     <el-dialog title="Редактировать пользователя" v-model="isShowModalEditUser" width="500px">
@@ -67,7 +73,40 @@
       </div>
     </el-dialog>
 
+    <el-dialog v-if="visibleModalToAvatar" :title="`Загрузка аватара для юзера ${userForAvatar.name}`" v-model="visibleModalToAvatar" width="800px">
+        <el-form ref="form">
+            <el-form-item label="Выберите аватар">
+                <el-upload class="avatar-uploader" :show-file-list="false" :on-change="handleFileChange" accept="image/*">
+                    <el-button slot="trigger" size="small" type="primary">Выбрать файл</el-button>
+                </el-upload>
+            </el-form-item>
+            <div v-if="avatarUrl" class="avatar-preview">
+                <img :src="avatarUrl" alt="Preview" />
+            </div>
+            <el-form-item>
+                <el-button :disabled="!avatarFile" type="primary" @click="uploadAvatar">Загрузить</el-button>
+                <el-button @click="visibleModalToAvatar = false">Отмена</el-button>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+
 </template>
+
+<style>
+
+.avatar-preview {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.avatar-preview img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+</style>
 
 <script>
 
@@ -88,6 +127,10 @@
                     skorozvonId: 0,
                     rankName: "leadorub"
                 },
+                visibleModalToAvatar: false,
+                userForAvatar: null,
+                avatarFile: null,
+                avatarUrl: ''
             }
         },
         async beforeMount() {
@@ -154,6 +197,35 @@
             editUser(userObject) {
                 this.editedUser = userObject
                 this.isShowModalEditUser = true
+            },
+            openModalToAvatar(userObject) {
+                this.userForAvatar = userObject
+                this.visibleModalToAvatar = true
+            },
+            handleFileChange(file, fileList) {
+                if (file.raw) {
+                    this.avatarFile = file.raw
+                    const reader = new FileReader()
+                    reader.onload = e => {
+                        this.avatarUrl = e.target.result
+                    }
+                    reader.readAsDataURL(file.raw)
+                }
+            },
+            async uploadAvatar() {
+                if (!this.avatarFile) {
+                    alert('Пожалуйста, выберите файл')
+                    return
+                }
+
+                const formData = new FormData();
+                formData.append('avatar', this.avatarFile)
+                formData.append('userId', this.userForAvatar._id)
+
+                await this.$store.dispatch('createDataList', {
+                    col: 'api/users/upload-avatar',
+                    data: formData
+                })
             },
             async saveUser() {
                 const result = await this.$store.dispatch('createDataList', {
