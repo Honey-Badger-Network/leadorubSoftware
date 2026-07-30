@@ -39,6 +39,18 @@
                 </div>
             </template>
         </el-table-column>
+
+        <el-table-column :width="140" label="Уникальный ?">
+            <template #default="{ row }">
+                <span :style="{ color: row.isUniquePhone ? '' : 'red' }">{{ row.isUniquePhone ? 'уникальный' : 'повтор' }}</span>
+            </template>
+        </el-table-column>
+
+        <el-table-column :width="140" label="ЗП за лид">
+            <template #default="{ row }">
+                <el-input v-model="row.leadSalaryPrice" type="number"></el-input>
+            </template>
+        </el-table-column>
         
         <el-table-column :width="150" label="Установить ОКК">
             <template #default="{ row }">
