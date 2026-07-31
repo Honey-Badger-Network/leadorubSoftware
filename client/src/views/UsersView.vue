@@ -10,7 +10,10 @@
                 <div class="login-container">
                     <!-- сдесь apiBase для того чтобы если прод то дргуой или локалхост то тоже другой базоый АйПи будет -->
                     <img v-if="row.avatar" class="user-avatar" :src="`${apiBase}public/avatars/${row.avatar}`">
-                    <span>{{ row.email }}</span>
+                    <el-icon v-if="!row.avatar" class="user-icon">
+                        <User />
+                    </el-icon>
+                    <span class="login-email">{{ row.email }}</span>
                 </div>
             </template>
         </el-table-column>
@@ -121,12 +124,22 @@
     height: 30px;
     object-fit: cover;
     border-radius: 50%;
-    margin-right: 10px;
+
+}
+
+.user-icon {
+    width: 30px !important;
+    height: 30px !important;
+}
+
+.login-email {
+    margin-left: 10px;
 }
 
 .login-container {
     display: flex;
     align-items: center;
+    float: left !important;
 }
 
 </style>
@@ -135,6 +148,8 @@
 
     import axios from 'axios';
     import { ElMessage } from 'element-plus';
+
+    import { User } from '@element-plus/icons-vue'
 
     export default {
         data() {
@@ -156,6 +171,9 @@
                 avatarUrl: '',
                 apiBase: null
             }
+        },
+        components: {
+            User
         },
         async beforeMount() {
             this.apiBase = this.$store.getters['getApiBaseURL']
