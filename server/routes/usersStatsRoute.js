@@ -7,6 +7,7 @@ const dotenv = require('dotenv')
 const { Router } = require('express')
 
 const usersStatsModel = require('../models/usersStats.js')
+const usersModel = require('../models/usersModel.js')
 const bonusesModel = require('../models/bonusesModel.js')
 
 const { setUsersStatsToDB } = require('../crones/setUsersStats.js')
@@ -113,6 +114,7 @@ router.get('/api/salary/get', async (req, res) => {
             }
         })
 
+        const usersArrayList = await usersModel.find()
 
         const bonusesData = await bonusesModel.find({
             bonusDate: {
@@ -263,6 +265,14 @@ router.get('/api/salary/get', async (req, res) => {
             let lidorubObjectKey = aggregatedBonusesArray.find((user) => {
                 return user.email === item.email
             })
+
+            let userObjectKey = usersArrayList.find((user) => {
+                return user.email === item.email
+            })
+
+            if (userObjectKey) {
+                item.avatar = userObjectKey.avatar
+            }
 
             if (lidorubObjectKey) {
                 item.scriptBonus = lidorubObjectKey.sumBonus

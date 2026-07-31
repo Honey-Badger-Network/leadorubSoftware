@@ -11,7 +11,7 @@
                     <!-- сдесь apiBase для того чтобы если прод то дргуой или локалхост то тоже другой базоый АйПи будет -->
                     <img v-if="row.avatar" class="user-avatar" :src="`${apiBase}public/avatars/${row.avatar}`">
                     <el-icon v-if="!row.avatar" class="user-icon">
-                        <User />
+                        <User class="icon-self" />
                     </el-icon>
                     <span class="login-email">{{ row.email }}</span>
                 </div>
@@ -120,16 +120,21 @@
 }
 
 .user-avatar {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     object-fit: cover;
     border-radius: 50%;
 
 }
 
 .user-icon {
-    width: 30px !important;
-    height: 30px !important;
+    width: 40px !important;
+    height: 40px !important;
+}
+
+.icon-self {
+    width: 20px !important;
+    height: 20px !important;
 }
 
 .login-email {
