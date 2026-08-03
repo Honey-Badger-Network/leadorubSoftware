@@ -177,27 +177,32 @@ router.get('/api/salary/get', async (req, res) => {
             let bonusByDate = getBonusByDate(item)
             let userIdString = item.user.toString()
             let userName = item.name
+            let userEmail = item.email
 
             let countTargetsAndUnique = 0
             let countTargetsAndUnUnique = 0
 
+            // TODO тут лучше исопльзвоать useEmail для агрегации потмоу что могут
+            // TODO создать дублированого юзера и будут дублированые в зарплатной 
+            // TODO а так просумируется как один юзер если использвоать userEmail
+
             // if (resultObject[item.name]) {
-            if (resultObject[userIdString]) {
-                // resultObject[userIdString].countCallsWithProfile += item.countCallsWithProfile
-                resultObject[userIdString].countCalls += item.countCalls || 0
-                resultObject[userIdString].countCallsWithProfile += 0
-                resultObject[userIdString].countLeads += item.countLeads
-                resultObject[userIdString].countTargets += item.countTargets
-                resultObject[userIdString].countHolds += item.countHolds
-                resultObject[userIdString].sumHold += item.sumHold
-                resultObject[userIdString].salary += Math.round(item.salary)
-                // resultObject[userIdString].scriptBonus += bonusByDate
-                resultObject[userIdString].clear += item.clear
-                resultObject[userIdString].brokerSalary += item.brokerSalary
-                resultObject[userIdString].salaryToLeads += item.salaryToLeads
+            if (resultObject[userEmail]) {
+                // resultObject[userEmail].countCallsWithProfile += item.countCallsWithProfile
+                resultObject[userEmail].countCalls += item.countCalls || 0
+                resultObject[userEmail].countCallsWithProfile += 0
+                resultObject[userEmail].countLeads += item.countLeads
+                resultObject[userEmail].countTargets += item.countTargets
+                resultObject[userEmail].countHolds += item.countHolds
+                resultObject[userEmail].sumHold += item.sumHold
+                resultObject[userEmail].salary += Math.round(item.salary)
+                // resultObject[userEmail].scriptBonus += bonusByDate
+                resultObject[userEmail].clear += item.clear
+                resultObject[userEmail].brokerSalary += item.brokerSalary
+                resultObject[userEmail].salaryToLeads += item.salaryToLeads
             } else {
                 // resultObject[item.name] = {
-                resultObject[userIdString] = {
+                resultObject[userEmail] = {
                     // countCallsWithProfile: item.countCallsWithProfile,
                     name: item.name,
                     email: item.email,
