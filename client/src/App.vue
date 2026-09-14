@@ -75,7 +75,7 @@
 <script>
 import { ref, computed, onBeforeMount } from 'vue'
 import { useRoute } from 'vue-router'
-import { User, House, Avatar, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin } from '@element-plus/icons-vue'
+import { User, House, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin } from '@element-plus/icons-vue'
 import AppHeader from './components/AppHeader.vue'
 
 export default {
@@ -99,7 +99,8 @@ export default {
     Menu,
     User,
     AppHeader,
-    List
+    List,
+    Phone
   },
   computed: {
     showSidebar() {
@@ -134,8 +135,13 @@ export default {
           label: 'Лиды',
           path: '/leads',
           icon: Service,
-          // condition: () => this.rankName === 'admin',
           condition: null,
+        },
+        {
+          label: 'ЛидыNew',
+          path: '/leadsNew',
+          icon: Phone,
+          condition: null
         },
         {
           label: 'Пользователи',

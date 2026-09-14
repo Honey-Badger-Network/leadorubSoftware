@@ -23,9 +23,15 @@ const router = createRouter({
       meta: { requiresAuth: true, onlyAdmin: false }
     },
     {
+      path: '/leadsNew',
+      name: 'leadsNew',
+      component: () => import('../views/LeasdNewView.vue'),
+      meta: { requiresAuth: true, onlyAdmin: false }
+    },
+    {
       path: '/login',
       name: "login",
-      component: () => import('../views/LoginView.vue'),
+      component: () => import('../views/loginView.vue'),
       meta: { requiresAuth: true, onlyAdmin: false }
     },
     {
