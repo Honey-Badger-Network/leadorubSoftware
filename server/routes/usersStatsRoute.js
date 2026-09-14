@@ -13,6 +13,8 @@ const bonusesModel = require('../models/bonusesModel.js')
 const { setUsersStatsToDB } = require('../crones/setUsersStats.js')
 const { getFullMonthClear } = require('../services/salaryService.js')
 const { setTransfersToDB } = require('../crones/setTransfers.js')
+const { upsertBonusDataByUsers } = require('../crones/setBonuses.js')
+
 
 const router = Router()
 
@@ -29,6 +31,10 @@ router.get('/api/salary/updateInfo', async (req, res) => {
             let resultByUpdateStats = await setTransfersToDB(gte, gte)
         } else if (mode === 'updateSalary') {
             let resultByUpdateStats = await setUsersStatsToDB(gte, gte)
+        } else if (mode === 'updateBonuses') {
+            console.log('update bonuses blyyat')
+            let resultByUpdateStats = await upsertBonusDataByUsers(dayjs(gte).endOf('week').format('YYYY-MM-DD'))
+            console.log('azazazaza')
         }
 
 
