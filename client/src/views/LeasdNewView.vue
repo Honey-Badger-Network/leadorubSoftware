@@ -46,7 +46,11 @@
 
 
     <el-table style="margin-top: 30px;" :data="leadsList">
-        <el-table-column label="Телефон" prop="phone" :width="120"></el-table-column>
+        <el-table-column label="Телефон" prop="phone" :width="120">
+            <template #default="{ row }">
+                <span>{{ renderPhoneNumber(row.phone) }}</span>
+            </template>
+        </el-table-column>
         <el-table-column label="Дата" prop="date" :width="120"></el-table-column>
         <el-table-column label="Лидоруб" :width="150">
             <template #default="{ row }">
@@ -54,6 +58,11 @@
                     <el-option v-for="item in usersList" :key="item.label" :label="item.label" :value="item.value"/>
                 </el-select>
                 <span v-else>{{ row.userName }}</span>
+            </template>
+        </el-table-column>
+        <el-table-column v-if="rankName === 'admin'" label="Записи MP3" :width="150">
+            <template #default="{ row }">
+                <el-button @click="toggleDialogModalVisible('audio', row)" plain circle :type="row.audioArray.length > 0 ? 'success' : 'danger'">{{ row.audioArray.length }}</el-button>
             </template>
         </el-table-column>
         <el-table-column label="Статус ОКК" :width="150">
@@ -100,6 +109,11 @@
                 <el-tag v-else :type="getResidenceStatusType(row.residenceStatus)">{{ row.residenceStatus }}</el-tag>
             </template>
         </el-table-column>
+        <el-table-column v-if="rankName === 'admin'" label="Проверено" :width="110">
+            <template #default="{ row }">
+                <el-checkbox class="check-boxer" v-model="row.isChecked"></el-checkbox>
+            </template>
+        </el-table-column>
         <el-table-column label="Офферы" :width="100">
             <template #default="{ row }">
                 <el-button @click="toggleDialogModalVisible('offers', row)" circle plain :type="row.offersList.length > 0 ? 'success' : 'warning'">{{ row.offersList.length }}</el-button>
@@ -114,6 +128,31 @@
             <el-button @click="saveChangesToLead" type="success" plain>Сохранить</el-button>
             <el-button @click="deleteComment" type="danger" plain>Удалить</el-button>
         </div>
+    </el-dialog>
+
+    <el-dialog title="Прослушать аудио лидорубов" v-model="dialogVisibles.dialogAudio" :width="400">
+        
+        <div>
+            <div v-for="(audio, index) in editedLead.audioArray" style="display: flex; align-items: center">
+                <el-button circle plain type="primary" style="margin-top: 10px;" @click="playAudio(audio)">{{ index }}</el-button>
+            </div>
+        </div>
+
+        <div v-if="audio.isLoading">
+            <p>Идет загрузка Аудио</p>
+        </div>
+
+        <div v-if="audio.currentURL" style="margin-top: 20px; padding: 10px; border: 1px solid #dcdfe6; border-radius: 8px; display: flex; align-items: center; gap: 20px;">
+            <el-button :disabled="audio.isLoading" @click="togglePlay" type="success" circle>
+                <el-icon>
+                    <component :is="!audio.isPlaying ? 'VideoPlay' : 'VideoPause'" />
+                </el-icon>
+            </el-button>
+            <el-slider :disabled="audio.isLoading" v-model="audio.progress" :max="audio.duration" @change="seek" style="flex: 1;" tooltip="hover" tooltip-format="{value}s"></el-slider>
+            <span>{{ formatTime(audio.progress) }} / {{ formatTime(audio.duration) }}</span>
+            <audio ref="audio" :src="audio.currentURL"></audio>
+        </div>
+
     </el-dialog>
 
     <el-dialog v-model="dialogVisibles.dialogOffers" title="Офферы лида" :width="400">
@@ -170,6 +209,14 @@
 
 </template>
 
+<style>
+
+.check-boxer {
+    transform: scale(2);
+}
+
+</style>
+
 <script>
 
     import dayjs from 'dayjs';
@@ -177,7 +224,7 @@
 
     import FormItemSelect from '../components/FormItemSelect.vue'
     import { ElMessage } from 'element-plus';
-    import { Delete, Plus } from '@element-plus/icons-vue';
+    import { Delete, Plus, VideoPlay, VideoPause } from '@element-plus/icons-vue';
 
     export default {
         data() {
@@ -198,16 +245,27 @@
                 leadsList: [],
                 dialogVisibles: {
                     dialogComment: false,
-                    dialogOffers: false
+                    dialogOffers: false,
+                    dialogAudio: false
                 },
                 editedLead: null,
-                isModalOffersMode: false
+                isModalOffersMode: false,
+                audio: {
+                    currentURL: null,
+                    isLoading: false,
+                    currentTime: 0,
+                    progress: 0,
+                    duration: 0,
+                    isPlaying: false
+                }
             }
         },
         components: {
             FormItemSelect,
             Delete,
-            Plus
+            Plus,
+            VideoPlay,
+            VideoPause
         },
         computed: {
             brokersList() {
@@ -262,6 +320,8 @@
                     this.dialogVisibles.dialogComment = true
                 } else if (mode === 'offers') {
                     this.dialogVisibles.dialogOffers = true
+                } else if (mode === 'audio') {
+                    this.dialogVisibles.dialogAudio = true
                 }
                 this.editedLead = leadObj
             },
@@ -272,6 +332,11 @@
                     price: 1500,
                     status: 'hold'
                 })
+            },
+            renderPhoneNumber(phone) {
+                let splicedPhone = phone.slice(-6)
+                let renderedPhone = this.rankName === 'admin' ? phone : splicedPhone
+                return renderedPhone
             },
             deleteSomeOfferFromEditedLead(offerIndex) {
                 this.editedLead.offersList.splice(offerIndex, 1)
@@ -300,6 +365,89 @@
                         message: `ошибка обновления лида ${e.message}`,
                         type: 'error',
                     })
+                }
+            },
+            async playAudio(audioUrl) {
+                this.audio.currentURL = audioUrl
+                this.audio.isLoading = true
+                this.audio.currentTime = 0
+                this.audio.progress = 0
+                this.audio.duration = 0
+                this.audio.isPlaying = false
+
+                const loadAudio = (audio) => {
+                    return new Promise((resolve) => {
+                        audio.onloadedmetadata = () => {
+                            this.audio.duration = audio.duration
+                            this.audio.isLoading = false
+                            resolve()
+                        }
+                    })
+                }
+
+                this.$nextTick(async () => {
+                    const audio = this.$refs.audio
+                    audio.src = this.audio.currentURL
+                    audio.load()
+
+                    await loadAudio(audio)
+
+                    await audio.play()
+                    this.audio.isPlaying = true
+
+                    audio.ontimeupdate = () => {
+                        this.audio.currentTime = audio.currentTime
+                        this.audio.progress = audio.currentTime
+                    }
+
+                    audio.onended = () => {
+                        this.audio.isPlaying = false
+                    }
+                })
+            },
+            togglePlay() {
+                const audio = this.$refs.audio
+                if (!audio) return
+                
+                if (this.audio.isPlaying) {
+                    audio.pause()
+                    this.audio.isPlaying = false
+                } else {
+                    audio.play()
+                    this.audio.isPlaying = true
+                }
+            },
+            seek() {
+                const audio = this.$refs.audio
+                if (audio) {
+                    audio.currentTime = this.audio.progress
+                    if (!this.audio.isPlaying) {
+                        audio.play()
+                        this.audio.isPlaying = true
+                    }
+                }
+            },
+            formatTime(seconds) {
+                const min = Math.floor(seconds / 60)
+                const sec = Math.floor(seconds % 60)
+                return `${min}:${sec < 10 ? '0' + sec : sec}`
+            }
+        },
+        watch: {
+            'dialogVisibles.dialogAudio'(newVal) {
+                if (!newVal) {
+                    const audio = this.$refs.audio
+                    if (audio && !audio.paused) {
+                        audio.pause()
+                    }
+                    this.audio =  {
+                        currentURL: null,
+                        isLoading: false,
+                        currentTime: 0,
+                        progress: 0,
+                        duration: 0,
+                        isPlaying: false
+                    }
                 }
             }
         },
