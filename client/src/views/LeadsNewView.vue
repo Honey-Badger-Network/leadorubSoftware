@@ -7,7 +7,7 @@
             <el-date-picker style="width: 250px;" v-model="filter.gte"></el-date-picker>
         </el-form-item>
 
-        <el-form-item>
+        <el-form-item v-if="rankName !== 'admin'">
             <el-date-picker style="width: 250px;" v-model="filter.lte"></el-date-picker>
         </el-form-item>
 
@@ -54,7 +54,7 @@
         <el-table-column label="Дата" prop="date" :width="120"></el-table-column>
         <el-table-column label="Лидоруб" :width="150">
             <template #default="{ row }">
-                <el-select v-if="rankName === 'admin'" v-model="row.users" filterable>
+                <el-select v-if="rankName === 'admin'" v-model="row.userName" filterable>
                     <el-option v-for="item in usersList" :key="item.label" :label="item.label" :value="item.value"/>
                 </el-select>
                 <span v-else>{{ row.userName }}</span>
@@ -120,6 +120,8 @@
             </template>
         </el-table-column>
     </el-table>
+
+    <el-button v-if="rankName === 'admin'" @click="saveLeadsData" style="margin-top: 20px;" type="success" plain>обновить лиды</el-button>
 
     <el-dialog v-model="dialogVisibles.dialogComment" title="Редактирование коментария ОКК" :width="400">
         <el-input v-model="editedLead.commentOKK"></el-input>
@@ -363,6 +365,27 @@
                     console.log(e.message)
                     ElMessage({
                         message: `ошибка обновления лида ${e.message}`,
+                        type: 'error',
+                    })
+                }
+            },
+            async saveLeadsData() {
+                try {
+                    const response = await this.$store.dispatch('createDataList', {
+                        col: "api/leads/upsert",
+                        data: {
+                            leadsData: this.leadsList,
+                            date: this.filter.gte
+                        }
+                    })
+
+                    ElMessage({
+                        message: 'Лиды успешно изменены',
+                        type: 'success',
+                    })
+                } catch (e) {
+                    ElMessage({
+                        message: 'Ошибка обновления лидов',
                         type: 'error',
                     })
                 }

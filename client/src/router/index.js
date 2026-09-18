@@ -25,7 +25,7 @@ const router = createRouter({
     {
       path: '/leadsNew',
       name: 'leadsNew',
-      component: () => import('../views/LeasdNewView.vue'),
+      component: () => import('../views/LeadsNewView.vue'),
       meta: { requiresAuth: true, onlyAdmin: false }
     },
     {
