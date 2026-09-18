@@ -84,6 +84,14 @@
             </template>
         </el-table-column>
         <el-table-column label="Кто перевел" prop="selfLeadName" :width="150"></el-table-column>
+        <el-table-column label="Брокер" :width="150">
+            <template #default="{ row }">
+                <el-select v-if="rankName === 'admin'" v-model="row.broker">
+                    <el-option v-for="(broker, index) in brokersList" :value="broker.name" :label="broker.name"></el-option>
+                </el-select>
+                <span v-else>{{ row.broker }}</span>
+            </template>
+        </el-table-column>
         <el-table-column label="Уникальность" prop="isUniquePhone" :width="150">
             <template #default="{ row }">
                 <el-tag :type="row.isUniquePhone ? 'success' : 'danger'">{{ row.isUniquePhone ? 'Уникальный' : 'Был повтор' }}</el-tag>
@@ -93,6 +101,12 @@
             <template #default="{ row }">
                 <el-tag v-if="row.lastPhoneCalled !== 'first'">{{ row.lastPhoneCalled }}</el-tag>
                 <span v-else>Первый лид</span>
+            </template>
+        </el-table-column>
+        <el-table-column label="Цена лида" :width="100">
+            <template #default="{ row }">
+                <el-input v-if="rankName === 'admin'" v-model="row.leadSalaryPrice" type="number"></el-input>
+                <el-tag v-else :type="getTypeByPrice(row.leadSalaryPrice)">{{ row.leadSalaryPrice }}</el-tag>
             </template>
         </el-table-column>
         <el-table-column label="Офер лида" :width="150">
@@ -316,6 +330,17 @@
                     created: 'default'
                 }
                 return statusMap[status] || 'default'
+            },
+            getTypeByPrice(price) {
+                if (price === 250) {
+                    return 'success'
+                } else if (price === 100) {
+                    return 'warning'
+                } else if (price === 0) {
+                    return 'danger'
+                } else {
+                    return 'default'
+                }
             },
             toggleDialogModalVisible(mode, leadObj) {
                 if (mode === 'comment') {
