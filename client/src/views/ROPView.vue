@@ -16,6 +16,7 @@
 
     </template>
 
+    <!-- TODO потом переделат ьпо красивому фронт и фаст кнопки -->
 
     <script>
 
@@ -27,7 +28,10 @@
                     date: {
                         gte: dayjs(new Date).format('YYYY-MM-DD'),
                         lte: dayjs(new Date).format('YYYY-MM-DD'),
-                    }
+                    },
+                    cardsData: null,
+                    lidorubsData: null,
+                    brokersData: null
                 }
             },
             methods: {
@@ -54,7 +58,29 @@
                         this.date.gte = startOfLastMonth.format('YYYY-MM-DD');
                         this.date.lte = endOfLastMonth.format('YYYY-MM-DD');
                     }
+                },
+                async fetchData() {
+                    try {
+                        const response = await this.$store.dispatch('getDataList', {
+                            col: 'api/rop/analytics',
+                            params: {
+                                gte: this.date.gte,
+                                lte: this.date.lte
+                            }
+                        })
+                        console.log(response)
+                    } catch (e) {
+                        console.log(e.message)
+                    }
                 }
+            },
+            watch: {
+                'date': {
+                    handler() {
+                        this.fetchData()
+                    },
+                    deep: true,
+                },
             }
         }
 
