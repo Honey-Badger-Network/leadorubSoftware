@@ -9,7 +9,7 @@ const router = Router()
 const usersStatsModel = require('../models/usersStats.js')
 const leadsModel = require('../models/leadsModel.js')
 
-const { getCardDataToSumAggr, getCardDataFromLeadsSumAggr, getLidorubsDataAggregated } = require('../services/ropService.js')
+const { getCardDataToSumAggr, getCardDataFromLeadsSumAggr, getLidorubsDataAggregated, getPercentByCardStats, getConversionValues, getBrokersAggregatedData } = require('../services/ropService.js')
 
 
 router.get('/api/rop/analytics', async (req, res) => {
@@ -52,13 +52,34 @@ router.get('/api/rop/analytics', async (req, res) => {
             }
         })
 
-        console.log(currentStatsData, '******', previousStatsData)
-
         let currentCardDataObject = getCardDataToSumAggr(currentStatsData)
-        let previousCardDataObject = getCardDataToSumAggr(currentStatsData)
+        let previousCardDataObject = getCardDataToSumAggr(previousStatsData)
+
+        let currentCardLeadDataObject = getCardDataFromLeadsSumAggr(currentLeadsData)
+        let previousCardLeadDataObject = getCardDataFromLeadsSumAggr(previousLeadsData)
+
+        let currentMergeCardData = { ...currentCardDataObject, ...currentCardLeadDataObject }
+        let previousMergeCardData = { ...previousCardDataObject, ...previousCardLeadDataObject }
+
+        let percentValuesForCurrentObject = getPercentByCardStats(currentMergeCardData, previousMergeCardData)
+
+        currentMergeCardData.percent = { ...percentValuesForCurrentObject }
+        currentMergeCardData.conversion = { ...getConversionValues(currentMergeCardData) }
+
+        console.log('CURRENT', currentMergeCardData)
+
+
+        let lidorubsData = getLidorubsDataAggregated(currentLeadsData, currentStatsData)
+        let brokersData = getBrokersAggregatedData(currentLeadsData)
+
+        console.log(lidorubsData, 'lidorubsData lidorubsData')
 
         res.status(200).json({
-            data: currentCardDataObject
+            data: {
+                cardsData: currentMergeCardData,
+                lidorubsData,
+                brokersData
+            }
         })
 
     } catch (e) {
