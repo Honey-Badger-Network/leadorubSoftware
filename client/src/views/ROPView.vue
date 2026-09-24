@@ -48,7 +48,7 @@
             <h3>Эффективность лидорубов</h3>
 
             <el-table style="overflow-x: auto;" :data="lidorubsData" stripe>
-                <el-table-column label="#" prop="index" :width="40"></el-table-column>
+                <el-table-column label="#" type="index" :width="40"></el-table-column>
                 <el-table-column label="Сотрудник" prop="name" :width="200"></el-table-column>
                 <el-table-column label="Звонки" prop="countCalls" :width="100"></el-table-column>
                 <el-table-column label="Лиды" prop="countLeads" :width="100"></el-table-column>
@@ -58,8 +58,16 @@
                 <el-table-column label="Breaked" prop="countBreaked" :width="100"></el-table-column>
                 <el-table-column label="Invalid" prop="countInvalid" :width="100"></el-table-column>
                 <el-table-column label="Лид/звонки" prop="conversion.callLead" :width="150"></el-table-column>
-                <el-table-column label="Целевой/лиды" prop="conversion.leadTarget" :width="150"></el-table-column>
-                <el-table-column label="Hold/целевые" prop="conversion.targethold" :width="150"></el-table-column>
+                <el-table-column label="Целевой/лиды" prop="conversion.leadTarget" :width="150">
+                    <template #default="{ row }">
+                        <span>{{ row.conversion.leadTarget || 0 }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="Hold/целевые" prop="conversion.targethold" :width="150">
+                    <template #default="{ row }">
+                        <span>{{ row.conversion.targethold || 0 }}</span>
+                    </template>
+                </el-table-column>
                 <el-table-column label="Сумма холдов" prop="sumHold" :width="150"></el-table-column>
                 <el-table-column label="Зарплата" prop="salary" :width="100"></el-table-column>
                 <el-table-column label="Чистая" prop="clear" :width="100">
@@ -75,8 +83,12 @@
             <h3>Статистика по брокерам</h3>
 
             <el-table style="overflow-x: auto;" :data="brokersData" stripe>
-                <el-table-column label="#" prop="index" :width="40"></el-table-column>
-                <el-table-column label="Брокер" prop="broker" :width="200"></el-table-column>
+                <el-table-column label="#" type="index" :width="40"></el-table-column>
+                <el-table-column label="Брокер" prop="broker" :width="200">
+                    <template #default="{ row }">
+                        <span>{{ row.broker ? row.broker : 'не передано брокеру' }}</span>
+                    </template>
+                </el-table-column>
                 <el-table-column label="Получено лидов" prop="countLeads" :width="100"></el-table-column>
                 <el-table-column label="Created" prop="countCreated" :width="100"></el-table-column>
                 <el-table-column label="Hold" prop="countHold" :width="150"></el-table-column>

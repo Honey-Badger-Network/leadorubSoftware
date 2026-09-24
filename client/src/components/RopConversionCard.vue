@@ -1,6 +1,10 @@
 <template>
   <el-card class="conversion-card">
-    <h3>{{ value }}</h3>
+
+    <template #header>
+        <h3>{{ value || 0 }} %</h3>
+    </template>
+
     <span>Конверсия</span><br>
     <span>{{ description }}</span>
   </el-card>

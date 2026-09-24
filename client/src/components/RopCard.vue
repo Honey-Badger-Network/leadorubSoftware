@@ -9,10 +9,12 @@
             </el-icon>
         </div>
 
-        <div class="card-footer">
-            <p class="number">{{ count }}</p>
-            <span :style="{ color: percent > 0 ? 'green' : 'red' }">{{ percent > 0 ? '+' : '-' }} {{ Math.abs(percent) }}%</span>
-        </div>
+        <template #footer>
+            <div class="card-footer">
+                <p>{{ count }}</p>
+                <p :style="{ color: percent > 0 ? 'green' : 'red' }">{{ Math.abs(percent) }}%</p>
+            </div>
+        </template>
     </el-card>
 </template>
 
@@ -61,20 +63,14 @@ export default {
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-}
-
-.number {
-  font-size: 16px;
-  font-weight: 700;
-  margin-top: 25px;
-  margin-bottom: 5px;
+  align-items: center;
 }
 
 .card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: auto;
 }
 
 .trend-icon {
