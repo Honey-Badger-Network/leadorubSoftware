@@ -2,14 +2,15 @@ export function getCardDataToSumAggr (usersStatsDataArray) {
     let totalObject = {
         countCalls: 0,
         countLeads: 0,
-        countTargets: 0
+        countTargets: 0,
+        clear: 0
     }
 
     usersStatsDataArray.forEach((row) => {
         totalObject.countCalls += row.countCalls
         totalObject.countLeads += row.countLeads
         totalObject.countTargets += row.countTargets
-        
+        totalObject.clear += row.clear
     })
 
     return totalObject
@@ -65,6 +66,20 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
 
     let aggregatedDataArray = Object.values(aggregatedDataObject)
 
+    let totalLidorubValue = {
+        name: 'Итого',
+        countCalls: 0,
+        countLeads: 0,
+        countTargets: 0,
+        countHolds: 0,
+        sumHold: 0,
+        salary: 0,
+        clear: 0,
+        countCreated: 0,
+        countBreaked: 0,
+        countInvalid: 0,
+    }
+
     aggregatedDataArray.forEach((user) => {
         user.conversion = {
             callLead: Math.round(user.countLeads / user.countCalls * 100),
@@ -82,7 +97,26 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
             user.countCreated += lead.residenceStatus === 'created' ? 1 : 0
         })
 
+        totalLidorubValue.countCalls += user.countCalls
+        totalLidorubValue.countLeads += user.countLeads
+        totalLidorubValue.countTargets += user.countTargets
+        totalLidorubValue.countHolds += user.countHolds
+        totalLidorubValue.sumHold += user.sumHold
+        totalLidorubValue.salary += user.salary
+        totalLidorubValue.clear += user.clear
+        totalLidorubValue.countCreated += user.countCreated
+        totalLidorubValue.countBreaked += user.countBreaked
+        totalLidorubValue.countInvalid += user.countInvalid
     })
+
+    totalLidorubValue.conversion = {
+        callLead: Math.round(totalLidorubValue.countLeads / totalLidorubValue.countCalls * 100),
+        leadTarget: Math.round(totalLidorubValue.countTargets / totalLidorubValue.countLeads * 100),
+        targetHold: Math.round(totalLidorubValue.countHolds / totalLidorubValue.countTargets * 100)
+    }
+
+    aggregatedDataArray.push(totalLidorubValue)
+
     return aggregatedDataArray
 }
 
@@ -113,6 +147,16 @@ export function getBrokersAggregatedData (leadsArray) {
         }
     })
 
+    let totalBrokerValue = {
+        broker: 'Итого',
+        countLeads: 0,
+        countCreated: 0,
+        countBreaked: 0,
+        countInvalid: 0,
+        countHold: 0,
+        sumHold: 0
+    }
+
     let brokerAggregatedArray = Object.values(brokerAggregatedObject)
 
     brokerAggregatedArray.forEach((broker) => {
@@ -122,7 +166,23 @@ export function getBrokersAggregatedData (leadsArray) {
             invalidPercent: Math.floor(broker.countInvalid / broker.countLeads * 100),
             createdPercent: Math.floor(broker.countCreated / broker.countLeads * 100),
         }
+
+        totalBrokerValue.countLeads += broker.countLeads
+        totalBrokerValue.countCreated += broker.countCreated
+        totalBrokerValue.countBreaked += broker.countBreaked
+        totalBrokerValue.countInvalid += broker.countInvalid
+        totalBrokerValue.countHold += broker.countHold
+        totalBrokerValue.sumHold += broker.sumHold
     })
+
+    totalBrokerValue.conversion = {
+        holdPercent: Math.floor(totalBrokerValue.countHold / totalBrokerValue.countLeads * 100),
+        breakedPercent: Math.floor(totalBrokerValue.countBreaked / totalBrokerValue.countLeads * 100),
+        invalidPercent: Math.floor(totalBrokerValue.countInvalid / totalBrokerValue.countLeads * 100),
+        createdPercent: Math.floor(totalBrokerValue.countCreated / totalBrokerValue.countLeads * 100),
+    }
+
+    brokerAggregatedArray.push(totalBrokerValue)
 
     return brokerAggregatedArray
 }

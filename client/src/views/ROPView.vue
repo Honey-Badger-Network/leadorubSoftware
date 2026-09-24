@@ -40,6 +40,18 @@
                 <RopConversionCard :value="cardsData.conversion.targetHold" description="Целевой > Холд"></RopConversionCard>
                 <RopConversionCard :value="cardsData.conversion.breakedDevelop || 0" description="Breaked > Перевод"></RopConversionCard>
                 <RopConversionCard :value="cardsData.conversion.invalidDevelop || 0" description="Invalid > Перевод"></RopConversionCard>
+
+                <el-card>
+                    <h3>Чистая прибыль (оценочно)</h3>
+
+                    <div class="ropClearDiv">
+                        <strong :style="{ color: cardsData.clear > 0 ? 'green' : 'red' }">{{ cardsData.clear }}</strong>
+                        <el-icon style="font-size: 40px; color: yellow">
+                            <Histogram ></Histogram>
+                        </el-icon>
+                    </div>
+
+                </el-card>
             </div>
             
         </el-card>
@@ -111,6 +123,12 @@
     gap: 10px;
 }
 
+.ropClearDiv {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+}
+
 .buttons-wrapper {
   display: flex;
   flex-wrap: wrap;
@@ -151,7 +169,7 @@
     import dayjs from 'dayjs';
     import RopCard from '@/components/RopCard.vue';
     import RopConversionCard from '@/components/RopConversionCard.vue';
-    import { Phone, Wallet, ArrowDown, ArrowUp, User, Coin, Aim, Position, Warning, CircleClose } from '@element-plus/icons-vue';
+    import { Phone, Wallet, ArrowDown, Histogram, ArrowUp, User, Coin, Aim, Position, Warning, CircleClose } from '@element-plus/icons-vue';
 
     export default {
         data() {
@@ -175,6 +193,7 @@
             Position, 
             Warning, 
             CircleClose,
+            Histogram,
             RopCard,
             RopConversionCard
         },
