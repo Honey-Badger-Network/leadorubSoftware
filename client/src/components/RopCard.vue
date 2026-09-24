@@ -2,14 +2,14 @@
     <el-card class="compact-card">
         <div class="header">
             <div>
-                <p class="category">{{ title }}</p>
+                <p>{{ title }}</p>
             </div>
             <el-icon>
                 <component :style="{ color: iconColor }" :is="iconComponent" class="icon" />
             </el-icon>
         </div>
 
-        <div>
+        <div class="card-footer">
             <p class="number">{{ count }}</p>
             <span :style="{ color: percent > 0 ? 'green' : 'red' }">{{ percent > 0 ? '+' : '-' }} {{ Math.abs(percent) }}%</span>
         </div>
@@ -64,29 +64,17 @@ export default {
   align-items: flex-start;
 }
 
-.category {
-  font-size: 14px;
-  margin: 0;
-  font-weight: 600;
-}
-
 .number {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   margin-top: 25px;
   margin-bottom: 5px;
 }
 
-.stats {
-    margin-top: 20px;
+.card-footer {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-}
-
-.percent-change {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 .trend-icon {

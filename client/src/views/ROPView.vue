@@ -44,6 +44,51 @@
             
         </el-card>
 
+        <el-card style="margin-top: 40px;">
+            <h3>Эффективность лидорубов</h3>
+
+            <el-table style="overflow-x: auto;" :data="lidorubsData" stripe>
+                <el-table-column label="#" prop="index" :width="40"></el-table-column>
+                <el-table-column label="Сотрудник" prop="name" :width="200"></el-table-column>
+                <el-table-column label="Звонки" prop="countCalls" :width="100"></el-table-column>
+                <el-table-column label="Лиды" prop="countLeads" :width="100"></el-table-column>
+                <el-table-column label="Целевые (ОКК)" prop="countTargets" :width="150"></el-table-column>
+                <el-table-column label="created (Брокер)" prop="countCreated" :width="150"></el-table-column>
+                <el-table-column label="Hold" prop="countHolds" :width="100"></el-table-column>
+                <el-table-column label="Breaked" prop="countBreaked" :width="100"></el-table-column>
+                <el-table-column label="Invalid" prop="countInvalid" :width="100"></el-table-column>
+                <el-table-column label="Лид/звонки" prop="conversion.callLead" :width="150"></el-table-column>
+                <el-table-column label="Целевой/лиды" prop="conversion.leadTarget" :width="150"></el-table-column>
+                <el-table-column label="Hold/целевые" prop="conversion.targethold" :width="150"></el-table-column>
+                <el-table-column label="Сумма холдов" prop="sumHold" :width="150"></el-table-column>
+                <el-table-column label="Зарплата" prop="salary" :width="100"></el-table-column>
+                <el-table-column label="Чистая" prop="clear" :width="100">
+                    <template #default="{ row }">
+                        <strong :style="{ color: row.clear > 0 ? 'green' : 'red' }">{{ row.clear }}</strong>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-card>
+
+
+        <el-card style="margin-top: 40px;">
+            <h3>Статистика по брокерам</h3>
+
+            <el-table style="overflow-x: auto;" :data="brokersData" stripe>
+                <el-table-column label="#" prop="index" :width="40"></el-table-column>
+                <el-table-column label="Брокер" prop="broker" :width="200"></el-table-column>
+                <el-table-column label="Получено лидов" prop="countLeads" :width="100"></el-table-column>
+                <el-table-column label="Created" prop="countCreated" :width="100"></el-table-column>
+                <el-table-column label="Hold" prop="countHold" :width="150"></el-table-column>
+                <el-table-column label="Breaked (Брокер)" prop="countBreaked" :width="150"></el-table-column>
+                <el-table-column label="Invalid" prop="countInvalid" :width="100"></el-table-column>
+                <el-table-column label="Hold %" prop="conversion.holdPercent" :width="100"></el-table-column>
+                <el-table-column label="Breaked %" prop="conversion.breakedPercent" :width="100"></el-table-column>
+                <el-table-column label="Invalid %" prop="conversion.invalidPercent" :width="150"></el-table-column>
+                <el-table-column label="Сума холдов" prop="sumHold" :width="150"></el-table-column>
+            </el-table>
+        </el-card>
+
     </div>
 </template>
 
