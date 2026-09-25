@@ -69,15 +69,19 @@
                 <el-table-column label="Hold" prop="countHolds" :width="100"></el-table-column>
                 <el-table-column label="Breaked" prop="countBreaked" :width="100"></el-table-column>
                 <el-table-column label="Invalid" prop="countInvalid" :width="100"></el-table-column>
-                <el-table-column label="Лид/звонки" prop="conversion.callLead" :width="150"></el-table-column>
+                <el-table-column label="Лид/звонки" prop="conversion.callLead" :width="150">
+                    <template #default="{ row }">
+                        <el-tag :type="getTypeColorByPercent(row.conversion.callLead)">{{ row.conversion.callLead || 0 }} %</el-tag>
+                    </template>
+                </el-table-column>
                 <el-table-column label="Целевой/лиды" prop="conversion.leadTarget" :width="150">
                     <template #default="{ row }">
-                        <span>{{ row.conversion.leadTarget || 0 }}</span>
+                        <el-tag :type="getTypeColorByPercent(row.conversion.leadTarget)">{{ row.conversion.leadTarget || 0 }} %</el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column label="Hold/целевые" prop="conversion.targethold" :width="150">
                     <template #default="{ row }">
-                        <span>{{ row.conversion.targethold || 0 }}</span>
+                        <el-tag :type="getTypeColorByPercent(row.conversion.targethold)">{{ row.conversion.targethold || 0 }} %</el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column label="Сумма холдов" prop="sumHold" :width="150"></el-table-column>
@@ -106,9 +110,21 @@
                 <el-table-column label="Hold" prop="countHold" :width="150"></el-table-column>
                 <el-table-column label="Breaked (Брокер)" prop="countBreaked" :width="150"></el-table-column>
                 <el-table-column label="Invalid" prop="countInvalid" :width="100"></el-table-column>
-                <el-table-column label="Hold %" prop="conversion.holdPercent" :width="100"></el-table-column>
-                <el-table-column label="Breaked %" prop="conversion.breakedPercent" :width="100"></el-table-column>
-                <el-table-column label="Invalid %" prop="conversion.invalidPercent" :width="150"></el-table-column>
+                <el-table-column label="Hold %" prop="conversion.holdPercent" :width="100">
+                    <template #default="{ row }">
+                        <el-tag :type="getTypeColorByPercent(row.conversion.holdPercent)">{{ row.conversion.holdPercent || 0 }} %</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column label="Breaked %" prop="conversion.breakedPercent" :width="100">
+                    <template #default="{ row }">
+                        <el-tag :type="getTypeColorByPercent(row.conversion.breakedPercent)">{{ row.conversion.breakedPercent || 0 }} %</el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column label="Invalid %" prop="conversion.invalidPercent" :width="150">
+                    <template #default="{ row }">
+                        <el-tag :type="getTypeColorByPercent(row.conversion.invalidPercent)">{{ row.conversion.invalidPercent || 0 }} %</el-tag>
+                    </template>
+                </el-table-column>
                 <el-table-column label="Сума холдов" prop="sumHold" :width="150"></el-table-column>
             </el-table>
         </el-card>
@@ -222,6 +238,17 @@
                     this.date.lte = endOfLastMonth.format('YYYY-MM-DD');
                 }
             },
+            getTypeColorByPercent(percent) {
+                if (percent === 0) {
+                    return 'danger'
+                } else if (percent > 0 && percent < 66) {
+                    return 'primary'
+                } else if (percent > 66) {
+                    return 'success'
+                } else {
+                    return 'danger'
+                }
+            },
             async fetchData() {
                 try {
                     const response = await this.$store.dispatch('getDataList', {
@@ -246,6 +273,9 @@
                 },
                 deep: true,
             },
+        },
+        async beforeMount() {
+            await this.fetchData()
         }
     }
 

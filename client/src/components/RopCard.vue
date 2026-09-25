@@ -12,7 +12,7 @@
         <template #footer>
             <div class="card-footer">
                 <p>{{ count }}</p>
-                <p :style="{ color: percent > 0 ? 'green' : 'red' }">{{ Math.abs(percent) }}%</p>
+                <p :style="{ color: percent > 0 ? 'green' : 'red' }">{{ percent > 0 ? '+' : '-' }} {{ Math.abs(percent) }}%</p>
             </div>
         </template>
     </el-card>
@@ -71,6 +71,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     margin-top: auto;
+    font-size: 12px;
 }
 
 .trend-icon {
