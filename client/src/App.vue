@@ -3,7 +3,10 @@
     <el-aside class="app-sidebar" :width="isShowMenu ? fullSidebarWidth : miniSizeSidebar" v-if="showSidebar && !isLoading">
       <el-menu class="app-sidebar__menu" :default-active="$route.path" background-color="transparent" text-color="#cbd5e1" active-text-color="#fff" router>
 
-        <div class="app-sidebar__brand" style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+        <div
+          class="app-sidebar__brand"
+          :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isShowMenu ? '0 20px' : '0 15px' }"
+        >
 
           <div style="display: flex; align-items: center;">
             <img src="https://m-files.cdnvideo.ru/lpfile/1/7/1/17132b3c0df3b9802560ee27788e85d5/-/crop/0x0x640x640/-/resize/94/-/resize/1920/f.png" class="logo" />
@@ -28,6 +31,14 @@
             </el-menu-item>
           </el-tooltip>
         </template>
+
+        <div class="app-sidebar__footer">
+          <span class="app-sidebar__status"></span>
+          <div v-if="isShowMenu">
+            <strong>Система активна</strong>
+            <small>CRM · HBA</small>
+          </div>
+        </div>
 
       </el-menu>
     </el-aside>
@@ -59,9 +70,11 @@
 }
 
 .main-menu {
-  height: 100vh; 
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
-  align-items: start;
+  align-items: stretch;
 }
 
 .logo {
@@ -88,7 +101,7 @@ export default {
       menuItems: [],
       isLoading: true,
       isMobile: true,
-      isShowMenu: false, // переменая для коллапса сайдбара
+      isShowMenu: true, // на десктопе показываем полное меню
       activeOffersArr: null,
       isDark: false
     }
@@ -109,7 +122,7 @@ export default {
     },
     // ширина открытого развернутого сайдбара
     fullSidebarWidth() {
-      return this.isMobile ? '100%' : '200px'
+      return this.isMobile ? '100%' : '224px'
     },
     // ширина свернутого меню (мини версия для мобилки : десктоп)
     miniSizeSidebar() {
@@ -223,6 +236,7 @@ export default {
     this.fetchResidenceOffers()
 
     this.isMobile = window.innerWidth < 480 ? true : false
+    this.isShowMenu = !this.isMobile
 
   }
 }

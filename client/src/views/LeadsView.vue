@@ -6,7 +6,17 @@
         description="Фильтруйте, проверяйте и управляйте системными и ручными лидами."
       />
 
-      <div class="form-filter">
+      <PagePanel
+        eyebrow="Поиск"
+        title="Фильтры и действия"
+        description="Настройте период и параметры выборки перед загрузкой данных."
+      >
+        <template v-if="rankName === 'admin'" #actions>
+          <el-button type="primary" @click="isShowModalCreateLead = true">Создать лид</el-button>
+          <el-button type="success" plain @click="downloadLeads">Выгрузить</el-button>
+        </template>
+
+        <div class="form-filter">
         <el-input type="date" v-model="gte"></el-input>
         <el-input type="date" v-model="lte"></el-input>
 
@@ -37,15 +47,16 @@
           <el-button @click="fetchLeads()" type="info" plain>Применить</el-button>
           <el-button @click="resetFilters()" type="warning" plain>Сбросить</el-button>
         </div>
-      </div>
-
-      <div v-if="rankName === 'admin'" class="page-action-row">
-        <el-button type="primary" @click="isShowModalCreateLead = true">Создать лид</el-button>
-        <el-button type="success" plain @click="downloadLeads">Выгрузить лиды</el-button>
-      </div>
+        </div>
+      </PagePanel>
   
       <!-- Вкладки для выбора таблицы -->
-      <el-tabs v-model="activeTab" style="margin-top: 20px" type="border-card" @tab-click="handleTabClick">
+      <PagePanel
+        eyebrow="Результаты"
+        title="Список лидов"
+        description="Системные и созданные вручную лиды за выбранный период."
+      >
+      <el-tabs v-model="activeTab" type="border-card" @tab-click="handleTabClick">
         <el-tab-pane label="Системные лиды" name="leads">
           <div class="table-data">
             <el-table :data="currentData" style="width: 100%">
@@ -58,7 +69,9 @@
               <el-table-column :width="160" prop="userName" label="Имя"></el-table-column>
               <el-table-column :width="110" prop="statusOKK" label="Статус ОКК">
                 <template #default="{ row }">
-                  <p>{{ row.statusOKK ? 'Целевой' : 'Нецелевой' }}</p>
+                  <el-tag :type="row.statusOKK ? 'success' : 'info'" round>
+                    {{ row.statusOKK ? 'Целевой' : 'Нецелевой' }}
+                  </el-tag>
                 </template>
               </el-table-column>
               <el-table-column :width="160" prop="commentOKK" label="Коментарий"></el-table-column>
@@ -67,7 +80,9 @@
               <!-- новые свойства рендерю в таблицу -->
               <el-table-column :width="150" prop="isUniquePhone" label="Уникальный">
                 <template #default="{ row }">
-                  <span :style="{'color': row.isUniquePhone ? 'green' : 'red'}">{{ row.isUniquePhone ? 'Уникальный' : 'был повтор' }}</span>
+                  <el-tag :type="row.isUniquePhone ? 'success' : 'danger'" round>
+                    {{ row.isUniquePhone ? 'Уникальный' : 'Был повтор' }}
+                  </el-tag>
                 </template>
               </el-table-column>
               <el-table-column :width="150" prop="lastPhoneCalled" label="Последний звонок"></el-table-column>
@@ -139,6 +154,7 @@
               </el-table>
         </el-tab-pane>
       </el-tabs>
+      </PagePanel>
     </div>
 
     <el-dialog title="Информация о системном лиде" v-model="isShowModalLeadInfo" width="700px">

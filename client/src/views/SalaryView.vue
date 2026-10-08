@@ -6,6 +6,11 @@
     />
 
 
+    <PagePanel
+        eyebrow="Период"
+        title="Параметры расчёта"
+        description="Выберите даты вручную или воспользуйтесь быстрым периодом."
+    >
     <el-form class="page-filter-panel" inline>
         <el-form-item label="Начало">
           <!-- <el-date-picker v-model="gte" type="date" style="width: 200px"/> -->
@@ -35,7 +40,13 @@
     <div v-if="userRank === 'admin'" class="page-action-row">
         <el-button type="primary" plain @click="isShowClearCalculation = true">Проверить чистую</el-button>
     </div>
+    </PagePanel>
 
+    <PagePanel
+        eyebrow="Начисления"
+        title="Расчёт по сотрудникам"
+        description="Звонки, лиды, конверсии, бонусы и итоговые выплаты."
+    >
     <el-table :data="salaryTableData" style="width: 100%">
         <el-table-column :width="userColumnWidth" fixed="left"  prop="name" label="Имя">
             <template #header>
@@ -68,8 +79,9 @@
 
         <el-table-column :width="100" prop="countHolds" label="CTR">
             <template #default="{ row }">
-                <span v-if="row.countHolds > 0 && row.countTargets > 0">{{ Math.round(row.countHolds / row.countTargets * 100) || 0 }} %</span>
-                <span v-else>0 %</span>
+                <el-tag :type="row.countHolds > 0 ? 'success' : 'info'" round>
+                    {{ row.countHolds > 0 && row.countTargets > 0 ? Math.round(row.countHolds / row.countTargets * 100) : 0 }}%
+                </el-tag>
             </template>
         </el-table-column>
 
@@ -82,13 +94,17 @@
         <el-table-column :width="100" prop="scriptBonus" label="Бонус"></el-table-column>
         <el-table-column :width="100" prop="salary + scriptBonus" label="Итого ЗП">
             <template #default="{ row }">
-                <!-- <p>{{ row.salary + row.scriptBonus }}</p> -->
-                <p>{{ row.salary + row.scriptBonus }}</p>
+                <strong class="salary-total">{{ row.salary + row.scriptBonus }}</strong>
             </template>
         </el-table-column>
-        <el-table-column :width="100" prop="clear" label="Чистая"></el-table-column>
+        <el-table-column :width="110" prop="clear" label="Чистая">
+            <template #default="{ row }">
+                <strong :class="row.clear >= 0 ? 'salary-positive' : 'salary-negative'">{{ row.clear }}</strong>
+            </template>
+        </el-table-column>
         <!-- <el-table-column prop="brokerSalary" label="ЗП брокерам"></el-table-column> -->
     </el-table>
+    </PagePanel>
 
     <el-dialog title="Топ лидорубов" v-model="modalWithBestLidorub" width="500px">
         <h3>Топ лидорубов за месяц <span>{{ monthToBestLidorub }}</span></h3>
@@ -154,6 +170,18 @@
     display: flex;
     align-items: center;
     float: left !important;
+}
+
+.salary-total {
+    color: #6d5dfc;
+}
+
+.salary-positive {
+    color: #059669;
+}
+
+.salary-negative {
+    color: #dc2626;
 }
 
 </style>

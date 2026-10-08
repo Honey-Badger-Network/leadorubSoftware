@@ -5,6 +5,11 @@
         description="Проверка звонков, статусов и качества обработки каждого лида."
     />
 
+    <PagePanel
+        eyebrow="Параметры"
+        title="Период проверки"
+        description="Выберите дату и загрузите лиды для контроля качества."
+    >
     <el-form class="page-filter-panel" inline>
         <el-form-item label="Начало">
           <el-input v-model="gte" type="date" style="width: 200px"/>
@@ -16,12 +21,21 @@
 
     <!-- <p>При обновление сохранении данных лидов ставьте флажок к колонке "Проверен" тем лидам которые проверил иначе они перезапишутся и статус вернется к нецелевой неважно целевой он или нет</p> -->
 
-    <div class="page-action-row">
+    <div class="page-action-row page-action-row--bottom">
         <el-button plain type="warning" @click="isManualeShow = true">Открыть памятку</el-button>
     </div>
 
     <p class="page-note">При изменении статуса ОКК за прошлые даты зарплатная обновится автоматически. Ответ сервера может занять немного больше времени.</p>
+    </PagePanel>
 
+    <PagePanel
+        eyebrow="Проверка"
+        title="Лиды на контроле"
+        description="Прослушивайте записи и фиксируйте результат проверки."
+    >
+      <template #actions>
+        <el-button type="success" @click="saveLeadsData">Сохранить данные</el-button>
+      </template>
     <el-table :data="tableData" style="width: 100%">
         <el-table-column :width="100" prop="date" label="Дата"></el-table-column>
         <el-table-column :width="120" prop="phone" label="Телефон"></el-table-column>
@@ -47,7 +61,9 @@
 
         <el-table-column :width="140" label="Уникальный ?">
             <template #default="{ row }">
-                <span :style="{ color: row.isUniquePhone ? '' : 'red' }">{{ row.isUniquePhone ? 'уникальный' : 'повтор' }}</span>
+                <el-tag :type="row.isUniquePhone ? 'success' : 'danger'" round>
+                    {{ row.isUniquePhone ? 'Уникальный' : 'Повтор' }}
+                </el-tag>
             </template>
         </el-table-column>
 
@@ -118,8 +134,6 @@
 
     </el-table>
 
-    <el-button type="success" style="margin-top: 30px" @click="saveLeadsData">Сохранить данные</el-button>
-
     <div v-if="isAudioLoading && !showModalToAudio">
         <p>Идет загрузка Аудио</p>
     </div>
@@ -134,6 +148,7 @@
         <span>{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
         <audio ref="audio" :src="currentAudioUrl"></audio>
     </div>
+    </PagePanel>
 
     <el-dialog title="Памятка дял ОКК" v-model="isManualeShow" width="400px">
         <p>сдесь можно менять статус ОКК и изменять юзера для определного лида в колонках "Лидоруб" и "Установить ОКК"</p>

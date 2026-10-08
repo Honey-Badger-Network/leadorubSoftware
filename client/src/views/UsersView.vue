@@ -5,10 +5,14 @@
         description="Управление сотрудниками, ролями и профилями команды."
     />
 
-    <div class="page-action-row">
+    <PagePanel
+        eyebrow="Команда"
+        title="Список пользователей"
+        description="Учётные записи, роли и персональные аватары сотрудников."
+    >
+      <template #actions>
         <el-button type="primary" @click="visibleModalCreateUser = true">Создать пользователя</el-button>
-    </div>
-
+      </template>
     <el-table :data="usersArray" style="width: 100%;">
 
         <el-table-column prop="email" label="Логин">
@@ -25,24 +29,29 @@
         </el-table-column>
 
         <el-table-column prop="name" label="Имя"></el-table-column>
-        <el-table-column prop="rankName" label="Ранк"></el-table-column>
-        <el-table-column prop="password" label="Пароль"></el-table-column>
-        <el-table-column label="Удалить">
+        <el-table-column prop="rankName" label="Роль" min-width="110">
             <template #default="{ row }">
-                <el-button type="danger" plain @click="deleteUser(row._id)">Удалить</el-button>
+                <el-tag :type="row.rankName === 'admin' ? 'danger' : 'primary'" round>
+                    {{ row.rankName }}
+                </el-tag>
             </template>
         </el-table-column>
-        <el-table-column label="Редактировать">
+        <el-table-column label="Пароль" min-width="110">
             <template #default="{ row }">
-                <el-button type="success" plain @click="editUser(row)">Редактировать</el-button>
+                <span class="password-mask" :title="`Пароль пользователя ${row.name}`">••••••••</span>
             </template>
         </el-table-column>
-        <el-table-column label="Загрузить аватар">
+        <el-table-column label="Действия" min-width="330" fixed="right">
             <template #default="{ row }">
-                <el-button type="primary" plain @click="openModalToAvatar(row)">Загрузить</el-button>
+                <div class="user-actions">
+                    <el-button type="primary" plain @click="editUser(row)">Редактировать</el-button>
+                    <el-button type="success" plain @click="openModalToAvatar(row)">Аватар</el-button>
+                    <el-button type="danger" plain @click="deleteUser(row._id)">Удалить</el-button>
+                </div>
             </template>
         </el-table-column>
     </el-table>
+    </PagePanel>
 
 
     <el-dialog title="Создание пользователя" v-model="visibleModalCreateUser" width="500px">
@@ -151,6 +160,22 @@
     display: flex;
     align-items: center;
     float: left !important;
+}
+
+.password-mask {
+  color: var(--el-text-color-secondary);
+  font-size: 16px;
+  letter-spacing: 0.08em;
+}
+
+.user-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.user-actions .el-button {
+  margin-left: 0;
 }
 
 </style>

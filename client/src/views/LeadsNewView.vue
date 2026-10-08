@@ -6,9 +6,14 @@
         description="Быстрая проверка, редактирование и контроль качества лидов."
     />
 
-    <div class="page-action-row">
-        <el-button type="primary" plain @click="showFilter =! showFilter">{{ showFilter ? 'Скрыть' : 'Показать' }} фильтры</el-button>
-    </div>
+    <PagePanel
+        eyebrow="Поиск"
+        title="Фильтры"
+        description="Настройте выборку лидов для оперативной работы."
+    >
+        <template #actions>
+            <el-button type="primary" plain @click="showFilter =! showFilter">{{ showFilter ? 'Скрыть' : 'Показать' }} фильтры</el-button>
+        </template>
 
     <el-form class="page-filter-panel" v-if="showFilter">
         <el-form-item>
@@ -50,9 +55,15 @@
         </el-form-item>
 
     </el-form>
+    </PagePanel>
 
 
 
+    <PagePanel
+        eyebrow="Редактирование"
+        title="Список лидов"
+        description="Изменения применятся только к отмеченным строкам."
+    >
     <el-table :data="leadsList">
         <el-table-column label="Телефон" prop="phone" :width="120">
             <template #default="{ row }">
@@ -143,7 +154,10 @@
         </el-table-column>
     </el-table>
 
-    <el-button v-if="rankName === 'admin'" @click="saveLeadsData" style="margin-top: 20px;" type="success" plain>обновить лиды</el-button>
+    <div v-if="rankName === 'admin'" class="page-action-row page-action-row--bottom">
+        <el-button @click="saveLeadsData" type="success">Обновить лиды</el-button>
+    </div>
+    </PagePanel>
 
     <el-dialog v-model="dialogVisibles.dialogComment" title="Редактирование коментария ОКК" :width="400">
         <el-input v-model="editedLead.commentOKK"></el-input>

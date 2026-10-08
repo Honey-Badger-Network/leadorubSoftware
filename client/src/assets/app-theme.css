@@ -31,8 +31,10 @@ select {
 
 .workspace-main {
   min-width: 0;
+  height: 100vh;
   padding: 0 24px 38px !important;
   overflow-x: hidden !important;
+  overflow-y: auto !important;
   background:
     radial-gradient(circle at 100% 0%, rgba(109, 93, 252, 0.08), transparent 24%),
     linear-gradient(180deg, #f8f9fd 0%, #f3f5fa 100%);
@@ -45,8 +47,11 @@ select {
 }
 
 .app-sidebar {
+  position: relative;
   z-index: 4;
-  height: 100%;
+  flex: 0 0 auto;
+  height: 100vh;
+  min-height: 100vh;
   overflow: hidden;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   background: linear-gradient(180deg, #171d2e 0%, #22243c 52%, #2d2854 100%);
@@ -55,7 +60,12 @@ select {
 }
 
 .app-sidebar__menu {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  padding: 0 0 14px;
+  overflow-x: hidden;
+  overflow-y: auto;
   border-right: 0 !important;
 }
 
@@ -76,10 +86,68 @@ select {
 }
 
 .app-sidebar__brand {
+  flex: 0 0 66px;
   height: 66px !important;
   margin-top: 8px !important;
   margin-bottom: 16px !important;
   background: transparent !important;
+}
+
+.app-sidebar__footer {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  margin: auto 10px 0;
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #fff;
+}
+
+.app-sidebar__status {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border: 2px solid rgba(74, 222, 128, 0.22);
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 14px rgba(74, 222, 128, 0.65);
+}
+
+.app-sidebar__footer strong,
+.app-sidebar__footer small {
+  display: block;
+  white-space: nowrap;
+}
+
+.app-sidebar__footer strong {
+  font-size: 11px;
+}
+
+.app-sidebar__footer small {
+  margin-top: 3px;
+  color: #8994aa;
+  font-size: 9px;
+}
+
+.page-panel .el-table,
+.page-panel .el-tabs--border-card {
+  border-color: var(--el-border-color-lighter);
+  box-shadow: none;
+}
+
+.page-panel .page-filter-panel,
+.page-panel .form-filter,
+.page-panel .input-container,
+.page-panel .page-action-panel {
+  margin-bottom: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .page-filter-panel,

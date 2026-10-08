@@ -5,13 +5,24 @@
         description="История попыток передачи лидов и результат каждого соединения."
     />
 
+    <PagePanel
+        eyebrow="Период"
+        title="Фильтр трансферов"
+        description="Выберите диапазон дат для загрузки истории."
+    >
     <div class="input-container">
         <el-input v-model="gte" type="date" class="input-my"></el-input>
         <el-input v-model="lte" type="date" class="input-my"></el-input>
         <el-button type="primary" class="input-my-btn" @click="fetchSkorozvonTransfers">Применить</el-button>
     </div>
+    </PagePanel>
 
-    <div v-if="!isLoadingData" style="margin-top: 20px;">
+    <PagePanel
+        eyebrow="Результаты"
+        title="История трансферов"
+        description="Попытки передачи, длительность соединения и итоговый статус."
+    >
+    <div v-if="!isLoadingData">
         <el-table :data="transfersList">
             <el-table-column prop="phone" label="Телефон"></el-table-column>
             <el-table-column prop="user" label="Сотрудник"></el-table-column>
@@ -20,17 +31,21 @@
             <el-table-column prop="date" label="Дата"></el-table-column>
             <el-table-column prop="isAttemptTransfer" label="Попытка">
                 <template #default="{ row }">
-                    <span>{{ row.isAttemptTransfer === 't' ? 'перевод' : 'обрыв' }}</span>
+                    <el-tag :type="row.isAttemptTransfer === 't' ? 'primary' : 'warning'" round>
+                        {{ row.isAttemptTransfer === 't' ? 'Перевод' : 'Обрыв' }}
+                    </el-tag>
                 </template>
             </el-table-column>
             <el-table-column prop="isSuccessTransfer" label="Результат">
                 <template #default="{ row }">
-                    <span :style="{'color': row.isSuccessTransfer ? 'green' : 'red'}">{{ row.isSuccessTransfer ? 'успешно' : 'обрыв' }}</span>
+                    <el-tag :type="row.isSuccessTransfer ? 'success' : 'danger'" round>
+                        {{ row.isSuccessTransfer ? 'Успешно' : 'Не состоялся' }}
+                    </el-tag>
                 </template>
             </el-table-column>
             <el-table-column prop="seconds" label="Длительность">
                 <template #default="{ row }">
-                    <span>{{ row.seconds }} sec</span>
+                    <strong>{{ row.seconds }} сек.</strong>
                 </template>
             </el-table-column>
             <el-table-column prop="time" label="Время"></el-table-column>
@@ -40,6 +55,7 @@
     <div v-if="isLoadingData" style="margin-top: 20px;">
         <el-skeleton :rows="4"></el-skeleton>
     </div>
+    </PagePanel>
 
 </template>
 

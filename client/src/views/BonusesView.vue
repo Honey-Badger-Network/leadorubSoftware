@@ -5,22 +5,45 @@
         description="История начислений и создание ручных бонусов для сотрудников."
     />
 
+    <PagePanel
+        eyebrow="Поиск"
+        title="Период начислений"
+        description="Выберите даты для просмотра истории бонусов."
+    >
+      <template #actions>
+        <el-button type="success" @click="isShowModalToBonus = true">Создать бонус</el-button>
+      </template>
     <div class="page-filter-panel">
         <el-input v-model="gte" type="date"></el-input>
         <el-input v-model="lte" type="date"></el-input>
         <el-button type="primary" @click="fetchBonuses">Найти</el-button>
-        <el-button type="success" plain @click="isShowModalToBonus = true">Создать бонус</el-button>
     </div>
+    </PagePanel>
 
+    <PagePanel
+        eyebrow="Начисления"
+        title="История бонусов"
+        description="Ручные и автоматические начисления сотрудникам."
+    >
     <div v-if="bonusesData" class="page-table-panel">
         <el-table :data="bonusesData">
             <el-table-column label="Дата" prop="bonusDate"></el-table-column>
-            <el-table-column label="Тип бонуса" prop="bonusType"></el-table-column>
+            <el-table-column label="Тип бонуса" prop="bonusType">
+                <template #default="{ row }">
+                    <el-tag type="primary" round>{{ row.bonusType }}</el-tag>
+                </template>
+            </el-table-column>
             <el-table-column label="Название" prop="bonusText"></el-table-column>
             <el-table-column label="Лидоруб" prop="bonusUserName"></el-table-column>
-            <el-table-column label="Бонус" prop="bonusValue"></el-table-column>
+            <el-table-column label="Бонус" prop="bonusValue">
+                <template #default="{ row }">
+                    <strong class="bonus-value">+ {{ row.bonusValue }} ₽</strong>
+                </template>
+            </el-table-column>
         </el-table>
     </div>
+    <el-empty v-else description="Выберите период и загрузите бонусы" />
+    </PagePanel>
 
     <el-dialog title="Создать ручной бонус" v-model="isShowModalToBonus" width="500px">
         
@@ -160,3 +183,10 @@
     }
 
 </script>
+
+<style scoped>
+.bonus-value {
+    color: #059669;
+    font-size: 14px;
+}
+</style>
