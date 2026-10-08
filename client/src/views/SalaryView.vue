@@ -1,8 +1,12 @@
 <template>
-    <h3>Зарплатная</h3>
+    <PageHeader
+        eyebrow="Финансы команды"
+        title="Зарплатная"
+        description="Расчёт выплат, бонусов и эффективности сотрудников за выбранный период."
+    />
 
 
-    <el-form inline>
+    <el-form class="page-filter-panel" inline>
         <el-form-item label="Начало">
           <!-- <el-date-picker v-model="gte" type="date" style="width: 200px"/> -->
             <el-input v-model="gte" type="date" style="width: 200px"/>
@@ -16,7 +20,7 @@
         </el-form-item>
     </el-form>
 
-    <div style="margin-top: 30px; margin-bottom: 30px">
+    <div class="page-action-panel">
         <!-- easy buttons -->
         <el-button @click="easyGetSalary('today')">сегодня</el-button>
         <el-button @click="easyGetSalary('yesterday')">вчера</el-button>
@@ -28,7 +32,9 @@
         <el-button v-if="userRole === 'admin' && leadorubsTop" @click="openModalWithBest">Лучший лидоруб</el-button>
     </div>
 
-    <el-button @click="isShowClearCalculation = true" v-if="userRank === 'admin'">Проверить чистую</el-button>
+    <div v-if="userRank === 'admin'" class="page-action-row">
+        <el-button type="primary" plain @click="isShowClearCalculation = true">Проверить чистую</el-button>
+    </div>
 
     <el-table :data="salaryTableData" style="width: 100%">
         <el-table-column :width="userColumnWidth" fixed="left"  prop="name" label="Имя">

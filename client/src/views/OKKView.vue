@@ -1,7 +1,11 @@
 <template>
-    <h3>ОКК</h3>
+    <PageHeader
+        eyebrow="Контроль качества"
+        title="ОКК"
+        description="Проверка звонков, статусов и качества обработки каждого лида."
+    />
 
-    <el-form inline>
+    <el-form class="page-filter-panel" inline>
         <el-form-item label="Начало">
           <el-input v-model="gte" type="date" style="width: 200px"/>
         </el-form-item>
@@ -12,10 +16,11 @@
 
     <!-- <p>При обновление сохранении данных лидов ставьте флажок к колонке "Проверен" тем лидам которые проверил иначе они перезапишутся и статус вернется к нецелевой неважно целевой он или нет</p> -->
 
-    <el-button style="margin-bottom: 10px" plain type="warning" @click="isManualeShow = true">Открыть памятку</el-button>
+    <div class="page-action-row">
+        <el-button plain type="warning" @click="isManualeShow = true">Открыть памятку</el-button>
+    </div>
 
-    <p style="marign-top: 20px; margin-bottom: 20px;">Теперь если обновить значение статуса ОКК в прошлых датах то будет авто обновление зарплатной</p>
-    <p style="color: gray; margin-bottom: 20px;">на получение ответа с сервера уйдет дольше времени !!!</p>
+    <p class="page-note">При изменении статуса ОКК за прошлые даты зарплатная обновится автоматически. Ответ сервера может занять немного больше времени.</p>
 
     <el-table :data="tableData" style="width: 100%">
         <el-table-column :width="100" prop="date" label="Дата"></el-table-column>

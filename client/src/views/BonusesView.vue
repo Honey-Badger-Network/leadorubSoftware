@@ -1,14 +1,18 @@
 <template>
-    <h3>{{ title }}</h3>
+    <PageHeader
+        eyebrow="Мотивация команды"
+        :title="title"
+        description="История начислений и создание ручных бонусов для сотрудников."
+    />
 
-    <div style="width: 30%;">
+    <div class="page-filter-panel">
         <el-input v-model="gte" type="date"></el-input>
-        <el-input v-model="lte" type="date" style="margin-top: 10px"></el-input>
-        <el-button @click="fetchBonuses" style="margin-top: 10px">Искать</el-button>
-        <el-button @click="isShowModalToBonus = true" style="margin-top: 10px">Создать бонус</el-button>
+        <el-input v-model="lte" type="date"></el-input>
+        <el-button type="primary" @click="fetchBonuses">Найти</el-button>
+        <el-button type="success" plain @click="isShowModalToBonus = true">Создать бонус</el-button>
     </div>
 
-    <div v-if="bonusesData">
+    <div v-if="bonusesData" class="page-table-panel">
         <el-table :data="bonusesData">
             <el-table-column label="Дата" prop="bonusDate"></el-table-column>
             <el-table-column label="Тип бонуса" prop="bonusType"></el-table-column>

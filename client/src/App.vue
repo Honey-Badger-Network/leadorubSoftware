@@ -1,9 +1,9 @@
 <template>
   <el-container class="main-menu">
-    <el-aside :width="isShowMenu ? fullSidebarWidth : miniSizeSidebar" v-if="showSidebar && !isLoading" style="height: 100%; background-color: #2d2d2d;">
-      <el-menu default-active="1" background-color="transparent" text-color="#fff" active-text-color="#ffd04b" router style="height: 100%; display: flex; flex-direction: column; justify-content: flex-start;">
+    <el-aside class="app-sidebar" :width="isShowMenu ? fullSidebarWidth : miniSizeSidebar" v-if="showSidebar && !isLoading">
+      <el-menu class="app-sidebar__menu" :default-active="$route.path" background-color="transparent" text-color="#cbd5e1" active-text-color="#fff" router>
 
-        <el-menu-item style="display: flex; justify-content: space-between;">
+        <div class="app-sidebar__brand" style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
 
           <div style="display: flex; align-items: center;">
             <img src="https://m-files.cdnvideo.ru/lpfile/1/7/1/17132b3c0df3b9802560ee27788e85d5/-/crop/0x0x640x640/-/resize/94/-/resize/1920/f.png" class="logo" />
@@ -16,11 +16,11 @@
             </el-icon>
           </el-button>
 
-        </el-menu-item>
+        </div>
 
         <template v-for="(item, index) in menuItems" :key="index">
-          <el-tooltip :content="item.label" :disabled="isShowMenu" placement="right">
-            <el-menu-item v-if="!item.condition || item.condition()" :index="item.path" :to="item.path">
+          <el-tooltip v-if="!item.condition || item.condition()" :content="item.label" :disabled="isShowMenu" placement="right">
+            <el-menu-item :index="item.path" :to="item.path">
               <el-icon>
                 <component :is="item.icon" />
               </el-icon>
@@ -32,8 +32,8 @@
       </el-menu>
     </el-aside>
 
-    <el-main :class="{ 'dark': isDark }" style="height: 100%;" v-if="showNotMobileFull">
-      <AppHeader v-if="showSidebar" @updateTheme="updateTheme" :userRole="rankName" :userName="userName" :offersList="activeOffersArr" :onClickMenu="collapse" />
+    <el-main class="workspace-main" :class="{ 'dark': isDark }" v-if="showNotMobileFull">
+      <AppHeader v-if="showSidebar" @updateTheme="updateTheme" :userName="userName" :offersList="activeOffersArr" :onClickMenu="collapse" />
       <router-view></router-view>
     </el-main>
   </el-container>
@@ -73,7 +73,7 @@
 </style>
 
 <script>
-import { ref, computed, onBeforeMount } from 'vue'
+import { markRaw } from 'vue'
 import { useRoute } from 'vue-router'
 import { User, House, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin, Histogram } from '@element-plus/icons-vue'
 import AppHeader from './components/AppHeader.vue'
@@ -129,55 +129,55 @@ export default {
         {
           label: 'Главная',
           path: '/',
-          icon: House,
+          icon: markRaw(House),
           condition: null,
         },
         {
           label: 'Лиды',
           path: '/leads',
-          icon: Service,
+          icon: markRaw(Service),
           condition: null,
         },
         {
-          label: 'ЛидыNew',
+          label: 'Работа с лидами',
           path: '/leadsNew',
-          icon: Phone,
+          icon: markRaw(Phone),
           condition: null
         },
         {
           label: 'Пользователи',
           path: '/users',
-          icon: View,
+          icon: markRaw(View),
           condition: () => this.rankName === 'admin',
         },
         {
           label: 'Зарплатная',
           path: '/salary',
-          icon: Money,
+          icon: markRaw(Money),
           condition: null,
         },
         {
           label: 'ОКК',
           path: '/okk',
-          icon: Star,
+          icon: markRaw(Star),
           condition: () => this.rankName === 'admin',
         },
         {
           label: 'Трансферы',
           path: '/transfers',
-          icon: List,
+          icon: markRaw(List),
           condition: () => this.rankName === 'admin'
         },
         {
           label: 'Бонусы',
           path: '/bonuses',
-          icon: Coin,
+          icon: markRaw(Coin),
           condition: () => this.rankName === 'admin'
         },
         {
           label: 'Аналитика РОПа',
           path: '/rop',
-          icon: Histogram,
+          icon: markRaw(Histogram),
           condition: () => this.rankName === 'admin'
         }
         // {

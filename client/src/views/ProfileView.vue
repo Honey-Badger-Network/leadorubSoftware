@@ -1,7 +1,10 @@
 <template>
     <div v-if="userData">
-        <h3>{{ title }} {{ userData.email }}</h3>
-        <p>Ранк: {{ userData.rankName }}</p>
+        <PageHeader
+            eyebrow="Профиль сотрудника"
+            :title="userData.name || title"
+            :description="`${userData.email} · Роль: ${userData.rankName}`"
+        />
     </div>
 
     <!-- <ModalCreateTransferVue v-if="userData" :userName="userName"></ModalCreateTransferVue> -->

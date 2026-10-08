@@ -1,6 +1,10 @@
 <template>
     <div>
-      <h3>Лиды с БД</h3>
+      <PageHeader
+        eyebrow="База данных"
+        title="Лиды"
+        description="Фильтруйте, проверяйте и управляйте системными и ручными лидами."
+      />
 
       <div class="form-filter">
         <el-input type="date" v-model="gte"></el-input>
@@ -35,8 +39,10 @@
         </div>
       </div>
 
-      <el-button v-if="rankName === 'admin'" style="margin-top: 20px; margin-bottom: 20px" type="success" plain @click="isShowModalCreateLead = true">Создать лид</el-button>
-      <el-button v-if="rankName === 'admin'" style="margin-top: 20px; margin-bottom: 20px" type="success" plain @click="downloadLeads">Выгрузить лиды</el-button>
+      <div v-if="rankName === 'admin'" class="page-action-row">
+        <el-button type="primary" @click="isShowModalCreateLead = true">Создать лид</el-button>
+        <el-button type="success" plain @click="downloadLeads">Выгрузить лиды</el-button>
+      </div>
   
       <!-- Вкладки для выбора таблицы -->
       <el-tabs v-model="activeTab" style="margin-top: 20px" type="border-card" @tab-click="handleTabClick">
@@ -540,9 +546,6 @@
 </script>
   
 <style>
-  .form-filter {
-    width: 40% !important;
-  }
   .table-data {
     margin-top: 30px;
   }

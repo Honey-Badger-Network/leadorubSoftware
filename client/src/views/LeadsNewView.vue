@@ -1,8 +1,16 @@
 <template>
 
-    <el-button type="warning" plain @click="showFilter =! showFilter">{{ showFilter ? 'скрыть' : 'показать' }} фильтр</el-button>
+    <PageHeader
+        eyebrow="Оперативная работа"
+        title="Работа с лидами"
+        description="Быстрая проверка, редактирование и контроль качества лидов."
+    />
 
-    <el-form style="margin-top: 20px;" v-if="showFilter">
+    <div class="page-action-row">
+        <el-button type="primary" plain @click="showFilter =! showFilter">{{ showFilter ? 'Скрыть' : 'Показать' }} фильтры</el-button>
+    </div>
+
+    <el-form class="page-filter-panel" v-if="showFilter">
         <el-form-item>
             <el-date-picker style="width: 250px;" v-model="filter.gte"></el-date-picker>
         </el-form-item>
@@ -45,7 +53,7 @@
 
 
 
-    <el-table style="margin-top: 30px;" :data="leadsList">
+    <el-table :data="leadsList">
         <el-table-column label="Телефон" prop="phone" :width="120">
             <template #default="{ row }">
                 <span>{{ renderPhoneNumber(row.phone) }}</span>

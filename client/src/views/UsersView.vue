@@ -1,9 +1,15 @@
 <template>
-    <h3>Пользователи</h3>
+    <PageHeader
+        eyebrow="Администрирование"
+        title="Пользователи"
+        description="Управление сотрудниками, ролями и профилями команды."
+    />
 
-    <el-button plain type="warning" @click="visibleModalCreateUser = true">Создать пользователя</el-button>
+    <div class="page-action-row">
+        <el-button type="primary" @click="visibleModalCreateUser = true">Создать пользователя</el-button>
+    </div>
 
-    <el-table :data="usersArray" style="width: 100%; margin-top: 20px;">
+    <el-table :data="usersArray" style="width: 100%;">
 
         <el-table-column prop="email" label="Логин">
             <template #default="{ row }">

@@ -1,31 +1,25 @@
 <template>
     <div class="navbar">
-        <div class="navbar-collapse">
+        <div class="navbar__group">
             <el-button @click="onClickMenu" circle>
                 <el-icon>
                     <Menu />
                 </el-icon>
             </el-button>
-            <el-button type="warning" plain @click="isShowModalOffers =! isShowModalOffers">активные регионы</el-button>
+            <el-button type="primary" plain @click="isShowModalOffers =! isShowModalOffers">Активные регионы</el-button>
         </div>
         
-        <div>
-            <el-switch v-model="isDark" @change="onThemeChange" active-text="dark" inactive-text="light" style="margin-right: 30px;"></el-switch>
+        <div class="navbar__group navbar__group--right">
+            <el-switch v-model="isDark" @change="onThemeChange" active-text="Тёмная" inactive-text="Светлая"></el-switch>
             <el-dropdown placement="bottom-end" trigger="click">
-                <div>
-                    <div>
-                        <el-button>
-                            <el-icon style="vertical-align: middle" :size="20">
-                                <User />
-                            </el-icon>
-                            <span>{{ userName || 'user' }}</span>
-                        </el-button>
-                    </div>
-                </div>
+                <el-button class="navbar__user">
+                    <span class="navbar__avatar"><el-icon><User /></el-icon></span>
+                    <span>{{ userName || 'Пользователь' }}</span>
+                </el-button>
                 <template #dropdown>
                     <el-dropdown-menu>
-                        <el-dropdown-item @click="userView" :icon="iconUser">Профиль</el-dropdown-item>
-                        <el-dropdown-item @click="logout" :icon="iconClose">Выйти</el-dropdown-item>
+                        <el-dropdown-item @click="userView">Профиль</el-dropdown-item>
+                        <el-dropdown-item @click="logout">Выйти</el-dropdown-item>
                     </el-dropdown-menu>
                 </template>
             </el-dropdown>
@@ -33,7 +27,7 @@
     </div>
 
     <el-dialog title="Список активных регионов" v-model="isShowModalOffers" width="500px">
-        <div v-for="(offer, idx) in offersList" :key="idx" style="display: flex; margin-bottom: 10px; justify-content: space-between;">
+        <div v-for="(offer, idx) in offersList" :key="idx" class="offer-row">
             <span>{{ offer.region }}</span>
             <el-badge :value="offer.countOffers" :type="getColorType(offer.countOffers)"></el-badge>
         </div>
@@ -42,26 +36,79 @@
 </template>
 
 
-<style>
+<style scoped>
 .navbar {
-    height: 20px;
-    padding-bottom: 20px;
-    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 3;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid rgb(194, 194, 194);
-    margin-bottom: 30px;
-}
-  
-.navbar-collapse {
-    margin-top: -5px;
+    gap: 18px;
+    min-height: 68px;
+    margin: 0 -24px 24px;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    background: color-mix(in srgb, var(--el-bg-color) 86%, transparent);
+    box-shadow: 0 8px 28px rgba(30, 41, 59, 0.04);
+    backdrop-filter: blur(18px);
 }
 
-.offers-container {
+.navbar__group {
     display: flex;
-    text-wrap: wrap;
-    color: black;
-    font-size: 10px;
+    align-items: center;
+    gap: 10px;
+}
+
+.navbar__group--right {
+    gap: 18px;
+}
+
+.navbar__user {
+    height: 42px;
+    padding: 0 13px 0 6px;
+    border-radius: 12px;
+}
+
+.navbar__avatar {
+    display: grid;
+    width: 30px;
+    height: 30px;
+    margin-right: 7px;
+    place-items: center;
+    border-radius: 9px;
+    background: linear-gradient(135deg, #6d5dfc, #4a90f5);
+    color: #fff;
+}
+
+.offer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 11px 4px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.offer-row:last-child {
+    border-bottom: 0;
+}
+
+@media (max-width: 760px) {
+    .navbar {
+        margin-right: -12px;
+        margin-left: -12px;
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .navbar__group--right :deep(.el-switch) {
+        display: none;
+    }
+
+    .navbar__user span:last-child {
+        display: none;
+    }
 }
 
 </style>
@@ -73,6 +120,7 @@
 
 
     export default {
+        emits: ['update-theme'],
         data() {
             return {
                 title: 'appLayout',
