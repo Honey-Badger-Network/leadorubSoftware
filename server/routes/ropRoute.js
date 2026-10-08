@@ -9,7 +9,15 @@ const router = Router()
 const usersStatsModel = require('../models/usersStats.js')
 const leadsModel = require('../models/leadsModel.js')
 
-const { getCardDataToSumAggr, getCardDataFromLeadsSumAggr, getLidorubsDataAggregated, getPercentByCardStats, getConversionValues, getBrokersAggregatedData } = require('../services/ropService.js')
+const {
+    getCardDataToSumAggr,
+    getCardDataFromLeadsSumAggr,
+    getLidorubsDataAggregated,
+    getPercentByCardStats,
+    getConversionValues,
+    getBrokersAggregatedData,
+    getDailyDynamics
+} = require('../services/ropService.js')
 
 
 router.get('/api/rop/analytics', async (req, res) => {
@@ -72,6 +80,13 @@ router.get('/api/rop/analytics', async (req, res) => {
 
         let lidorubsData = getLidorubsDataAggregated(currentLeadsData, currentStatsData)
         let brokersData = getBrokersAggregatedData(currentLeadsData)
+        const dates = []
+
+        for (let date = startDate; date.isBefore(endDate) || date.isSame(endDate, 'day'); date = date.add(1, 'day')) {
+            dates.push(date.format('YYYY-MM-DD'))
+        }
+
+        const dailyDynamics = getDailyDynamics(currentStatsData, currentLeadsData, dates)
 
         console.log(lidorubsData, 'lidorubsData lidorubsData')
 
@@ -79,7 +94,8 @@ router.get('/api/rop/analytics', async (req, res) => {
             data: {
                 cardsData: currentMergeCardData,
                 lidorubsData,
-                brokersData
+                brokersData,
+                dailyDynamics
             }
         })
 

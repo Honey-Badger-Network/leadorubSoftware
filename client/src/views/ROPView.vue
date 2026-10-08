@@ -1,288 +1,762 @@
 <template>
-    <div class="analytics-container">
-        <h3>Аналитика РОП</h3>
-        <p>Сводная аналитика по отделу лидогенерация</p>
+  <div class="analytics-page">
+    <section class="analytics-hero">
+      <div class="analytics-hero__content">
+        <span class="analytics-hero__eyebrow">Центр управления отделом</span>
+        <h1>Аналитика РОПа</h1>
+        <p>Звонки, лиды, статусы и конверсии команды в одном отчёте.</p>
+      </div>
+      <div class="analytics-hero__period">
+        <span>Выбранный период</span>
+        <strong>{{ periodLabel }}</strong>
+      </div>
+    </section>
 
-        <div class="buttons-wrapper">
-            <el-button class="fast-btn" @click="changeFastDate('today')">сегодня</el-button>
-            <el-button class="fast-btn" @click="changeFastDate('yesterday')">вчера</el-button>
-            <el-button class="fast-btn" @click="changeFastDate('week')">неделя</el-button>
-            <el-button class="fast-btn" @click="changeFastDate('month')">месяц</el-button>
-            <el-button class="fast-btn" @click="changeFastDate('lastMonth')">прошлый месяц</el-button>
-
-            <div class="date-pickers">
-                <el-date-picker v-model="date.gte" type="date" placeholder="С" class="custom-date-picker"></el-date-picker>
-                <span class="date-separator">-</span>
-                <el-date-picker v-model="date.lte" type="date" placeholder="По" class="custom-date-picker"></el-date-picker>
-            </div>
+    <el-card class="dashboard-card filters-card" shadow="never">
+      <div class="filters-card__row">
+        <div class="filters-card__presets">
+          <el-button
+            v-for="preset in datePresets"
+            :key="preset.value"
+            round
+            :type="activePreset === preset.value ? 'primary' : ''"
+            :plain="activePreset !== preset.value"
+            @click="changeFastDate(preset.value)"
+          >
+            {{ preset.label }}
+          </el-button>
         </div>
 
-        <el-card v-if="cardsData">
-            <h3>Итоги по отделу за период</h3>
+        <el-date-picker
+          v-model="dateRange"
+          class="filters-card__date"
+          type="daterange"
+          range-separator="—"
+          start-placeholder="Дата начала"
+          end-placeholder="Дата окончания"
+          format="DD.MM.YYYY"
+          value-format="YYYY-MM-DD"
+          :clearable="false"
+          unlink-panels
+          @change="activePreset = null"
+        />
+      </div>
+    </el-card>
 
-            <div class="cards-conteiner">
+    <el-alert
+      v-if="errorMessage"
+      class="analytics-alert"
+      title="Не удалось загрузить аналитику"
+      :description="errorMessage"
+      type="error"
+      show-icon
+      closable
+      @close="errorMessage = ''"
+    />
 
-                <RopCard title="Звонки" iconColor="blue" iconName="phone"  :prevValue="cardsData.prevValues.countCalls" :count="cardsData.countCalls" :percent="cardsData.percent.countCallsPercent"></RopCard>
-                
-                <RopCard title="разговоры с человеком" iconColor="green" iconName="phone"  :prevValue="cardsData.prevValues.countCallsWithMan" :count="cardsData.countCallsWithMan" :percent="cardsData.percent.countCallsWithManPercent"></RopCard>
-                <RopCard title="разговоры 60+" iconColor="yellow" iconName="phone"  :prevValue="cardsData.prevValues.countCallsManyMinute" :count="cardsData.countCallsManyMinute" :percent="cardsData.percent.countCallsManyMinutePercent"></RopCard>
-                <RopCard title="Перезвонить" iconColor="red" iconName="phone"  :prevValue="cardsData.prevValues.countCallsResultReCall" :count="cardsData.countCallsResultReCall" :percent="cardsData.percent.countCallsResultReCallPercent"></RopCard>
+    <el-card v-if="cardsData" class="dashboard-card" shadow="never" v-loading="isLoading">
+      <div class="section-heading">
+        <div>
+          <span class="section-heading__eyebrow">Общая картина</span>
+          <h2>Итоги по отделу</h2>
+          <p>Сравнение с предыдущим периодом такой же длительности.</p>
+        </div>
+        <span class="section-heading__badge">{{ summaryCards.length }} показателей</span>
+      </div>
 
-                <RopCard title="Лиды" iconColor="gray" iconName="User"  :prevValue="cardsData.prevValues.countLeads" :count="cardsData.countLeads" :percent="cardsData.percent.countLeadsPercent"></RopCard>
-                <RopCard title="Целевые (ОКК)" iconColor="green" iconName="Aim"  :prevValue="cardsData.prevValues.countTargets"  :count="cardsData.countTargets" :percent="cardsData.percent.countTargetsPercent"></RopCard>
-                <RopCard title="Передано брокерам" iconColor="cyan" iconName="Position"  :prevValue="cardsData.prevValues.countResidence" :count="cardsData.countResidence" :percent="cardsData.percent.countResidencePercent"></RopCard>
-                <RopCard title="HOLD" iconColor="green" iconName="Coin"  :prevValue="cardsData.prevValues.countHold" :count="cardsData.countHold" :percent="cardsData.percent.countHoldPercent"></RopCard>
-                <RopCard title="BREAKED" iconColor="orange" iconName="Warning"  :prevValue="cardsData.prevValues.countBreaked" :count="cardsData.countBreaked" :percent="cardsData.percent.countBreakedPercent"></RopCard>
-                <RopCard title="INVALID" iconColor="red" iconName="CircleClose"  :prevValue="cardsData.prevValues.countInvalid" :count="cardsData.countInvalid" :percent="cardsData.percent.countInvalidPercent"></RopCard>
-                <RopCard title="Сума холдов" iconColor="cyan" iconName="Wallet"  :prevValue="cardsData.prevValues.sumHold" :count="cardsData.sumHold" :percent="cardsData.percent.sumHoldPercent"></RopCard>
+      <div class="metrics-grid">
+        <RopCard
+          v-for="card in summaryCards"
+          :key="card.key"
+          :title="card.title"
+          :icon-color="card.color"
+          :icon-name="card.icon"
+          :prev-value="cardsData.prevValues?.[card.key] || 0"
+          :count="cardsData[card.key] || 0"
+          :percent="cardsData.percent?.[`${card.key}Percent`] || 0"
+        />
+      </div>
+    </el-card>
 
-            </div>
+    <section class="dynamics-section" v-loading="isLoading">
+      <div class="section-heading section-heading--outside">
+        <div>
+          <span class="section-heading__eyebrow">Тренды</span>
+          <h2>Динамика по дням</h2>
+          <p>Каждый столбец — фактический результат команды за конкретный день.</p>
+        </div>
+      </div>
 
-            <div class="cards-conteiner" style="margin-top: 20px;">
-                <RopConversionCard :value="cardsData.conversion.callLead" description="Звонок > Лид"></RopConversionCard>
-                <RopConversionCard :value="cardsData.conversion.leadTarget" description="Лид > Целевой"></RopConversionCard>
-                <RopConversionCard :value="cardsData.conversion.targetResidence" description="Целевой > Брокер"></RopConversionCard>
-                <RopConversionCard :value="cardsData.conversion.targetHold" description="Целевой > Холд"></RopConversionCard>
-                <RopConversionCard :value="cardsData.conversion.breakedDevelop || 0" description="Breaked > Перевод"></RopConversionCard>
-                <RopConversionCard :value="cardsData.conversion.invalidDevelop || 0" description="Invalid > Перевод"></RopConversionCard>
+      <div class="charts-grid">
+        <DailyBarChart
+          v-for="chart in chartConfigs"
+          :key="chart.key"
+          :title="chart.title"
+          :description="chart.description"
+          :rows="dailyDynamics"
+          :series="chart.series"
+        />
+      </div>
+    </section>
 
-                <el-card>
-                    <h3>Чистая прибыль (оценочно)</h3>
+    <el-card v-if="cardsData" class="dashboard-card" shadow="never" v-loading="isLoading">
+      <div class="section-heading">
+        <div>
+          <span class="section-heading__eyebrow">Воронка</span>
+          <h2>Конверсии и результат</h2>
+          <p>Ключевые переходы между этапами работы отдела.</p>
+        </div>
+      </div>
 
-                    <div class="ropClearDiv">
-                        <strong :style="{ color: cardsData.clear > 0 ? 'green' : 'red' }">{{ cardsData.clear }}</strong>
-                        <el-icon style="font-size: 40px; color: yellow">
-                            <Histogram ></Histogram>
-                        </el-icon>
-                    </div>
+      <div class="conversions-layout">
+        <div class="conversions-grid">
+          <RopConversionCard
+            v-for="conversion in conversionCards"
+            :key="conversion.key"
+            :value="cardsData.conversion?.[conversion.key] || 0"
+            :description="conversion.description"
+          />
+        </div>
 
-                </el-card>
-            </div>
-            
-        </el-card>
+        <article class="profit-card" :class="{ 'profit-card--negative': cardsData.clear < 0 }">
+          <div>
+            <span>Оценочно</span>
+            <h3>Чистая прибыль</h3>
+          </div>
+          <div class="profit-card__result">
+            <strong>{{ formatNumber(cardsData.clear) }} ₽</strong>
+            <span class="profit-card__icon">
+              <el-icon><Histogram /></el-icon>
+            </span>
+          </div>
+        </article>
+      </div>
+    </el-card>
 
-        <el-card style="margin-top: 40px;">
-            <h3>Эффективность лидорубов</h3>
+    <el-card class="dashboard-card table-card" shadow="never" v-loading="isLoading">
+      <div class="section-heading">
+        <div>
+          <span class="section-heading__eyebrow">Команда</span>
+          <h2>Эффективность лидорубов</h2>
+        </div>
+      </div>
 
-            <el-table style="overflow-x: auto;" :data="lidorubsData" stripe>
-                <el-table-column label="#" type="index" :width="40"></el-table-column>
-                <el-table-column label="Сотрудник" prop="name" :width="200"></el-table-column>
-                <el-table-column label="Звонки" prop="countCalls" :width="100"></el-table-column>
-                <el-table-column label="Лиды" prop="countLeads" :width="100"></el-table-column>
-                <el-table-column label="Целевые (ОКК)" prop="countTargets" :width="150"></el-table-column>
-                <el-table-column label="created (Брокер)" prop="countCreated" :width="150"></el-table-column>
-                <el-table-column label="Hold" prop="countHolds" :width="100"></el-table-column>
-                <el-table-column label="Breaked" prop="countBreaked" :width="100"></el-table-column>
-                <el-table-column label="Invalid" prop="countInvalid" :width="100"></el-table-column>
-                <el-table-column label="Лид/звонки" prop="conversion.callLead" :width="150">
-                    <template #default="{ row }">
-                        <el-tag :type="getTypeColorByPercent(row.conversion.callLead)">{{ row.conversion.callLead || 0 }} %</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column label="Целевой/лиды" prop="conversion.leadTarget" :width="150">
-                    <template #default="{ row }">
-                        <el-tag :type="getTypeColorByPercent(row.conversion.leadTarget)">{{ row.conversion.leadTarget || 0 }} %</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column label="Hold/целевые" prop="conversion.targethold" :width="150">
-                    <template #default="{ row }">
-                        <el-tag :type="getTypeColorByPercent(row.conversion.targethold)">{{ row.conversion.targethold || 0 }} %</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column label="Сумма холдов" prop="sumHold" :width="150"></el-table-column>
-                <el-table-column label="Зарплата" prop="salary" :width="100"></el-table-column>
-                <el-table-column label="Чистая" prop="clear" :width="100">
-                    <template #default="{ row }">
-                        <strong :style="{ color: row.clear > 0 ? 'green' : 'red' }">{{ row.clear }}</strong>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </el-card>
+      <el-table :data="lidorubsData" stripe table-layout="auto">
+        <el-table-column label="#" type="index" width="50" />
+        <el-table-column label="Сотрудник" prop="name" min-width="170" fixed="left" />
+        <el-table-column label="Звонки" prop="countCalls" min-width="95" />
+        <el-table-column label="Лиды" prop="countLeads" min-width="90" />
+        <el-table-column label="Целевые (ОКК)" prop="countTargets" min-width="135" />
+        <el-table-column label="Created" prop="countCreated" min-width="105" />
+        <el-table-column label="Hold" prop="countHolds" min-width="85" />
+        <el-table-column label="Breaked" prop="countBreaked" min-width="95" />
+        <el-table-column label="Invalid" prop="countInvalid" min-width="90" />
+        <el-table-column label="Лид / звонки" min-width="125">
+          <template #default="{ row }">
+            <el-tag :type="getTypeColorByPercent(row.conversion.callLead)" round>
+              {{ row.conversion.callLead || 0 }}%
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="Целевой / лиды" min-width="135">
+          <template #default="{ row }">
+            <el-tag :type="getTypeColorByPercent(row.conversion.leadTarget)" round>
+              {{ row.conversion.leadTarget || 0 }}%
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="Hold / целевые" min-width="135">
+          <template #default="{ row }">
+            <el-tag :type="getTypeColorByPercent(row.conversion.targetHold)" round>
+              {{ row.conversion.targetHold || 0 }}%
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="Сумма холдов" prop="sumHold" min-width="130" />
+        <el-table-column label="Зарплата" prop="salary" min-width="100" />
+        <el-table-column label="Чистая" min-width="110">
+          <template #default="{ row }">
+            <strong :class="row.clear >= 0 ? 'value-positive' : 'value-negative'">
+              {{ formatNumber(row.clear) }}
+            </strong>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
 
+    <el-card class="dashboard-card table-card" shadow="never" v-loading="isLoading">
+      <div class="section-heading">
+        <div>
+          <span class="section-heading__eyebrow">Партнёры</span>
+          <h2>Статистика по брокерам</h2>
+        </div>
+      </div>
 
-        <el-card style="margin-top: 40px;">
-            <h3>Статистика по брокерам</h3>
-
-            <el-table style="overflow-x: auto;" :data="brokersData" stripe>
-                <el-table-column label="#" type="index" :width="40"></el-table-column>
-                <el-table-column label="Брокер" prop="broker" :width="200">
-                    <template #default="{ row }">
-                        <span>{{ row.broker ? row.broker : 'не передано брокеру' }}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column label="Получено лидов" prop="countLeads" :width="100"></el-table-column>
-                <el-table-column label="Created" prop="countCreated" :width="100"></el-table-column>
-                <el-table-column label="Hold" prop="countHold" :width="150"></el-table-column>
-                <el-table-column label="Breaked (Брокер)" prop="countBreaked" :width="150"></el-table-column>
-                <el-table-column label="Invalid" prop="countInvalid" :width="100"></el-table-column>
-                <el-table-column label="Hold %" prop="conversion.holdPercent" :width="100">
-                    <template #default="{ row }">
-                        <el-tag :type="getTypeColorByPercent(row.conversion.holdPercent)">{{ row.conversion.holdPercent || 0 }} %</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column label="Breaked %" prop="conversion.breakedPercent" :width="100">
-                    <template #default="{ row }">
-                        <el-tag :type="getTypeColorByPercent(row.conversion.breakedPercent)">{{ row.conversion.breakedPercent || 0 }} %</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column label="Invalid %" prop="conversion.invalidPercent" :width="150">
-                    <template #default="{ row }">
-                        <el-tag :type="getTypeColorByPercent(row.conversion.invalidPercent)">{{ row.conversion.invalidPercent || 0 }} %</el-tag>
-                    </template>
-                </el-table-column>
-                <el-table-column label="Сума холдов" prop="sumHold" :width="150"></el-table-column>
-            </el-table>
-        </el-card>
-
-    </div>
+      <el-table :data="brokersData" stripe table-layout="auto">
+        <el-table-column label="#" type="index" width="50" />
+        <el-table-column label="Брокер" min-width="180" fixed="left">
+          <template #default="{ row }">
+            {{ row.broker || 'Не передано брокеру' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="Получено лидов" prop="countLeads" min-width="125" />
+        <el-table-column label="Created" prop="countCreated" min-width="95" />
+        <el-table-column label="Hold" prop="countHold" min-width="85" />
+        <el-table-column label="Breaked" prop="countBreaked" min-width="95" />
+        <el-table-column label="Invalid" prop="countInvalid" min-width="90" />
+        <el-table-column
+          v-for="column in brokerConversionColumns"
+          :key="column.key"
+          :label="column.label"
+          min-width="105"
+        >
+          <template #default="{ row }">
+            <el-tag :type="getTypeColorByPercent(row.conversion[column.key])" round>
+              {{ row.conversion[column.key] || 0 }}%
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="Сумма холдов" prop="sumHold" min-width="130" />
+      </el-table>
+    </el-card>
+  </div>
 </template>
 
-<style>
+<script>
+import dayjs from 'dayjs'
+import 'dayjs/locale/ru'
+import { Histogram } from '@element-plus/icons-vue'
+import DailyBarChart from '@/components/DailyBarChart.vue'
+import RopCard from '@/components/RopCard.vue'
+import RopConversionCard from '@/components/RopConversionCard.vue'
 
-.cards-conteiner {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap; 
+dayjs.locale('ru')
+
+const SUMMARY_CARDS = [
+  { key: 'countCalls', title: 'Звонки', icon: 'Phone', color: '#5b7cfa' },
+  { key: 'countCallsWithMan', title: 'Разговоры с человеком', icon: 'Phone', color: '#18a77a' },
+  { key: 'countCallsManyMinute', title: 'Разговоры 60+ сек', icon: 'Phone', color: '#eab308' },
+  { key: 'countCallsResultReCall', title: 'Перезвонить', icon: 'Phone', color: '#f97316' },
+  { key: 'countLeads', title: 'Лиды', icon: 'User', color: '#64748b' },
+  { key: 'countTargets', title: 'Целевые (ОКК)', icon: 'Aim', color: '#10b981' },
+  { key: 'countResidence', title: 'Передано брокерам', icon: 'Position', color: '#06b6d4' },
+  { key: 'countCreated', title: 'Created', icon: 'Position', color: '#8b5cf6' },
+  { key: 'countHold', title: 'Hold', icon: 'Coin', color: '#22c55e' },
+  { key: 'countBreaked', title: 'Breaked', icon: 'Warning', color: '#f59e0b' },
+  { key: 'countInvalid', title: 'Invalid', icon: 'CircleClose', color: '#ef4444' },
+  { key: 'sumHold', title: 'Сумма холдов', icon: 'Wallet', color: '#0ea5e9' }
+]
+
+const CONVERSION_CARDS = [
+  { key: 'callLead', description: 'Звонок → Лид' },
+  { key: 'leadTarget', description: 'Лид → Целевой' },
+  { key: 'targetResidence', description: 'Целевой → Брокер' },
+  { key: 'targetHold', description: 'Целевой → Hold' },
+  { key: 'breakedDevelop', description: 'Breaked → Перевод' },
+  { key: 'invalidDevelop', description: 'Invalid → Перевод' }
+]
+
+const CHART_CONFIGS = [
+  {
+    key: 'calls',
+    title: 'Звонки и разговоры 60+ сек',
+    description: 'Объём набора и количество содержательных разговоров.',
+    series: [
+      { key: 'countCalls', label: 'Звонки', color: '#5b7cfa' },
+      { key: 'countCallsManyMinute', label: 'Разговоры 60+ сек', color: '#21c7a8' }
+    ]
+  },
+  {
+    key: 'leads',
+    title: 'Лиды, целевые и перезвоны',
+    description: 'Ежедневное движение лидов по ключевым этапам.',
+    series: [
+      { key: 'countLeads', label: 'Лиды', color: '#6366f1' },
+      { key: 'countTargets', label: 'Целевые', color: '#10b981' },
+      { key: 'countCallsResultReCall', label: 'Перезвонить', color: '#f59e0b' }
+    ]
+  },
+  {
+    key: 'statuses',
+    title: 'Итоги по статусам',
+    description: 'Created, Hold, Breaked и Invalid в разрезе каждого дня.',
+    series: [
+      { key: 'countCreated', label: 'Created', color: '#8b5cf6' },
+      { key: 'countHold', label: 'Hold', color: '#22c55e' },
+      { key: 'countBreaked', label: 'Breaked', color: '#f97316' },
+      { key: 'countInvalid', label: 'Invalid', color: '#ef4444' }
+    ]
+  }
+]
+
+export default {
+  name: 'ROPView',
+  components: {
+    DailyBarChart,
+    Histogram,
+    RopCard,
+    RopConversionCard
+  },
+  data() {
+    const today = dayjs().format('YYYY-MM-DD')
+
+    return {
+      dateRange: [today, today],
+      activePreset: 'today',
+      cardsData: null,
+      lidorubsData: [],
+      brokersData: [],
+      dailyDynamics: [],
+      isLoading: false,
+      errorMessage: '',
+      requestId: 0,
+      datePresets: [
+        { label: 'Сегодня', value: 'today' },
+        { label: 'Вчера', value: 'yesterday' },
+        { label: 'Неделя', value: 'week' },
+        { label: 'Месяц', value: 'month' },
+        { label: 'Прошлый месяц', value: 'lastMonth' }
+      ],
+      summaryCards: SUMMARY_CARDS,
+      conversionCards: CONVERSION_CARDS,
+      chartConfigs: CHART_CONFIGS,
+      brokerConversionColumns: [
+        { key: 'holdPercent', label: 'Hold %' },
+        { key: 'breakedPercent', label: 'Breaked %' },
+        { key: 'invalidPercent', label: 'Invalid %' }
+      ]
+    }
+  },
+  computed: {
+    periodLabel() {
+      if (!this.dateRange?.length) {
+        return 'Период не выбран'
+      }
+
+      const [start, end] = this.dateRange
+      const startLabel = dayjs(start).format('D MMMM YYYY')
+      const endLabel = dayjs(end).format('D MMMM YYYY')
+
+      return start === end ? startLabel : `${startLabel} — ${endLabel}`
+    }
+  },
+  watch: {
+    dateRange: {
+      handler(value) {
+        if (value?.length === 2) {
+          this.fetchData()
+        }
+      },
+      deep: true
+    }
+  },
+  async beforeMount() {
+    await this.fetchData()
+  },
+  methods: {
+    changeFastDate(mode) {
+      const now = dayjs()
+      let start = now
+      let end = now
+
+      if (mode === 'yesterday') {
+        start = now.subtract(1, 'day')
+        end = start
+      } else if (mode === 'week') {
+        start = now.startOf('week')
+        end = now.endOf('week')
+      } else if (mode === 'month') {
+        start = now.startOf('month')
+        end = now.endOf('month')
+      } else if (mode === 'lastMonth') {
+        start = now.subtract(1, 'month').startOf('month')
+        end = now.subtract(1, 'month').endOf('month')
+      }
+
+      this.activePreset = mode
+      this.dateRange = [start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD')]
+    },
+    getTypeColorByPercent(percent) {
+      const value = Number(percent) || 0
+
+      if (value <= 0) return 'danger'
+      if (value < 66) return 'primary'
+      return 'success'
+    },
+    formatNumber(value) {
+      return new Intl.NumberFormat('ru-RU').format(Number(value) || 0)
+    },
+    async fetchData() {
+      if (!this.dateRange?.length) {
+        return
+      }
+
+      const currentRequestId = ++this.requestId
+      this.isLoading = true
+      this.errorMessage = ''
+
+      try {
+        const response = await this.$store.dispatch('getDataList', {
+          col: 'api/rop/analytics',
+          params: {
+            gte: this.dateRange[0],
+            lte: this.dateRange[1]
+          }
+        })
+
+        if (currentRequestId !== this.requestId) {
+          return
+        }
+
+        this.cardsData = response.data.cardsData
+        this.lidorubsData = response.data.lidorubsData || []
+        this.brokersData = response.data.brokersData || []
+        this.dailyDynamics = response.data.dailyDynamics || []
+      } catch (error) {
+        if (currentRequestId === this.requestId) {
+          this.errorMessage = error.response?.data?.err || error.message
+        }
+      } finally {
+        if (currentRequestId === this.requestId) {
+          this.isLoading = false
+        }
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+.analytics-page {
+  display: grid;
+  gap: 22px;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 12px 0 40px;
 }
 
-.ropClearDiv {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-}
-
-.buttons-wrapper {
+.analytics-hero {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+  min-height: 170px;
+  padding: clamp(26px, 4vw, 44px);
+  overflow: hidden;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 84% 18%, rgba(101, 218, 255, 0.3), transparent 24%),
+    radial-gradient(circle at 12% 100%, rgba(150, 124, 255, 0.28), transparent 30%),
+    linear-gradient(125deg, #17233f 0%, #313163 48%, #4f46a6 100%);
+  box-shadow: 0 22px 55px rgba(42, 43, 102, 0.22);
+  color: #fff;
 }
 
-.fast-btn {
-  padding: 8px 16px;
-  font-weight: 500;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+.analytics-hero::after {
+  position: absolute;
+  top: -70px;
+  right: -60px;
+  width: 230px;
+  height: 230px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  box-shadow: 0 0 0 34px rgba(255, 255, 255, 0.04), 0 0 0 70px rgba(255, 255, 255, 0.025);
+  content: '';
 }
 
-.date-pickers {
+.analytics-hero__content,
+.analytics-hero__period {
+  position: relative;
+  z-index: 1;
+}
+
+.analytics-hero__eyebrow,
+.section-heading__eyebrow {
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.analytics-hero__eyebrow {
+  color: #a5e9ff;
+}
+
+.analytics-hero h1 {
+  margin: 9px 0 8px;
+  font-size: clamp(30px, 4vw, 48px);
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.analytics-hero p {
+  max-width: 640px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 15px;
+}
+
+.analytics-hero__period {
+  flex: 0 0 auto;
+  min-width: 220px;
+  padding: 17px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+}
+
+.analytics-hero__period span,
+.analytics-hero__period strong {
+  display: block;
+}
+
+.analytics-hero__period span {
+  margin-bottom: 6px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.analytics-hero__period strong {
+  font-size: 14px;
+}
+
+.dashboard-card {
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 20px;
+  background: var(--el-bg-color);
+  box-shadow: 0 16px 44px rgba(30, 41, 59, 0.065);
+}
+
+:deep(.dashboard-card > .el-card__body) {
+  padding: clamp(20px, 3vw, 30px);
+}
+
+.filters-card__row,
+.filters-card__presets {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.custom-date-picker {
-  width: 150px;
-  border-radius: 4px;
-  font-size: 14px;
+.filters-card__row {
+  justify-content: space-between;
 }
 
-.date-separator {
-  font-size: 20px;
-  color: #999;
+.filters-card__presets {
+  flex-wrap: wrap;
 }
 
+.filters-card__date {
+  width: 340px;
+}
+
+.analytics-alert {
+  border-radius: 14px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.section-heading--outside {
+  padding: 4px 4px 0;
+}
+
+.section-heading__eyebrow {
+  color: #6d5dfc;
+}
+
+.section-heading h2 {
+  margin: 6px 0 5px;
+  color: var(--el-text-color-primary);
+  font-size: clamp(21px, 2.4vw, 28px);
+  letter-spacing: -0.035em;
+}
+
+.section-heading p {
+  margin: 0;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+
+.section-heading__badge {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-regular);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 13px;
+}
+
+.dynamics-section {
+  min-height: 390px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.conversions-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(250px, 1fr);
+  gap: 16px;
+}
+
+.conversions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.profit-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 150px;
+  padding: 22px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 90% 12%, rgba(255, 255, 255, 0.2), transparent 28%),
+    linear-gradient(135deg, #0f9f78, #096f69);
+  box-shadow: 0 15px 32px rgba(15, 159, 120, 0.22);
+  color: #fff;
+}
+
+.profit-card--negative {
+  background: linear-gradient(135deg, #ef4444, #9f1239);
+  box-shadow: 0 15px 32px rgba(225, 29, 72, 0.2);
+}
+
+.profit-card span {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.profit-card h3 {
+  margin: 5px 0 0;
+  font-size: 16px;
+}
+
+.profit-card__result {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profit-card__result strong {
+  font-size: clamp(25px, 3vw, 36px);
+  letter-spacing: -0.05em;
+}
+
+.profit-card__icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 22px;
+}
+
+.table-card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.table-card :deep(.el-table) {
+  border-radius: 12px;
+}
+
+.table-card :deep(.el-table th.el-table__cell) {
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-regular);
+  font-size: 12px;
+}
+
+.value-positive {
+  color: #059669;
+}
+
+.value-negative {
+  color: #dc2626;
+}
+
+@media (max-width: 1280px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .conversions-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .analytics-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .analytics-hero__period {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .filters-card__row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .filters-card__date {
+    width: 100%;
+  }
+
+  .conversions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .analytics-page {
+    gap: 16px;
+  }
+
+  .analytics-hero {
+    min-height: 0;
+    border-radius: 18px;
+  }
+
+  .filters-card__presets :deep(.el-button) {
+    flex: 1 0 auto;
+    margin-left: 0;
+  }
+
+  .section-heading__badge {
+    display: none;
+  }
+
+  .metrics-grid,
+  .conversions-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
-
-
-<script>
-
-    import dayjs from 'dayjs';
-    import RopCard from '@/components/RopCard.vue';
-    import RopConversionCard from '@/components/RopConversionCard.vue';
-    import { Phone, Wallet, ArrowDown, Histogram, ArrowUp, User, Coin, Aim, Position, Warning, CircleClose } from '@element-plus/icons-vue';
-
-    export default {
-        data() {
-            return {
-                date: {
-                    gte: dayjs(new Date).format('YYYY-MM-DD'),
-                    lte: dayjs(new Date).format('YYYY-MM-DD'),
-                },
-                cardsData: null,
-                lidorubsData: [],
-                brokersData: []
-            }
-        },
-        components: {
-            Phone, 
-            Wallet, 
-            ArrowDown, 
-            ArrowUp, 
-            User, Coin, 
-            Aim, 
-            Position, 
-            Warning, 
-            CircleClose,
-            Histogram,
-            RopCard,
-            RopConversionCard
-        },
-        methods: {
-            changeFastDate(mode) {
-                if (mode === 'today') {
-                    this.date.gte = dayjs(new Date).format('YYYY-MM-DD')
-                    this.date.lte = dayjs(new Date).format('YYYY-MM-DD')
-                } else if (mode === 'yesterday') {
-                    this.date.gte = dayjs(new Date).subtract(1, 'day').format('YYYY-MM-DD')
-                    this.date.lte = dayjs(new Date).subtract(1, 'day').format('YYYY-MM-DD')
-                } else if (mode === 'week') {
-                    const startOfWeek = dayjs(new Date).startOf('week');
-                    const endOfWeek = dayjs(new Date).endOf('week');
-                    this.date.gte = startOfWeek.format('YYYY-MM-DD');
-                    this.date.lte = endOfWeek.format('YYYY-MM-DD');
-                } else if (mode === 'month') {
-                    const startOfMonth = dayjs(new Date).startOf('month');
-                    const endOfMonth = dayjs(new Date).endOf('month');
-                    this.date.gte = startOfMonth.format('YYYY-MM-DD');
-                    this.date.lte = endOfMonth.format('YYYY-MM-DD');
-                } else if (mode === 'lastMonth') {
-                    const startOfLastMonth = dayjs(new Date).subtract(1, 'month').startOf('month');
-                    const endOfLastMonth = dayjs(new Date).subtract(1, 'month').endOf('month');
-                    this.date.gte = startOfLastMonth.format('YYYY-MM-DD');
-                    this.date.lte = endOfLastMonth.format('YYYY-MM-DD');
-                }
-            },
-            getTypeColorByPercent(percent) {
-                if (percent === 0) {
-                    return 'danger'
-                } else if (percent > 0 && percent < 66) {
-                    return 'primary'
-                } else if (percent > 66) {
-                    return 'success'
-                } else {
-                    return 'danger'
-                }
-            },
-            async fetchData() {
-                try {
-                    const response = await this.$store.dispatch('getDataList', {
-                        col: 'api/rop/analytics',
-                        params: {
-                            gte: this.date.gte,
-                            lte: this.date.lte
-                        }
-                    })
-                    this.cardsData = response.data.cardsData
-                    this.lidorubsData = response.data.lidorubsData
-                    this.brokersData = response.data.brokersData
-                } catch (e) {
-                    console.log(e.message)
-                }
-            }
-        },
-        watch: {
-            'date': {
-                handler() {
-                    this.fetchData()
-                },
-                deep: true,
-            },
-        },
-        async beforeMount() {
-            await this.fetchData()
-        }
-    }
-
-</script>

@@ -29,6 +29,7 @@ export function getCardDataToSumAggr (usersStatsDataArray) {
 export function getCardDataFromLeadsSumAggr (leadsDataArray) {
     let totalObject = {
         countResidence: 0,
+        countCreated: 0,
         countHold: 0,
         countInvalid: 0,
         countBreaked: 0,
@@ -37,10 +38,11 @@ export function getCardDataFromLeadsSumAggr (leadsDataArray) {
 
     leadsDataArray.forEach((lead) => {
         totalObject.countResidence += lead.broker === null ? 0 : 1
-        totalObject.countHold += lead.countHold
+        totalObject.countCreated += lead.residenceStatus === 'created' ? 1 : 0
+        totalObject.countHold += Number(lead.countHold) || 0
         totalObject.countInvalid += lead.residenceStatus === 'invalid' ? 1 : 0
         totalObject.countBreaked += lead.residenceStatus === 'breaked' ? 1 : 0
-        totalObject.sumHold += lead.price
+        totalObject.sumHold += Number(lead.price) || 0
     })
 
     return totalObject
@@ -227,4 +229,52 @@ export function getConversionValues(currentObject) {
         invalidDevelop: Math.round((currentObject.countResidence - currentObject.countBreaked) / currentObject.countInvalid * 100)
     }
     return conversionData
+}
+
+export function getDailyDynamics(usersStatsDataArray, leadsDataArray, datesArray) {
+    const dailyData = datesArray.reduce((result, date) => {
+        result[date] = {
+            date,
+            countCalls: 0,
+            countCallsManyMinute: 0,
+            countCallsResultReCall: 0,
+            countLeads: 0,
+            countTargets: 0,
+            countCreated: 0,
+            countHold: 0,
+            countBreaked: 0,
+            countInvalid: 0
+        }
+
+        return result
+    }, {})
+
+    usersStatsDataArray.forEach((row) => {
+        const day = dailyData[row.date]
+
+        if (!day) {
+            return
+        }
+
+        day.countCalls += Number(row.countCalls) || 0
+        day.countCallsManyMinute += Number(row.countCallsManyMinute) || 0
+        day.countCallsResultReCall += Number(row.countCallsResultReCall) || 0
+        day.countLeads += Number(row.countLeads) || 0
+        day.countTargets += Number(row.countTargets) || 0
+    })
+
+    leadsDataArray.forEach((lead) => {
+        const day = dailyData[lead.date]
+
+        if (!day) {
+            return
+        }
+
+        day.countCreated += lead.residenceStatus === 'created' ? 1 : 0
+        day.countHold += Number(lead.countHold) || 0
+        day.countBreaked += lead.residenceStatus === 'breaked' ? 1 : 0
+        day.countInvalid += lead.residenceStatus === 'invalid' ? 1 : 0
+    })
+
+    return datesArray.map((date) => dailyData[date])
 }
