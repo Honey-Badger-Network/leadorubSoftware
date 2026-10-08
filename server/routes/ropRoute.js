@@ -65,6 +65,7 @@ router.get('/api/rop/analytics', async (req, res) => {
 
         currentMergeCardData.percent = { ...percentValuesForCurrentObject }
         currentMergeCardData.conversion = { ...getConversionValues(currentMergeCardData) }
+        currentMergeCardData.prevValues = { ...previousMergeCardData }
 
         console.log('CURRENT', currentMergeCardData)
 

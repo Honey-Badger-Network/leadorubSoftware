@@ -14,6 +14,7 @@
                 <p>{{ count }}</p>
                 <p :style="{ color: percent > 0 ? 'green' : 'red' }">{{ percent > 0 ? '+' : '-' }} {{ Math.abs(percent) }}%</p>
             </div>
+            <h5>Было {{ prevValue }}</h5>
         </template>
     </el-card>
 </template>
@@ -28,7 +29,8 @@ export default {
     title: String,
     count: Number,
     iconName: String,
-    iconColor: String
+    iconColor: String,
+    prevValue: Number
   },
   components: {
     Phone, Wallet, ArrowDown, ArrowUp, User, Coin, Aim, Position, Warning, CircleClose
@@ -44,7 +46,7 @@ export default {
 <style>
 
 .compact-card {
-  width: 300px !important;
+  width: 150px !important;
   padding: 10px;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -71,7 +73,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     margin-top: auto;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .trend-icon {

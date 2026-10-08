@@ -1,6 +1,11 @@
 export function getCardDataToSumAggr (usersStatsDataArray) {
     let totalObject = {
         countCalls: 0,
+
+        countCallsWithMan: 0,
+        countCallsManyMinute: 0,
+        countCallsResultReCall: 0,
+
         countLeads: 0,
         countTargets: 0,
         clear: 0
@@ -8,6 +13,11 @@ export function getCardDataToSumAggr (usersStatsDataArray) {
 
     usersStatsDataArray.forEach((row) => {
         totalObject.countCalls += row.countCalls
+
+        totalObject.countCallsWithMan += row.countCallsWithMan
+        totalObject.countCallsManyMinute += row.countCallsManyMinute
+        totalObject.countCallsResultReCall += row.countCallsResultReCall
+
         totalObject.countLeads += row.countLeads
         totalObject.countTargets += row.countTargets
         totalObject.clear += row.clear

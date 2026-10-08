@@ -22,14 +22,19 @@
 
             <div class="cards-conteiner">
 
-                <RopCard title="Звонки" iconColor="blue" iconName="phone" :count="cardsData.countCalls" :percent="cardsData.percent.countCallsPercent"></RopCard>
-                <RopCard title="Лиды" iconColor="gray" iconName="User" :count="cardsData.countLeads" :percent="cardsData.percent.countLeadsPercent"></RopCard>
-                <RopCard title="Целевые (ОКК)" iconColor="green" iconName="Aim"  :count="cardsData.countTargets" :percent="cardsData.percent.countTargetsPercent"></RopCard>
-                <RopCard title="Передано брокерам" iconColor="cyan" iconName="Position" :count="cardsData.countResidence" :percent="cardsData.percent.countResidencePercent"></RopCard>
-                <RopCard title="HOLD" iconColor="green" iconName="Coin" :count="cardsData.countHold" :percent="cardsData.percent.countHoldPercent"></RopCard>
-                <RopCard title="BREAKED" iconColor="orange" iconName="Warning" :count="cardsData.countBreaked" :percent="cardsData.percent.countBreakedPercent"></RopCard>
-                <RopCard title="INVALID" iconColor="red" iconName="CircleClose" :count="cardsData.countInvalid" :percent="cardsData.percent.countInvalidPercent"></RopCard>
-                <RopCard title="Сума холдов" iconColor="cyan" iconName="Wallet" :count="cardsData.sumHold" :percent="cardsData.percent.sumHoldPercent"></RopCard>
+                <RopCard title="Звонки" iconColor="blue" iconName="phone"  :prevValue="cardsData.prevValues.countCalls" :count="cardsData.countCalls" :percent="cardsData.percent.countCallsPercent"></RopCard>
+                
+                <RopCard title="разговоры с человеком" iconColor="green" iconName="phone"  :prevValue="cardsData.prevValues.countCallsWithMan" :count="cardsData.countCallsWithMan" :percent="cardsData.percent.countCallsWithManPercent"></RopCard>
+                <RopCard title="разговоры 60+" iconColor="yellow" iconName="phone"  :prevValue="cardsData.prevValues.countCallsManyMinute" :count="cardsData.countCallsManyMinute" :percent="cardsData.percent.countCallsManyMinutePercent"></RopCard>
+                <RopCard title="Перезвонить" iconColor="red" iconName="phone"  :prevValue="cardsData.prevValues.countCallsResultReCall" :count="cardsData.countCallsResultReCall" :percent="cardsData.percent.countCallsResultReCallPercent"></RopCard>
+
+                <RopCard title="Лиды" iconColor="gray" iconName="User"  :prevValue="cardsData.prevValues.countLeads" :count="cardsData.countLeads" :percent="cardsData.percent.countLeadsPercent"></RopCard>
+                <RopCard title="Целевые (ОКК)" iconColor="green" iconName="Aim"  :prevValue="cardsData.prevValues.countTargets"  :count="cardsData.countTargets" :percent="cardsData.percent.countTargetsPercent"></RopCard>
+                <RopCard title="Передано брокерам" iconColor="cyan" iconName="Position"  :prevValue="cardsData.prevValues.countResidence" :count="cardsData.countResidence" :percent="cardsData.percent.countResidencePercent"></RopCard>
+                <RopCard title="HOLD" iconColor="green" iconName="Coin"  :prevValue="cardsData.prevValues.countHold" :count="cardsData.countHold" :percent="cardsData.percent.countHoldPercent"></RopCard>
+                <RopCard title="BREAKED" iconColor="orange" iconName="Warning"  :prevValue="cardsData.prevValues.countBreaked" :count="cardsData.countBreaked" :percent="cardsData.percent.countBreakedPercent"></RopCard>
+                <RopCard title="INVALID" iconColor="red" iconName="CircleClose"  :prevValue="cardsData.prevValues.countInvalid" :count="cardsData.countInvalid" :percent="cardsData.percent.countInvalidPercent"></RopCard>
+                <RopCard title="Сума холдов" iconColor="cyan" iconName="Wallet"  :prevValue="cardsData.prevValues.sumHold" :count="cardsData.sumHold" :percent="cardsData.percent.sumHoldPercent"></RopCard>
 
             </div>
 
@@ -137,6 +142,7 @@
 .cards-conteiner {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap; 
 }
 
 .ropClearDiv {
