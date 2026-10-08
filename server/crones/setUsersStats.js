@@ -15,6 +15,8 @@ const { getAllUsers, getUserIdByName, upserUsersStatsToDB } = require('../servic
 async function setUsersStatsToDB(gte, lte) {
     
     const usersCalls = await getSkorozvonCalls(gte, lte)
+
+    console.log(usersCalls, 'usersCalls usersCalls usersCalls')
     
     const usersCallsWithoutZeroCalls = usersCalls.filter((callUser) => {
         return callUser.countCalls > 0

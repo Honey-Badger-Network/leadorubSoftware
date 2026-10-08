@@ -41,6 +41,11 @@ async function upserUsersStatsToDB(userObject) {
             countTargets: userObject.countTargets,
             email: userObject.email,
             countCalls: userObject.countCalls,
+
+            countCallsWithMan: userObject.countCallsWithMan,
+            countCallsManyMinute: userObject.countCallsManyMinute,
+            countCallsResultReCall: userObject.countCallsResultReCall,
+
             countCallsWithProfile: userObject.countCallsWithProfile || 0,
             rankName: userObject.rankName,
             salary: userObject.salary,

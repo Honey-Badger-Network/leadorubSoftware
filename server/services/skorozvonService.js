@@ -240,10 +240,39 @@ async function getSkorozvonCalls(gte, lte) {
                 params: userParams,
             });
 
+            countCallsManyMinute = 0 // кол-во звонков где общался больше минуты
+            countCallsWithMan = 0 // кол-во звонков гед общался не с роботом
+            countCallsResultReCall = 0 // кол-во звонков перезвонить
+
+            responseCalls.data.data.calls.forEach((call) => {
+
+                const [minutes, seconds] = call.duration.split(':').map(Number);
+                const durationInSeconds = minutes * 60 + seconds;
+
+                // console.log(user.name, call.result, call.duration, '*********', durationInSeconds)
+
+                if (durationInSeconds > 60) {
+                    countCallsManyMinute += 1;
+                }
+
+                if (call.result !== 'Автоответчик') {
+                    countCallsWithMan += 1
+                }
+
+                if (call.result === 'Перезвонить') {
+                    countCallsResultReCall += 1
+                }
+
+            })
+
+
             usersCallsArray.push({
                 email: user.email,
                 name: user.name,
-                countCalls: responseCalls.data.data.total
+                countCalls: responseCalls.data.data.total,
+                countCallsWithMan,
+                countCallsManyMinute,
+                countCallsResultReCall
             })
         }
         
