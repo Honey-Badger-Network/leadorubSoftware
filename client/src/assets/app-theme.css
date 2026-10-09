@@ -19,7 +19,7 @@ body,
 
 body {
   color: var(--el-text-color-primary);
-  background: #f4f6fb;
+  background: #f3f4f6;
 }
 
 button,
@@ -35,15 +35,11 @@ select {
   padding: 0 24px 38px !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(109, 93, 252, 0.08), transparent 24%),
-    linear-gradient(180deg, #f8f9fd 0%, #f3f5fa 100%);
+  background: #f5f6f8;
 }
 
 .workspace-main.dark {
-  background:
-    radial-gradient(circle at 100% 0%, rgba(109, 93, 252, 0.1), transparent 25%),
-    var(--el-bg-color-page);
+  background: var(--el-bg-color-page);
 }
 
 .app-sidebar {
@@ -54,8 +50,8 @@ select {
   min-height: 100vh;
   overflow: hidden;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
-  background: linear-gradient(180deg, #171d2e 0%, #22243c 52%, #2d2854 100%);
-  box-shadow: 12px 0 35px rgba(15, 23, 42, 0.12);
+  background: linear-gradient(180deg, #171a21 0%, #20242d 100%);
+  box-shadow: 8px 0 26px rgba(15, 23, 42, 0.1);
   transition: width 0.25s ease;
 }
 
@@ -72,6 +68,8 @@ select {
 .app-sidebar__menu .el-menu-item {
   height: 48px;
   margin: 4px 8px;
+  padding-right: 14px;
+  padding-left: 14px;
   border-radius: 12px;
 }
 
@@ -80,8 +78,8 @@ select {
 }
 
 .app-sidebar__menu .el-menu-item.is-active {
-  background: linear-gradient(100deg, rgba(109, 93, 252, 0.33), rgba(74, 144, 245, 0.2)) !important;
-  box-shadow: inset 3px 0 #9ee8ff;
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 3px 0 #a8b3c5;
   color: #fff !important;
 }
 
@@ -91,6 +89,43 @@ select {
   margin-top: 8px !important;
   margin-bottom: 16px !important;
   background: transparent !important;
+}
+
+.app-sidebar__brand > div {
+  min-width: 0;
+}
+
+.app-sidebar .logo {
+  display: block;
+  flex: 0 0 30px;
+  object-fit: cover;
+  border-radius: 9px;
+}
+
+.app-sidebar--collapsed .app-sidebar__brand {
+  justify-content: center !important;
+  width: 100%;
+  padding: 0 !important;
+}
+
+.app-sidebar--collapsed .app-sidebar__brand > div {
+  justify-content: center;
+  width: 100%;
+}
+
+.app-sidebar--collapsed .app-sidebar__menu {
+  width: 72px;
+}
+
+.app-sidebar--collapsed .app-sidebar__menu .el-tooltip__trigger {
+  width: 48px;
+  margin: 4px auto;
+  padding: 0 !important;
+  justify-content: center;
+}
+
+.app-sidebar--collapsed .app-sidebar__menu .el-menu-item .el-icon {
+  margin: 0 !important;
 }
 
 .app-sidebar__footer {
@@ -105,6 +140,15 @@ select {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.045);
   color: #fff;
+}
+
+.app-sidebar--collapsed .app-sidebar__footer {
+  justify-content: center;
+  width: 44px;
+  min-height: 44px;
+  margin: auto auto 0;
+  padding: 0;
+  border-radius: 12px;
 }
 
 .app-sidebar__status {
@@ -162,9 +206,9 @@ select {
   margin: 0 0 20px;
   padding: 20px;
   border: 1px solid var(--el-border-color-lighter);
-  border-radius: 18px;
+  border-radius: 14px;
   background: var(--el-bg-color);
-  box-shadow: 0 12px 34px rgba(30, 41, 59, 0.055);
+  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.04);
 }
 
 .form-filter > *,
@@ -190,10 +234,10 @@ select {
 .page-note {
   margin: 0 0 18px;
   padding: 14px 16px;
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  border-left: 4px solid #5b7cfa;
+  border: 1px solid var(--el-border-color-lighter);
+  border-left: 4px solid #64748b;
   border-radius: 12px;
-  background: rgba(59, 130, 246, 0.06);
+  background: var(--el-fill-color-lighter);
   color: var(--el-text-color-regular);
   font-size: 13px;
   line-height: 1.5;
@@ -221,7 +265,7 @@ select {
 .el-select__wrapper:hover,
 .el-date-editor.el-input__wrapper:hover,
 .el-date-editor.el-range-editor:hover {
-  box-shadow: 0 0 0 1px #7c6ff0 inset;
+  box-shadow: 0 0 0 1px #64748b inset;
 }
 
 .el-table {
@@ -229,7 +273,7 @@ select {
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 16px;
   background: var(--el-bg-color);
-  box-shadow: 0 12px 34px rgba(30, 41, 59, 0.055);
+  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.04);
 }
 
 .el-table th.el-table__cell {
@@ -245,7 +289,7 @@ select {
 }
 
 .el-table .el-table__row:hover > td.el-table__cell {
-  background: color-mix(in srgb, #6d5dfc 5%, var(--el-bg-color)) !important;
+  background: var(--el-fill-color-lighter) !important;
 }
 
 .el-tabs--border-card {
@@ -253,7 +297,7 @@ select {
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 18px;
   background: var(--el-bg-color);
-  box-shadow: 0 12px 34px rgba(30, 41, 59, 0.055);
+  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.04);
 }
 
 .el-tabs--border-card > .el-tabs__header {

@@ -78,6 +78,8 @@
       </div>
     </el-card>
 
+    <AnalyticsFunnel v-if="cardsData" :metrics="cardsData" v-loading="isLoading" />
+
     <section class="dynamics-section" v-loading="isLoading">
       <div class="section-heading section-heading--outside">
         <div>
@@ -102,35 +104,24 @@
     <el-card v-if="cardsData" class="dashboard-card" shadow="never" v-loading="isLoading">
       <div class="section-heading">
         <div>
-          <span class="section-heading__eyebrow">Воронка</span>
-          <h2>Конверсии и результат</h2>
-          <p>Ключевые переходы между этапами работы отдела.</p>
+          <span class="section-heading__eyebrow">Экономика</span>
+          <h2>Финансовый результат</h2>
+          <p>Оценка результата отдела за выбранный период.</p>
         </div>
       </div>
 
-      <div class="conversions-layout">
-        <div class="conversions-grid">
-          <RopConversionCard
-            v-for="conversion in conversionCards"
-            :key="conversion.key"
-            :value="cardsData.conversion?.[conversion.key] || 0"
-            :description="conversion.description"
-          />
+      <article class="profit-card" :class="{ 'profit-card--negative': cardsData.clear < 0 }">
+        <div>
+          <span>Оценочно</span>
+          <h3>Чистая прибыль</h3>
         </div>
-
-        <article class="profit-card" :class="{ 'profit-card--negative': cardsData.clear < 0 }">
-          <div>
-            <span>Оценочно</span>
-            <h3>Чистая прибыль</h3>
-          </div>
-          <div class="profit-card__result">
-            <strong>{{ formatNumber(cardsData.clear) }} ₽</strong>
-            <span class="profit-card__icon">
-              <el-icon><Histogram /></el-icon>
-            </span>
-          </div>
-        </article>
-      </div>
+        <div class="profit-card__result">
+          <strong>{{ formatNumber(cardsData.clear) }} ₽</strong>
+          <span class="profit-card__icon">
+            <el-icon><Histogram /></el-icon>
+          </span>
+        </div>
+      </article>
     </el-card>
 
     <el-card class="dashboard-card table-card" shadow="never" v-loading="isLoading">
@@ -226,9 +217,9 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
 import { Histogram } from '@element-plus/icons-vue'
+import AnalyticsFunnel from '@/components/AnalyticsFunnel.vue'
 import DailyBarChart from '@/components/DailyBarChart.vue'
 import RopCard from '@/components/RopCard.vue'
-import RopConversionCard from '@/components/RopConversionCard.vue'
 
 dayjs.locale('ru')
 
@@ -245,15 +236,6 @@ const SUMMARY_CARDS = [
   { key: 'countBreaked', title: 'Breaked', icon: 'Warning', color: '#f59e0b' },
   { key: 'countInvalid', title: 'Invalid', icon: 'CircleClose', color: '#ef4444' },
   { key: 'sumHold', title: 'Сумма холдов', icon: 'Wallet', color: '#0ea5e9' }
-]
-
-const CONVERSION_CARDS = [
-  { key: 'callLead', description: 'Звонок → Лид' },
-  { key: 'leadTarget', description: 'Лид → Целевой' },
-  { key: 'targetResidence', description: 'Целевой → Брокер' },
-  { key: 'targetHold', description: 'Целевой → Hold' },
-  { key: 'breakedDevelop', description: 'Breaked → Перевод' },
-  { key: 'invalidDevelop', description: 'Invalid → Перевод' }
 ]
 
 const CHART_CONFIGS = [
@@ -292,10 +274,10 @@ const CHART_CONFIGS = [
 export default {
   name: 'ROPView',
   components: {
+    AnalyticsFunnel,
     DailyBarChart,
     Histogram,
-    RopCard,
-    RopConversionCard
+    RopCard
   },
   data() {
     const today = dayjs().format('YYYY-MM-DD')
@@ -318,7 +300,6 @@ export default {
         { label: 'Прошлый месяц', value: 'lastMonth' }
       ],
       summaryCards: SUMMARY_CARDS,
-      conversionCards: CONVERSION_CARDS,
       chartConfigs: CHART_CONFIGS,
       brokerConversionColumns: [
         { key: 'holdPercent', label: 'Hold %' },
@@ -441,27 +422,24 @@ export default {
   align-items: flex-end;
   justify-content: space-between;
   gap: 30px;
-  min-height: 170px;
-  padding: clamp(26px, 4vw, 44px);
+  min-height: 0;
+  padding: clamp(22px, 3vw, 30px);
   overflow: hidden;
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at 84% 18%, rgba(101, 218, 255, 0.3), transparent 24%),
-    radial-gradient(circle at 12% 100%, rgba(150, 124, 255, 0.28), transparent 30%),
-    linear-gradient(125deg, #17233f 0%, #313163 48%, #4f46a6 100%);
-  box-shadow: 0 22px 55px rgba(42, 43, 102, 0.22);
-  color: #fff;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 18px;
+  background: var(--el-bg-color);
+  box-shadow: 0 4px 18px rgba(30, 41, 59, 0.045);
+  color: var(--el-text-color-primary);
 }
 
-.analytics-hero::after {
+.analytics-hero::before {
   position: absolute;
-  top: -70px;
-  right: -60px;
-  width: 230px;
-  height: 230px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 50%;
-  box-shadow: 0 0 0 34px rgba(255, 255, 255, 0.04), 0 0 0 70px rgba(255, 255, 255, 0.025);
+  top: 20px;
+  bottom: 20px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #64748b;
   content: '';
 }
 
@@ -480,12 +458,12 @@ export default {
 }
 
 .analytics-hero__eyebrow {
-  color: #a5e9ff;
+  color: var(--el-text-color-secondary);
 }
 
 .analytics-hero h1 {
-  margin: 9px 0 8px;
-  font-size: clamp(30px, 4vw, 48px);
+  margin: 7px 0 7px;
+  font-size: clamp(27px, 3.4vw, 38px);
   letter-spacing: -0.045em;
   line-height: 1;
 }
@@ -493,7 +471,7 @@ export default {
 .analytics-hero p {
   max-width: 640px;
   margin: 0;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--el-text-color-secondary);
   font-size: 15px;
 }
 
@@ -501,10 +479,9 @@ export default {
   flex: 0 0 auto;
   min-width: 220px;
   padding: 17px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 14px;
+  background: var(--el-fill-color-lighter);
 }
 
 .analytics-hero__period span,
@@ -514,7 +491,7 @@ export default {
 
 .analytics-hero__period span {
   margin-bottom: 6px;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--el-text-color-secondary);
   font-size: 11px;
   text-transform: uppercase;
 }
@@ -525,9 +502,9 @@ export default {
 
 .dashboard-card {
   border: 1px solid var(--el-border-color-lighter);
-  border-radius: 20px;
+  border-radius: 18px;
   background: var(--el-bg-color);
-  box-shadow: 0 16px 44px rgba(30, 41, 59, 0.065);
+  box-shadow: 0 4px 18px rgba(30, 41, 59, 0.045);
 }
 
 :deep(.dashboard-card > .el-card__body) {
@@ -570,7 +547,7 @@ export default {
 }
 
 .section-heading__eyebrow {
-  color: #6d5dfc;
+  color: var(--el-text-color-secondary);
 }
 
 .section-heading h2 {
@@ -612,39 +589,25 @@ export default {
   gap: 16px;
 }
 
-.conversions-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(250px, 1fr);
-  gap: 16px;
-}
-
-.conversions-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
 .profit-card {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: space-between;
-  min-height: 150px;
+  gap: 24px;
+  min-height: 112px;
   padding: 22px;
+  border: 1px solid var(--el-border-color-lighter);
   border-radius: 18px;
-  background:
-    radial-gradient(circle at 90% 12%, rgba(255, 255, 255, 0.2), transparent 28%),
-    linear-gradient(135deg, #0f9f78, #096f69);
-  box-shadow: 0 15px 32px rgba(15, 159, 120, 0.22);
-  color: #fff;
+  background: var(--el-fill-color-lighter);
+  color: var(--el-text-color-primary);
 }
 
 .profit-card--negative {
-  background: linear-gradient(135deg, #ef4444, #9f1239);
-  box-shadow: 0 15px 32px rgba(225, 29, 72, 0.2);
+  border-color: rgba(239, 68, 68, 0.28);
 }
 
 .profit-card span {
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--el-text-color-secondary);
   font-size: 11px;
   text-transform: uppercase;
 }
@@ -662,8 +625,13 @@ export default {
 }
 
 .profit-card__result strong {
+  color: #047857;
   font-size: clamp(25px, 3vw, 36px);
   letter-spacing: -0.05em;
+}
+
+.profit-card--negative .profit-card__result strong {
+  color: #b91c1c;
 }
 
 .profit-card__icon {
@@ -672,8 +640,8 @@ export default {
   height: 44px;
   place-items: center;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-regular);
   font-size: 22px;
 }
 
@@ -705,9 +673,6 @@ export default {
     grid-template-columns: 1fr;
   }
 
-  .conversions-layout {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 900px) {
@@ -730,9 +695,6 @@ export default {
     width: 100%;
   }
 
-  .conversions-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (max-width: 560px) {
@@ -754,9 +716,13 @@ export default {
     display: none;
   }
 
-  .metrics-grid,
-  .conversions-grid {
+  .metrics-grid {
     grid-template-columns: 1fr;
+  }
+
+  .profit-card {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>

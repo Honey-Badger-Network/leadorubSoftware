@@ -23,7 +23,7 @@
           :percentage="getPercentFromAll(leads.length)"
           :stroke-width="8"
           :show-text="false"
-          color="#6d5dfc"
+          color="#64748b"
         />
         <small class="statistics-card__share">{{ getPercentFromAll(leads.length) }}% от недели</small>
       </article>
@@ -98,8 +98,8 @@ export default {
   gap: 10px;
   padding: 8px 13px;
   border-radius: 12px;
-  background: rgba(109, 93, 252, 0.09);
-  color: #6d5dfc;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-regular);
 }
 
 .statistics-total span {
@@ -122,15 +122,13 @@ export default {
   padding: 18px;
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 15px;
-  background:
-    linear-gradient(145deg, rgba(109, 93, 252, 0.055), transparent 55%),
-    var(--el-bg-color);
+  background: var(--el-bg-color);
   transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
 .statistics-card:hover {
-  border-color: rgba(109, 93, 252, 0.32);
-  transform: translateY(-2px);
+  border-color: var(--el-border-color);
+  transform: translateY(-1px);
 }
 
 .statistics-card__top {

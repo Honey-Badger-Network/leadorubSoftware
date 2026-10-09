@@ -122,10 +122,10 @@
 <style scoped>
 .home-page__user {
   padding: 10px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--el-border-color-lighter);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-regular);
   font-size: 13px;
   font-weight: 750;
 }
@@ -134,9 +134,9 @@
 .welcome-panel {
   padding: clamp(22px, 3vw, 32px);
   border: 1px solid var(--el-border-color-lighter);
-  border-radius: 20px;
+  border-radius: 16px;
   background: var(--el-bg-color);
-  box-shadow: 0 15px 42px rgba(30, 41, 59, 0.065);
+  box-shadow: 0 4px 18px rgba(30, 41, 59, 0.045);
 }
 
 .admin-panel__heading {
@@ -149,7 +149,7 @@
 
 .admin-panel__heading span,
 .welcome-panel > span {
-  color: #6d5dfc;
+  color: var(--el-text-color-secondary);
   font-size: 11px;
   font-weight: 850;
   letter-spacing: 0.12em;
@@ -198,9 +198,9 @@
 }
 
 .admin-action:hover:not(:disabled) {
-  border-color: rgba(109, 93, 252, 0.45);
-  box-shadow: 0 12px 26px rgba(30, 41, 59, 0.09);
-  transform: translateY(-2px);
+  border-color: var(--el-border-color);
+  box-shadow: 0 6px 18px rgba(30, 41, 59, 0.065);
+  transform: translateY(-1px);
 }
 
 .admin-action:disabled {
@@ -214,8 +214,8 @@
   height: 35px;
   place-items: center;
   border-radius: 11px;
-  background: rgba(109, 93, 252, 0.1);
-  color: #6d5dfc;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-regular);
   font-size: 11px;
   font-weight: 850;
 }
@@ -236,7 +236,7 @@
 }
 
 .admin-action__arrow {
-  color: #6d5dfc;
+  color: var(--el-text-color-secondary);
   font-size: 20px;
 }
 

@@ -1,11 +1,25 @@
 <template>
   <el-container class="main-menu">
-    <el-aside class="app-sidebar" :width="isShowMenu ? fullSidebarWidth : miniSizeSidebar" v-if="showSidebar && !isLoading">
-      <el-menu class="app-sidebar__menu" :default-active="$route.path" background-color="transparent" text-color="#cbd5e1" active-text-color="#fff" router>
+    <el-aside
+      v-if="showSidebar && !isLoading"
+      class="app-sidebar"
+      :class="{ 'app-sidebar--collapsed': !isShowMenu && !isMobile }"
+      :width="isShowMenu ? fullSidebarWidth : miniSizeSidebar"
+    >
+      <el-menu
+        class="app-sidebar__menu"
+        :default-active="$route.path"
+        :collapse="!isShowMenu && !isMobile"
+        :collapse-transition="false"
+        background-color="transparent"
+        text-color="#cbd5e1"
+        active-text-color="#fff"
+        router
+      >
 
         <div
           class="app-sidebar__brand"
-          :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isShowMenu ? '0 20px' : '0 15px' }"
+          :style="{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isShowMenu ? '0 20px' : '0' }"
         >
 
           <div style="display: flex; align-items: center;">
@@ -126,7 +140,7 @@ export default {
     },
     // ширина свернутого меню (мини версия для мобилки : десктоп)
     miniSizeSidebar() {
-      return this.isMobile ? '0px' : '60px'
+      return this.isMobile ? '0px' : '72px'
     },
     showNotMobileFull() {
       let isShow = true

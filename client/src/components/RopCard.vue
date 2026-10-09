@@ -1,5 +1,5 @@
 <template>
-  <el-card class="metric-card" shadow="never" :style="{ '--metric-accent': iconColor }">
+  <el-card class="metric-card" shadow="never">
     <div class="metric-card__header">
       <span>{{ title }}</span>
       <span class="metric-card__icon">
@@ -74,7 +74,7 @@ export default {
     },
     iconColor: {
       type: String,
-      default: '#6d5dfc'
+      default: '#64748b'
     },
     prevValue: {
       type: Number,
@@ -103,16 +103,14 @@ export default {
   overflow: hidden;
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 16px;
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--metric-accent) 8%, transparent), transparent 58%),
-    var(--el-bg-color);
+  background: var(--el-bg-color);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .metric-card:hover {
-  border-color: color-mix(in srgb, var(--metric-accent) 40%, var(--el-border-color));
-  box-shadow: 0 12px 28px rgba(30, 41, 59, 0.1);
-  transform: translateY(-2px);
+  border-color: var(--el-border-color);
+  box-shadow: 0 6px 18px rgba(30, 41, 59, 0.065);
+  transform: translateY(-1px);
 }
 
 .metric-card__header,
@@ -136,8 +134,8 @@ export default {
   height: 34px;
   place-items: center;
   border-radius: 11px;
-  background: color-mix(in srgb, var(--metric-accent) 14%, transparent);
-  color: var(--metric-accent);
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-regular);
   font-size: 17px;
 }
 

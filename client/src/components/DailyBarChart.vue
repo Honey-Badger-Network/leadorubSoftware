@@ -185,7 +185,7 @@ export default {
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 18px;
   background: var(--el-bg-color);
-  box-shadow: 0 14px 36px rgba(30, 41, 59, 0.07);
+  box-shadow: 0 4px 18px rgba(30, 41, 59, 0.045);
 }
 
 .chart-panel__heading {
@@ -197,7 +197,7 @@ export default {
 }
 
 .chart-panel__eyebrow {
-  color: #6d5dfc;
+  color: var(--el-text-color-secondary);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.12em;

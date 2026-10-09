@@ -31,7 +31,7 @@
         <el-table-column prop="name" label="Имя"></el-table-column>
         <el-table-column prop="rankName" label="Роль" min-width="110">
             <template #default="{ row }">
-                <el-tag :type="row.rankName === 'admin' ? 'danger' : 'primary'" round>
+                <el-tag type="info" effect="plain" round>
                     {{ row.rankName }}
                 </el-tag>
             </template>
@@ -44,8 +44,8 @@
         <el-table-column label="Действия" min-width="330" fixed="right">
             <template #default="{ row }">
                 <div class="user-actions">
-                    <el-button type="primary" plain @click="editUser(row)">Редактировать</el-button>
-                    <el-button type="success" plain @click="openModalToAvatar(row)">Аватар</el-button>
+                    <el-button plain @click="editUser(row)">Редактировать</el-button>
+                    <el-button plain @click="openModalToAvatar(row)">Аватар</el-button>
                     <el-button type="danger" plain @click="deleteUser(row._id)">Удалить</el-button>
                 </div>
             </template>

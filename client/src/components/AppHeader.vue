@@ -77,8 +77,8 @@
     margin-right: 7px;
     place-items: center;
     border-radius: 9px;
-    background: linear-gradient(135deg, #6d5dfc, #4a90f5);
-    color: #fff;
+    background: var(--el-fill-color);
+    color: var(--el-text-color-regular);
 }
 
 .offer-row {

@@ -46,9 +46,9 @@ export default {
   margin-bottom: 20px;
   padding: clamp(20px, 2.6vw, 28px);
   border: 1px solid var(--el-border-color-lighter);
-  border-radius: 20px;
+  border-radius: 16px;
   background: var(--el-bg-color);
-  box-shadow: 0 14px 40px rgba(30, 41, 59, 0.06);
+  box-shadow: 0 4px 18px rgba(30, 41, 59, 0.045);
 }
 
 .page-panel--compact {
@@ -66,7 +66,7 @@ export default {
 }
 
 .page-panel__eyebrow {
-  color: #6d5dfc;
+  color: var(--el-text-color-secondary);
   font-size: 10px;
   font-weight: 850;
   letter-spacing: 0.13em;

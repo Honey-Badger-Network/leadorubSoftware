@@ -173,7 +173,7 @@
 }
 
 .salary-total {
-    color: #6d5dfc;
+    color: var(--el-text-color-primary);
 }
 
 .salary-positive {

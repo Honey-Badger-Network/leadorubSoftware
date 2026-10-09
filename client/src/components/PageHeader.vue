@@ -35,31 +35,28 @@ export default {
 .app-page-header {
   position: relative;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
-  min-height: 126px;
-  margin-bottom: 20px;
-  padding: clamp(24px, 3.5vw, 38px);
+  min-height: 0;
+  margin-bottom: 18px;
+  padding: clamp(20px, 2.8vw, 28px);
   overflow: hidden;
-  border-radius: 22px;
-  background:
-    radial-gradient(circle at 86% 0%, rgba(89, 212, 255, 0.28), transparent 28%),
-    radial-gradient(circle at 18% 110%, rgba(141, 113, 255, 0.26), transparent 35%),
-    linear-gradient(125deg, #17233f 0%, #303060 52%, #4d45a2 100%);
-  box-shadow: 0 18px 48px rgba(42, 43, 102, 0.18);
-  color: #fff;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 16px;
+  background: var(--el-bg-color);
+  box-shadow: 0 4px 18px rgba(30, 41, 59, 0.045);
+  color: var(--el-text-color-primary);
 }
 
-.app-page-header::after {
+.app-page-header::before {
   position: absolute;
-  top: -88px;
-  right: -42px;
-  width: 220px;
-  height: 220px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 50%;
-  box-shadow: 0 0 0 35px rgba(255, 255, 255, 0.035), 0 0 0 72px rgba(255, 255, 255, 0.02);
+  top: 20px;
+  bottom: 20px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #64748b;
   content: '';
 }
 
@@ -70,7 +67,7 @@ export default {
 }
 
 .app-page-header__eyebrow {
-  color: #a5e9ff;
+  color: var(--el-text-color-secondary);
   font-size: 11px;
   font-weight: 850;
   letter-spacing: 0.13em;
@@ -78,8 +75,8 @@ export default {
 }
 
 .app-page-header h1 {
-  margin: 8px 0 7px;
-  font-size: clamp(27px, 3.2vw, 40px);
+  margin: 6px 0 6px;
+  font-size: clamp(25px, 3vw, 34px);
   letter-spacing: -0.045em;
   line-height: 1;
 }
@@ -87,7 +84,7 @@ export default {
 .app-page-header p {
   max-width: 720px;
   margin: 0;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--el-text-color-secondary);
   font-size: 14px;
   line-height: 1.5;
 }
@@ -104,7 +101,7 @@ export default {
     align-items: flex-start;
     flex-direction: column;
     min-height: 0;
-    border-radius: 18px;
+    border-radius: 14px;
   }
 
   .app-page-header__actions {
