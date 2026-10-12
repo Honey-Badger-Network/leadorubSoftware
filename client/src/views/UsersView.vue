@@ -15,21 +15,21 @@
       </template>
     <el-table :data="usersArray" style="width: 100%;">
 
-        <el-table-column prop="email" label="Логин">
+        <el-table-column prop="email" label="Логин" width="250">
             <template #default="{ row }">
                 <div class="login-container">
                     <!-- сдесь apiBase для того чтобы если прод то дргуой или локалхост то тоже другой базоый АйПи будет -->
-                    <img v-if="row.avatar" class="user-avatar" :src="`${apiBase}public/avatars/${row.avatar}`">
+                    <!-- <img v-if="row.avatar" class="user-avatar" :src="`${apiBase}public/avatars/${row.avatar}`">
                     <el-icon v-if="!row.avatar" class="user-icon">
                         <User class="icon-self" />
-                    </el-icon>
+                    </el-icon> -->
                     <span class="login-email">{{ row.email }}</span>
                 </div>
             </template>
         </el-table-column>
 
-        <el-table-column prop="name" label="Имя"></el-table-column>
-        <el-table-column prop="rankName" label="Роль" min-width="110">
+        <el-table-column prop="name" width="200" label="Имя"></el-table-column>
+        <el-table-column prop="rankName" label="Роль" width="110">
             <template #default="{ row }">
                 <el-tag type="info" effect="plain" round>
                     {{ row.rankName }}
