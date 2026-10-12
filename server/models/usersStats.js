@@ -1,31 +1,36 @@
 const { Schema, model } = require('mongoose');
 
+const numberWithDefault = {
+    type: Number,
+    default: 0
+}
+
 const usersStats = new Schema({
     email: String,
     name: String,
     date: String,
-    countCalls: Number,
+    countCalls: numberWithDefault,
 
-    countCallsWithMan: Number,
-    countCallsManyMinute: Number,
-    countCallsResultReCall: Number,
+    countCallsWithMan: numberWithDefault,
+    countCallsManyMinute: numberWithDefault,
+    countCallsResultReCall: numberWithDefault,
 
-    countCallsWithProfile: Number,
-    countLeads: Number,
-    countTargets: Number,
-    countHolds: Number,
-    sumHold: Number,
-    salary: Number,
-    bonus: Number,
-    scriptBonus: Number,
-    clear: Number,
-    brokerSalary: Number,
+    countCallsWithProfile: numberWithDefault,
+    countLeads: numberWithDefault,
+    countTargets: numberWithDefault,
+    countHolds: numberWithDefault,
+    sumHold: numberWithDefault,
+    salary: numberWithDefault,
+    bonus: numberWithDefault,
+    scriptBonus: numberWithDefault,
+    clear: numberWithDefault,
+    brokerSalary: numberWithDefault,
     user: {
         type: Schema.Types.ObjectId,
         ref: 'usersModel',
         required: false
     },
-    salaryToLeads: Number
+    salaryToLeads: numberWithDefault
 })
 
 module.exports = model('usersStats', usersStats);

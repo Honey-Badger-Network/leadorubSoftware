@@ -1,5 +1,31 @@
-export function getCardDataToSumAggr (usersStatsDataArray) {
-    let totalObject = {
+const USER_STATS_SUM_KEYS = [
+    'countCalls',
+    'countCallsWithMan',
+    'countCallsManyMinute',
+    'countCallsResultReCall',
+    'countLeads',
+    'countTargets',
+    'clear'
+]
+
+function toFiniteNumber (value) {
+    const number = Number(value)
+
+    return Number.isFinite(number) ? number : 0
+}
+
+function getSafePercent (numerator, denominator) {
+    const safeDenominator = toFiniteNumber(denominator)
+
+    if (safeDenominator === 0) {
+        return 0
+    }
+
+    return Math.round(toFiniteNumber(numerator) / safeDenominator * 100)
+}
+
+export function getCardDataToSumAggr (usersStatsDataArray = []) {
+    const totalObject = {
         countCalls: 0,
 
         countCallsWithMan: 0,
@@ -11,23 +37,17 @@ export function getCardDataToSumAggr (usersStatsDataArray) {
         clear: 0
     }
 
-    usersStatsDataArray.forEach((row) => {
-        totalObject.countCalls += row.countCalls
-
-        totalObject.countCallsWithMan += row.countCallsWithMan
-        totalObject.countCallsManyMinute += row.countCallsManyMinute
-        totalObject.countCallsResultReCall += row.countCallsResultReCall
-
-        totalObject.countLeads += row.countLeads
-        totalObject.countTargets += row.countTargets
-        totalObject.clear += row.clear
+    usersStatsDataArray.forEach((row = {}) => {
+        USER_STATS_SUM_KEYS.forEach((key) => {
+            totalObject[key] += toFiniteNumber(row[key])
+        })
     })
 
     return totalObject
 }
 
-export function getCardDataFromLeadsSumAggr (leadsDataArray) {
-    let totalObject = {
+export function getCardDataFromLeadsSumAggr (leadsDataArray = []) {
+    const totalObject = {
         countResidence: 0,
         countCreated: 0,
         countHold: 0,
@@ -39,10 +59,10 @@ export function getCardDataFromLeadsSumAggr (leadsDataArray) {
     leadsDataArray.forEach((lead) => {
         totalObject.countResidence += lead.broker === null ? 0 : 1
         totalObject.countCreated += lead.residenceStatus === 'created' ? 1 : 0
-        totalObject.countHold += Number(lead.countHold) || 0
+        totalObject.countHold += toFiniteNumber(lead.countHold)
         totalObject.countInvalid += lead.residenceStatus === 'invalid' ? 1 : 0
         totalObject.countBreaked += lead.residenceStatus === 'breaked' ? 1 : 0
-        totalObject.sumHold += Number(lead.price) || 0
+        totalObject.sumHold += toFiniteNumber(lead.price)
     })
 
     return totalObject
@@ -54,21 +74,21 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
 
     usersStatsArr.forEach((row) => {
         if (aggregatedDataObject[row.name]) {
-            aggregatedDataObject[row.name].countCalls += row.countCalls
-            aggregatedDataObject[row.name].countLeads += row.countLeads
-            aggregatedDataObject[row.name].countTargets += row.countTargets
-            aggregatedDataObject[row.name].countHolds += row.countHolds
-            aggregatedDataObject[row.name].sumHold += row.sumHold
+            aggregatedDataObject[row.name].countCalls += toFiniteNumber(row.countCalls)
+            aggregatedDataObject[row.name].countLeads += toFiniteNumber(row.countLeads)
+            aggregatedDataObject[row.name].countTargets += toFiniteNumber(row.countTargets)
+            aggregatedDataObject[row.name].countHolds += toFiniteNumber(row.countHolds)
+            aggregatedDataObject[row.name].sumHold += toFiniteNumber(row.sumHold)
         } else {
             aggregatedDataObject[row.name] = {
                 name: row.name,
-                countCalls: row.countCalls,
-                countLeads: row.countLeads,
-                countTargets: row.countTargets,
-                countHolds: row.countHolds,
-                sumHold: row.sumHold,
-                salary: row.salary,
-                clear: row.clear,
+                countCalls: toFiniteNumber(row.countCalls),
+                countLeads: toFiniteNumber(row.countLeads),
+                countTargets: toFiniteNumber(row.countTargets),
+                countHolds: toFiniteNumber(row.countHolds),
+                sumHold: toFiniteNumber(row.sumHold),
+                salary: toFiniteNumber(row.salary),
+                clear: toFiniteNumber(row.clear),
                 countCreated: 0,
                 countBreaked: 0,
                 countInvalid: 0
@@ -94,9 +114,9 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
 
     aggregatedDataArray.forEach((user) => {
         user.conversion = {
-            callLead: Math.round(user.countLeads / user.countCalls * 100),
-            leadTarget: Math.round(user.countTargets / user.countLeads * 100),
-            targetHold: Math.round(user.countHolds / user.countTargets * 100),
+            callLead: getSafePercent(user.countLeads, user.countCalls),
+            leadTarget: getSafePercent(user.countTargets, user.countLeads),
+            targetHold: getSafePercent(user.countHolds, user.countTargets),
         }
 
         let leadsToThisLidorub = leadsDataArray.filter((lead) => {
@@ -122,9 +142,9 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
     })
 
     totalLidorubValue.conversion = {
-        callLead: Math.round(totalLidorubValue.countLeads / totalLidorubValue.countCalls * 100),
-        leadTarget: Math.round(totalLidorubValue.countTargets / totalLidorubValue.countLeads * 100),
-        targetHold: Math.round(totalLidorubValue.countHolds / totalLidorubValue.countTargets * 100)
+        callLead: getSafePercent(totalLidorubValue.countLeads, totalLidorubValue.countCalls),
+        leadTarget: getSafePercent(totalLidorubValue.countTargets, totalLidorubValue.countLeads),
+        targetHold: getSafePercent(totalLidorubValue.countHolds, totalLidorubValue.countTargets)
     }
 
     aggregatedDataArray.push(totalLidorubValue)
@@ -144,8 +164,8 @@ export function getBrokersAggregatedData (leadsArray) {
             brokerAggregatedObject[lead.broker].countCreated += lead.residenceStatus === 'created' ? 1 : 0
             brokerAggregatedObject[lead.broker].countBreaked += lead.residenceStatus === 'breaked' ? 1 : 0
             brokerAggregatedObject[lead.broker].countInvalid += lead.residenceStatus === 'invalid' ? 1 : 0
-            brokerAggregatedObject[lead.broker].countHold += lead.countHold
-            brokerAggregatedObject[lead.broker].sumHold += lead.price
+            brokerAggregatedObject[lead.broker].countHold += toFiniteNumber(lead.countHold)
+            brokerAggregatedObject[lead.broker].sumHold += toFiniteNumber(lead.price)
         } else {
             brokerAggregatedObject[lead.broker] = {
                 broker: lead.broker,
@@ -153,8 +173,8 @@ export function getBrokersAggregatedData (leadsArray) {
                 countCreated: lead.residenceStatus === 'created' ? 1 : 0,
                 countBreaked: lead.residenceStatus === 'breaked' ? 1 : 0,
                 countInvalid: lead.residenceStatus === 'invalid' ? 1 : 0,
-                countHold: lead.countHold,
-                sumHold: lead.price
+                countHold: toFiniteNumber(lead.countHold),
+                sumHold: toFiniteNumber(lead.price)
             }
         }
     })
@@ -205,8 +225,8 @@ export function getPercentByCardStats(currentObject, prevObject) {
 
     for (const key in currentObject) {
         if (currentObject.hasOwnProperty(key) && prevObject.hasOwnProperty(key)) {
-            const currentValue = currentObject[key]
-            const prevValue = prevObject[key]
+            const currentValue = toFiniteNumber(currentObject[key])
+            const prevValue = toFiniteNumber(prevObject[key])
 
             if (prevValue !== 0) {
                 percentData[`${key}Percent`] = Math.round(((currentValue - prevValue) / prevValue) * 100)
@@ -221,12 +241,18 @@ export function getPercentByCardStats(currentObject, prevObject) {
 
 export function getConversionValues(currentObject) {
     const conversionData = {
-        callLead: Math.round(currentObject.countLeads / currentObject.countCalls * 100),
-        leadTarget: Math.round(currentObject.countTargets / currentObject.countLeads * 100),
-        targetResidence: Math.round(currentObject.countResidence / currentObject.countTargets * 100),
-        targetHold: Math.round(currentObject.countHold / currentObject.countTargets * 100),
-        breakedDevelop: Math.round((currentObject.countResidence - currentObject.countBreaked) / currentObject.countBreaked * 100),
-        invalidDevelop: Math.round((currentObject.countResidence - currentObject.countBreaked) / currentObject.countInvalid * 100)
+        callLead: getSafePercent(currentObject.countLeads, currentObject.countCalls),
+        leadTarget: getSafePercent(currentObject.countTargets, currentObject.countLeads),
+        targetResidence: getSafePercent(currentObject.countResidence, currentObject.countTargets),
+        targetHold: getSafePercent(currentObject.countHold, currentObject.countTargets),
+        breakedDevelop: getSafePercent(
+            toFiniteNumber(currentObject.countResidence) - toFiniteNumber(currentObject.countBreaked),
+            currentObject.countBreaked
+        ),
+        invalidDevelop: getSafePercent(
+            toFiniteNumber(currentObject.countResidence) - toFiniteNumber(currentObject.countBreaked),
+            currentObject.countInvalid
+        )
     }
     return conversionData
 }
@@ -256,11 +282,11 @@ export function getDailyDynamics(usersStatsDataArray, leadsDataArray, datesArray
             return
         }
 
-        day.countCalls += Number(row.countCalls) || 0
-        day.countCallsManyMinute += Number(row.countCallsManyMinute) || 0
-        day.countCallsResultReCall += Number(row.countCallsResultReCall) || 0
-        day.countLeads += Number(row.countLeads) || 0
-        day.countTargets += Number(row.countTargets) || 0
+        day.countCalls += toFiniteNumber(row.countCalls)
+        day.countCallsManyMinute += toFiniteNumber(row.countCallsManyMinute)
+        day.countCallsResultReCall += toFiniteNumber(row.countCallsResultReCall)
+        day.countLeads += toFiniteNumber(row.countLeads)
+        day.countTargets += toFiniteNumber(row.countTargets)
     })
 
     leadsDataArray.forEach((lead) => {
@@ -271,7 +297,7 @@ export function getDailyDynamics(usersStatsDataArray, leadsDataArray, datesArray
         }
 
         day.countCreated += lead.residenceStatus === 'created' ? 1 : 0
-        day.countHold += Number(lead.countHold) || 0
+        day.countHold += toFiniteNumber(lead.countHold)
         day.countBreaked += lead.residenceStatus === 'breaked' ? 1 : 0
         day.countInvalid += lead.residenceStatus === 'invalid' ? 1 : 0
     })
