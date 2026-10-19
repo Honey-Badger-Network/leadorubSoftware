@@ -1,5 +1,6 @@
 const USER_STATS_SUM_KEYS = [
     'countCalls',
+    'countMissedCalls',
     'countCallsWithMan',
     'countCallsManyMinute',
     'countCallsResultReCall',
@@ -27,6 +28,7 @@ function getSafePercent (numerator, denominator) {
 export function getCardDataToSumAggr (usersStatsDataArray = []) {
     const totalObject = {
         countCalls: 0,
+        countMissedCalls: 0,
 
         countCallsWithMan: 0,
         countCallsManyMinute: 0,
@@ -84,6 +86,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
     usersStatsArr.forEach((row) => {
         if (aggregatedDataObject[row.name]) {
             aggregatedDataObject[row.name].countCalls += toFiniteNumber(row.countCalls)
+            aggregatedDataObject[row.name].countMissedCalls += toFiniteNumber(row.countMissedCalls)
             aggregatedDataObject[row.name].countCallsManyMinute += toFiniteNumber(row.countCallsManyMinute)
             aggregatedDataObject[row.name].countLeads += toFiniteNumber(row.countLeads)
             aggregatedDataObject[row.name].countTargets += toFiniteNumber(row.countTargets)
@@ -93,6 +96,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
             aggregatedDataObject[row.name] = {
                 name: row.name,
                 countCalls: toFiniteNumber(row.countCalls),
+                countMissedCalls: toFiniteNumber(row.countMissedCalls),
                 countCallsManyMinute: toFiniteNumber(row.countCallsManyMinute),
                 countLeads: toFiniteNumber(row.countLeads),
                 countTargets: toFiniteNumber(row.countTargets),
@@ -112,6 +116,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
     let totalLidorubValue = {
         name: 'Итого',
         countCalls: 0,
+        countMissedCalls: 0,
         countCallsManyMinute: 0,
         countLeads: 0,
         countTargets: 0,
@@ -142,6 +147,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
         })
 
         totalLidorubValue.countCalls += user.countCalls
+        totalLidorubValue.countMissedCalls += user.countMissedCalls
         totalLidorubValue.countCallsManyMinute += user.countCallsManyMinute
         totalLidorubValue.countLeads += user.countLeads
         totalLidorubValue.countTargets += user.countTargets

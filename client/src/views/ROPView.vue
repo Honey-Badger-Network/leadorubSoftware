@@ -138,6 +138,7 @@
         <el-table-column label="#" type="index" width="50" />
         <el-table-column label="Сотрудник" prop="name" min-width="170" fixed="left" />
         <el-table-column label="Звонки" prop="countCalls" min-width="95" />
+        <el-table-column label="Пропущеные" prop="countMissedCalls"></el-table-column>
         <el-table-column label="Звонки 60+" prop="countCallsManyMinute" min-width="95" />
         <el-table-column label="Цена звонка">
           <template #default="{ row }">
@@ -238,6 +239,7 @@ dayjs.locale('ru')
 
 const SUMMARY_CARDS = [
   { key: 'countCalls', title: 'Звонки', icon: 'Phone', color: '#5b7cfa' },
+  { key: 'countMissedCalls', title: 'Пропущеные', icon: 'Phone', color: '#1b9fffa' },
   { key: 'countCallsWithMan', title: 'Разговоры с человеком', icon: 'Phone', color: '#18a77a' },
   { key: 'countCallsManyMinute', title: 'Разговоры 60+ сек', icon: 'Phone', color: '#eab308' },
   { key: 'countCallsResultReCall', title: 'Перезвонить', icon: 'Phone', color: '#f97316' },

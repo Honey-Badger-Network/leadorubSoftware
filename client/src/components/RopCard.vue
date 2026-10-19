@@ -10,7 +10,7 @@
       </el-button>
 
       <span v-else class="metric-card__icon">
-        <el-icon>
+        <el-icon :style="{ 'color': iconColor }">
           <component :is="iconName" />
         </el-icon>
       </span>
