@@ -65,6 +65,7 @@
       </div>
 
       <div class="metrics-grid">
+
         <RopCard
           v-for="card in summaryCards"
           :key="card.key"
@@ -74,6 +75,7 @@
           :prev-value="cardsData.prevValues?.[card.key] || 0"
           :count="cardsData[card.key] || 0"
           :percent="cardsData.percent?.[`${card.key}Percent`] || 0"
+          :callsDataArray="cardsData.usersCallsInfo"
         />
       </div>
     </el-card>
@@ -136,6 +138,17 @@
         <el-table-column label="#" type="index" width="50" />
         <el-table-column label="Сотрудник" prop="name" min-width="170" fixed="left" />
         <el-table-column label="Звонки" prop="countCalls" min-width="95" />
+        <el-table-column label="Звонки 60+" prop="countCallsManyMinute" min-width="95" />
+        <el-table-column label="Цена звонка">
+          <template #default="{ row }">
+            <span>15</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Сума денег">
+          <template #default="{ row }">
+            <span>{{ row.countCallsManyMinute * 15 }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="Лиды" prop="countLeads" min-width="90" />
         <el-table-column label="Целевые (ОКК)" prop="countTargets" min-width="135" />
         <el-table-column label="Created" prop="countCreated" min-width="105" />

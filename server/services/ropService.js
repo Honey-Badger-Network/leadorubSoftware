@@ -31,17 +31,26 @@ export function getCardDataToSumAggr (usersStatsDataArray = []) {
         countCallsWithMan: 0,
         countCallsManyMinute: 0,
         countCallsResultReCall: 0,
-
         countLeads: 0,
         countTargets: 0,
-        clear: 0
+        clear: 0,
+
+        usersCallsInfo: []
     }
 
     usersStatsDataArray.forEach((row = {}) => {
         USER_STATS_SUM_KEYS.forEach((key) => {
             totalObject[key] += toFiniteNumber(row[key])
         })
+        totalObject.usersCallsInfo.push({
+            userName: row.name,
+            countCallsWithMan: row.countCallsWithMan,
+            countCallsManyMinute: row.countCallsManyMinute,
+            countCallsResultReCall: row.countCallsResultReCall,
+        })
     })
+
+    // console.log(totalObject, 'totalObject totalObject totalObject')
 
     return totalObject
 }
@@ -75,6 +84,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
     usersStatsArr.forEach((row) => {
         if (aggregatedDataObject[row.name]) {
             aggregatedDataObject[row.name].countCalls += toFiniteNumber(row.countCalls)
+            aggregatedDataObject[row.name].countCallsManyMinute += toFiniteNumber(row.countCallsManyMinute)
             aggregatedDataObject[row.name].countLeads += toFiniteNumber(row.countLeads)
             aggregatedDataObject[row.name].countTargets += toFiniteNumber(row.countTargets)
             aggregatedDataObject[row.name].countHolds += toFiniteNumber(row.countHolds)
@@ -83,6 +93,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
             aggregatedDataObject[row.name] = {
                 name: row.name,
                 countCalls: toFiniteNumber(row.countCalls),
+                countCallsManyMinute: toFiniteNumber(row.countCallsManyMinute),
                 countLeads: toFiniteNumber(row.countLeads),
                 countTargets: toFiniteNumber(row.countTargets),
                 countHolds: toFiniteNumber(row.countHolds),
@@ -101,6 +112,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
     let totalLidorubValue = {
         name: 'Итого',
         countCalls: 0,
+        countCallsManyMinute: 0,
         countLeads: 0,
         countTargets: 0,
         countHolds: 0,
@@ -130,6 +142,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
         })
 
         totalLidorubValue.countCalls += user.countCalls
+        totalLidorubValue.countCallsManyMinute += user.countCallsManyMinute
         totalLidorubValue.countLeads += user.countLeads
         totalLidorubValue.countTargets += user.countTargets
         totalLidorubValue.countHolds += user.countHolds
