@@ -240,6 +240,20 @@ async function getSkorozvonCalls(gte, lte) {
                 params: userParams,
             });
 
+            const responseCallsMissed = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/calls', {
+                headers: { Authorization: `Bearer ${token}` },
+                params: {
+                    limit: 100,
+                    'date[from]': dayjs(gte).format('YYYY-MM-DD'),
+                    'date[to]': dayjs(lte).format('YYYY-MM-DD'),
+                    'duration[from]': 1,
+                    type: 'missed',
+                    page: 1,
+                    offset: 0,
+                    users: user.id
+                }
+            });
+
             countCallsManyMinute = 0 // кол-во звонков где общался больше минуты
             countCallsWithMan = 0 // кол-во звонков гед общался не с роботом
             countCallsResultReCall = 0 // кол-во звонков перезвонить
@@ -248,8 +262,6 @@ async function getSkorozvonCalls(gte, lte) {
 
                 const [minutes, seconds] = call.duration.split(':').map(Number);
                 const durationInSeconds = minutes * 60 + seconds;
-
-                // console.log(user.name, call.result, call.duration, '*********', durationInSeconds)
 
                 if (durationInSeconds > 60) {
                     countCallsManyMinute += 1;
@@ -270,6 +282,7 @@ async function getSkorozvonCalls(gte, lte) {
                 email: user.email,
                 name: user.name,
                 countCalls: responseCalls.data.data.total,
+                countMissedCalls: responseCallsMissed.data.data.total,
                 countCallsWithMan,
                 countCallsManyMinute,
                 countCallsResultReCall
