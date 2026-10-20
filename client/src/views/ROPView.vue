@@ -135,7 +135,7 @@
       </div>
 
       <el-table :data="lidorubsData" stripe table-layout="auto">
-        <el-table-column label="#" type="index" width="50" />
+        <!-- <el-table-column label="#" type="index" width="50" /> -->
         <el-table-column label="Сотрудник" prop="name" min-width="170" fixed="left" />
         
         <el-table-column label="Статистика звонков" align="center">
@@ -213,29 +213,31 @@
       </div>
 
       <el-table :data="brokersData" stripe table-layout="auto">
-        <el-table-column label="#" type="index" width="50" />
+        <!-- <el-table-column label="#" type="index" width="50" /> -->
         <el-table-column label="Брокер" min-width="180" fixed="left">
           <template #default="{ row }">
             {{ row.broker || 'Не передано брокеру' }}
           </template>
         </el-table-column>
-        <el-table-column label="Получено лидов" prop="countLeads" min-width="125" />
-        <el-table-column label="Created" prop="countCreated" min-width="95" />
-        <el-table-column label="Hold" prop="countHold" min-width="85" />
-        <el-table-column label="Breaked" prop="countBreaked" min-width="95" />
-        <el-table-column label="Invalid" prop="countInvalid" min-width="90" />
-        <el-table-column
-          v-for="column in brokerConversionColumns"
-          :key="column.key"
-          :label="column.label"
-          min-width="105"
-        >
-          <template #default="{ row }">
-            <el-tag :type="getTypeColorByPercent(row.conversion[column.key])" round>
-              {{ row.conversion[column.key] || 0 }}%
-            </el-tag>
-          </template>
+
+        <el-table-column label="статистика по лидам" align="center">
+          <el-table-column label="Получено лидов" prop="countLeads" min-width="125" />
+          <el-table-column label="Created" prop="countCreated" min-width="95" />
+          <el-table-column label="Hold" prop="countHold" min-width="85" />
+          <el-table-column label="Breaked" prop="countBreaked" min-width="95" />
+          <el-table-column label="Invalid" prop="countInvalid" min-width="90" />
         </el-table-column>
+
+
+        <el-table-column label="Конверсии" align="center">
+          <el-table-column v-for="column in brokerConversionColumns" :key="column.key" :label="column.label" min-width="105">
+            <template #default="{ row }">
+              <el-tag :type="getTypeColorByPercent(row.conversion[column.key])" round>{{ row.conversion[column.key] || 0 }}%</el-tag>
+            </template>
+          </el-table-column>
+        </el-table-column>
+
+
         <el-table-column label="Сумма холдов" prop="sumHold" min-width="130" />
       </el-table>
     </el-card>
