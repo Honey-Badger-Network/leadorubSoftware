@@ -137,46 +137,61 @@
       <el-table :data="lidorubsData" stripe table-layout="auto">
         <el-table-column label="#" type="index" width="50" />
         <el-table-column label="Сотрудник" prop="name" min-width="170" fixed="left" />
-        <el-table-column label="Звонки" prop="countCalls" min-width="95" />
-        <el-table-column label="Пропущеные" prop="countMissedCalls"></el-table-column>
-        <el-table-column label="Звонки 60+" prop="countCallsManyMinute" min-width="95" />
-        <el-table-column label="Цена звонка">
-          <template #default="{ row }">
-            <span>15</span>
-          </template>
+        
+        <el-table-column label="Статистика звонков" align="center">
+          <el-table-column label="Всего" prop="countCalls" min-width="95" />
+          <el-table-column label="Пропущенные" prop="countMissedCalls" />
+          <el-table-column label="Разговоры с человеком" prop="countCallsWithMan" />
+          <el-table-column label="Перезвонить" prop="countCallsResultReCall" />
         </el-table-column>
-        <el-table-column label="Сума денег">
-          <template #default="{ row }">
-            <span>{{ row.countCallsManyMinute * 15 }}</span>
-          </template>
+
+        <el-table-column label="Звонки 60+" align="center">
+          <el-table-column label="Всего" prop="countCallsManyMinute" min-width="95" />
+          <el-table-column label="Цена звонка">
+            <template #default="{ row }">
+              <span>15</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="Сума денег">
+            <template #default="{ row }">
+              <span>{{ row.countCallsManyMinute * 15 }}</span>
+            </template>
+          </el-table-column>
         </el-table-column>
-        <el-table-column label="Лиды" prop="countLeads" min-width="90" />
-        <el-table-column label="Целевые (ОКК)" prop="countTargets" min-width="135" />
-        <el-table-column label="Created" prop="countCreated" min-width="105" />
-        <el-table-column label="Hold" prop="countHolds" min-width="85" />
-        <el-table-column label="Breaked" prop="countBreaked" min-width="95" />
-        <el-table-column label="Invalid" prop="countInvalid" min-width="90" />
-        <el-table-column label="Лид / звонки" min-width="125">
-          <template #default="{ row }">
-            <el-tag :type="getTypeColorByPercent(row.conversion.callLead)" round>
-              {{ row.conversion.callLead || 0 }}%
-            </el-tag>
-          </template>
+
+        <el-table-column label="Статистика по лидам" align="center">
+          <el-table-column label="Всего" prop="countLeads" min-width="90" />
+          <el-table-column label="Целевые (ОКК)" prop="countTargets" min-width="135" />
+          <el-table-column label="Created" prop="countCreated" min-width="105" />
+          <el-table-column label="Hold" prop="countHolds" min-width="85" />
+          <el-table-column label="Breaked" prop="countBreaked" min-width="95" />
+          <el-table-column label="Invalid" prop="countInvalid" min-width="90" />
         </el-table-column>
-        <el-table-column label="Целевой / лиды" min-width="135">
-          <template #default="{ row }">
-            <el-tag :type="getTypeColorByPercent(row.conversion.leadTarget)" round>
-              {{ row.conversion.leadTarget || 0 }}%
-            </el-tag>
-          </template>
+
+        <el-table-column label="Конверсии статистика" align="center">
+          <el-table-column label="Лид / звонки" min-width="125">
+            <template #default="{ row }">
+              <el-tag :type="getTypeColorByPercent(row.conversion.callLead)" round>
+                {{ row.conversion.callLead || 0 }}%
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="Целевой / лиды" min-width="135">
+            <template #default="{ row }">
+              <el-tag :type="getTypeColorByPercent(row.conversion.leadTarget)" round>
+                {{ row.conversion.leadTarget || 0 }}%
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="Hold / целевые" min-width="135">
+            <template #default="{ row }">
+              <el-tag :type="getTypeColorByPercent(row.conversion.targetHold)" round>
+                {{ row.conversion.targetHold || 0 }}%
+              </el-tag>
+            </template>
+          </el-table-column>
         </el-table-column>
-        <el-table-column label="Hold / целевые" min-width="135">
-          <template #default="{ row }">
-            <el-tag :type="getTypeColorByPercent(row.conversion.targetHold)" round>
-              {{ row.conversion.targetHold || 0 }}%
-            </el-tag>
-          </template>
-        </el-table-column>
+
         <el-table-column label="Сумма холдов" prop="sumHold" min-width="130" />
         <el-table-column label="Зарплата" prop="salary" min-width="100" />
         <el-table-column label="Чистая" min-width="110">

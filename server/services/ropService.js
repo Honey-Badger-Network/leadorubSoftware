@@ -15,14 +15,20 @@ function toFiniteNumber (value) {
     return Number.isFinite(number) ? number : 0
 }
 
-function getSafePercent (numerator, denominator) {
+function roundToTwo(value) {
+    return Math.round((value + Number.EPSILON) * 100) / 100
+}
+
+function getSafePercent(numerator, denominator) {
     const safeDenominator = toFiniteNumber(denominator)
 
     if (safeDenominator === 0) {
         return 0
     }
 
-    return Math.round(toFiniteNumber(numerator) / safeDenominator * 100)
+    return roundToTwo(
+        toFiniteNumber(numerator) / safeDenominator * 100
+    )
 }
 
 export function getCardDataToSumAggr (usersStatsDataArray = []) {
@@ -87,6 +93,8 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
         if (aggregatedDataObject[row.name]) {
             aggregatedDataObject[row.name].countCalls += toFiniteNumber(row.countCalls)
             aggregatedDataObject[row.name].countMissedCalls += toFiniteNumber(row.countMissedCalls)
+            aggregatedDataObject[row.name].countCallsWithMan += toFiniteNumber(row.countCallsWithMan)
+            aggregatedDataObject[row.name].countCallsResultReCall += toFiniteNumber(row.countCallsResultReCall)
             aggregatedDataObject[row.name].countCallsManyMinute += toFiniteNumber(row.countCallsManyMinute)
             aggregatedDataObject[row.name].countLeads += toFiniteNumber(row.countLeads)
             aggregatedDataObject[row.name].countTargets += toFiniteNumber(row.countTargets)
@@ -97,6 +105,8 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
                 name: row.name,
                 countCalls: toFiniteNumber(row.countCalls),
                 countMissedCalls: toFiniteNumber(row.countMissedCalls),
+                countCallsWithMan: toFiniteNumber(row.countCallsWithMan),
+                countCallsResultReCall: toFiniteNumber(row.countCallsResultReCall),
                 countCallsManyMinute: toFiniteNumber(row.countCallsManyMinute),
                 countLeads: toFiniteNumber(row.countLeads),
                 countTargets: toFiniteNumber(row.countTargets),
@@ -117,6 +127,8 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
         name: 'Итого',
         countCalls: 0,
         countMissedCalls: 0,
+        countCallsWithMan: 0,
+        countCallsResultReCall: 0,
         countCallsManyMinute: 0,
         countLeads: 0,
         countTargets: 0,
@@ -148,6 +160,8 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
 
         totalLidorubValue.countCalls += user.countCalls
         totalLidorubValue.countMissedCalls += user.countMissedCalls
+        totalLidorubValue.countCallsWithMan += user.countCallsWithMan
+        totalLidorubValue.countCallsResultReCall += user.countCallsResultReCall
         totalLidorubValue.countCallsManyMinute += user.countCallsManyMinute
         totalLidorubValue.countLeads += user.countLeads
         totalLidorubValue.countTargets += user.countTargets
@@ -173,7 +187,6 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
 
 
 export function getBrokersAggregatedData (leadsArray) {
-    console.log(leadsArray, '*^&%*&%*&%*&%')
 
     let brokerAggregatedObject = {}
 
@@ -212,10 +225,10 @@ export function getBrokersAggregatedData (leadsArray) {
 
     brokerAggregatedArray.forEach((broker) => {
         broker.conversion = {
-            holdPercent: Math.floor(broker.countHold / broker.countLeads * 100),
-            breakedPercent: Math.floor(broker.countBreaked / broker.countLeads * 100),
-            invalidPercent: Math.floor(broker.countInvalid / broker.countLeads * 100),
-            createdPercent: Math.floor(broker.countCreated / broker.countLeads * 100),
+            holdPercent: roundToTwo(broker.countHold / broker.countLeads * 100),
+            breakedPercent: roundToTwo(broker.countBreaked / broker.countLeads * 100),
+            invalidPercent: roundToTwo(broker.countInvalid / broker.countLeads * 100),
+            createdPercent: roundToTwo(broker.countCreated / broker.countLeads * 100),
         }
 
         totalBrokerValue.countLeads += broker.countLeads
@@ -227,10 +240,10 @@ export function getBrokersAggregatedData (leadsArray) {
     })
 
     totalBrokerValue.conversion = {
-        holdPercent: Math.floor(totalBrokerValue.countHold / totalBrokerValue.countLeads * 100),
-        breakedPercent: Math.floor(totalBrokerValue.countBreaked / totalBrokerValue.countLeads * 100),
-        invalidPercent: Math.floor(totalBrokerValue.countInvalid / totalBrokerValue.countLeads * 100),
-        createdPercent: Math.floor(totalBrokerValue.countCreated / totalBrokerValue.countLeads * 100),
+        holdPercent: roundToTwo(totalBrokerValue.countHold / totalBrokerValue.countLeads * 100),
+        breakedPercent: roundToTwo(totalBrokerValue.countBreaked / totalBrokerValue.countLeads * 100),
+        invalidPercent: roundToTwo(totalBrokerValue.countInvalid / totalBrokerValue.countLeads * 100),
+        createdPercent: roundToTwo(totalBrokerValue.countCreated / totalBrokerValue.countLeads * 100),
     }
 
     brokerAggregatedArray.push(totalBrokerValue)
@@ -248,7 +261,7 @@ export function getPercentByCardStats(currentObject, prevObject) {
             const prevValue = toFiniteNumber(prevObject[key])
 
             if (prevValue !== 0) {
-                percentData[`${key}Percent`] = Math.round(((currentValue - prevValue) / prevValue) * 100)
+                percentData[`${key}Percent`] = roundToTwo(((currentValue - prevValue) / prevValue) * 100)
             } else {
                 percentData[`${key}Percent`] = currentValue !== 0 ? 100 : 0
             }
