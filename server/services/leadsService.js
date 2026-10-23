@@ -104,7 +104,8 @@ async function upsertNewLeadsData(lead) {
                             lastPhoneCalled: lead.lastPhoneCalled,
                             uniqueState: isUniqueOtherInfo.dateState,
                             // leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
-                            leadProject: lead.leadProject
+                            leadProject: lead.leadProject,
+                            time: lead.time
                         }
                     }
                 );
@@ -135,7 +136,8 @@ async function upsertNewLeadsData(lead) {
                     uniqueState: isUniqueOtherInfo.dateState,
                     leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
                     isBreakedStatus: lead.isBreakedStatus,
-                    leadProject: lead.leadProject
+                    leadProject: lead.leadProject,
+                    time: lead.time
                 })
         
                 await newEntry.save()
@@ -164,7 +166,8 @@ async function upsertNewLeadsData(lead) {
                 uniqueState: isUniqueOtherInfo.dateState,
                 leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
                 isBreakedStatus: lead.isBreakedStatus,
-                leadProject: lead.leadProject
+                leadProject: lead.leadProject,
+                time: lead.time
             })
     
             await newEntry.save()

@@ -226,6 +226,9 @@
         <el-form-item label="Дата" prop="date">
           <el-input v-model="newLeadsObject.date" type="date"></el-input>
         </el-form-item>
+        <el-form-item label="Время" prop="time">
+          <el-input v-model="newLeadsObject.time" type="time"></el-input>
+        </el-form-item>
         <el-form-item label="Брокер" prop="broker">
           <!-- <el-input v-model="newLeadsObject.broker"></el-input> -->
           <FormItemSelect v-if="brokersList.length > 0" v-model="newLeadsObject.broker" labelKey="name" valueKey="name" :options="brokersList" />
@@ -319,6 +322,7 @@
         isShowModalLeadInfo: false,
         newLeadsObject: {
           date: dayjs().format('YYYY-MM-DD'),
+          time: dayjs().format('HH:mm:ss'),
           broker: 'Володя Банкир',
           price: 0,
           phone: '',

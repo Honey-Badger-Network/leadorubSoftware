@@ -2,6 +2,7 @@ const { Schema, model } = require('mongoose');
 
 const leadsModel = new Schema({
     date: String,
+    time: String,
     broker: String,
     price: Number,
     phone: String,

@@ -53,6 +53,7 @@ async function setTransfersToDB(gte, lte) {
         let leadUser = leadUserInfo.userName
         let leadInfoPoints = leadUserInfo.leadPhoneInfo
         let leadProject = leadUserInfo.leadProject
+        let leadTime = leadUserInfo.leadTime
 
         // TODO дальеш что нужно сделать
         // из несколько одинаковых лидов (пока трансферов)
@@ -102,7 +103,8 @@ async function setTransfersToDB(gte, lte) {
           isUniquePhone: lead.isUniquePhone,
           lastPhoneCalled: lead.lastPhoneCalled,
           isBreakedStatus: false,
-          leadProject: leadProject
+          leadProject: leadProject,
+          time: leadTime
         };
   
         const result = await upsertNewLeadsData(leadInfo);

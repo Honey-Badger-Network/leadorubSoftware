@@ -73,32 +73,52 @@ router.get('/api/leads/aggregateByProject', async (req, res) => {
 
         const { gte, lte } = req.query
 
+        if (!gte || !lte || !dayjs(gte).isValid() || !dayjs(lte).isValid()) {
+            return res.status(400).json({
+                msg: 'Укажите корректные даты начала и окончания периода'
+            })
+        }
+
+        if (dayjs(gte).isAfter(dayjs(lte), 'day')) {
+            return res.status(400).json({
+                msg: 'Дата начала не может быть позже даты окончания'
+            })
+        }
+
         const leadsList = await leadsModel.find({
             date: {
                 $gte: gte,
-                $let: lte
+                $lte: lte
             }
-        })
+        }).lean()
 
-        let aggregatedByProjectObject = {}
+        const aggregatedByProjectObject = Object.create(null)
 
         leadsList.forEach((lead) => {
-            if (aggregatedByProjectObject[lead.leadProject]) {
-                aggregatedByProjectObject[lead.leadProject].countLeads += 1
-                aggregatedByProjectObject[lead.leadProject].countHolds += lead.countHold
-                aggregatedByProjectObject[lead.leadProject].phones.push(lead.phone)
-                aggregatedByProjectObject[lead.leadProject].countTargets += lead.statusOKK ? 1 : 0
+            const projectName = lead.leadProject?.trim() || 'Без названия'
+            const countHold = Number(lead.countHold)
+
+            if (aggregatedByProjectObject[projectName]) {
+                aggregatedByProjectObject[projectName].countLeads += 1
+                aggregatedByProjectObject[projectName].countHolds += Number.isFinite(countHold) ? countHold : 0
+                aggregatedByProjectObject[projectName].countTargets += lead.statusOKK === true ? 1 : 0
+
+                if (lead.phone) {
+                    aggregatedByProjectObject[projectName].phones.push(lead.phone)
+                }
             } else {
-                aggregatedByProjectObject[lead.leadProject] = {
+                aggregatedByProjectObject[projectName] = {
+                    projectName,
                     countLeads: 1,
-                    countHolds: lead.countHold,
-                    phones: [lead.phone],
-                    countTargets: lead.statusOKK ? 1 : 0
+                    countHolds: Number.isFinite(countHold) ? countHold : 0,
+                    phones: lead.phone ? [lead.phone] : [],
+                    countTargets: lead.statusOKK === true ? 1 : 0
                 }
             }
         })
 
-        let aggregatedByProjectArray = Object.values(aggregatedByProjectObject)
+        const aggregatedByProjectArray = Object.values(aggregatedByProjectObject)
+            .sort((firstProject, secondProject) => secondProject.countLeads - firstProject.countLeads)
 
         res.status(200).json({
             data: aggregatedByProjectArray
@@ -284,6 +304,7 @@ router.post('/api/leads/create', async (req, res) => {
 
         const newLeadObject = leadsModel({
             date: leadObject.date,
+            time: leadObject.time || null,
             broker: leadObject.broker,
             price: leadObject.price,
             phone: leadObject.phone.replace(/\D/g, ''),

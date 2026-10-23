@@ -36,8 +36,17 @@
       <template #actions>
         <el-button type="success" @click="saveLeadsData">Сохранить данные</el-button>
       </template>
-    <el-table :data="tableData" style="width: 100%">
-        <el-table-column :width="100" prop="date" label="Дата"></el-table-column>
+    <el-table
+        :data="tableData"
+        :default-sort="{ prop: 'time', order: 'ascending' }"
+        style="width: 100%"
+    >
+        <el-table-column :width="110" prop="date" label="Дата" sortable></el-table-column>
+        <el-table-column :width="100" prop="time" label="Время" sortable :sort-method="sortByTime">
+            <template #default="{ row }">
+                <span class="lead-time">{{ formatLeadTime(row.time) }}</span>
+            </template>
+        </el-table-column>
         <el-table-column :width="120" prop="phone" label="Телефон"></el-table-column>
 
         <el-table-column :width="170" label="Лидоруб">
@@ -254,6 +263,13 @@
     width: 400px;
 }
 
+.lead-time {
+    color: var(--el-text-color-regular);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
 </style>
 
 <script>
@@ -314,7 +330,26 @@
                 }
             })
 
-            this.tableData = response.leads
+            this.tableData = [...response.leads].sort(this.sortByTime)
+        },
+        getLeadTimestamp(lead) {
+            if (!lead?.date || !lead?.time) {
+                return Number.MAX_SAFE_INTEGER
+            }
+
+            const timestamp = dayjs(`${lead.date}T${lead.time}`).valueOf()
+
+            return Number.isFinite(timestamp) ? timestamp : Number.MAX_SAFE_INTEGER
+        },
+        sortByTime(firstLead, secondLead) {
+            return this.getLeadTimestamp(firstLead) - this.getLeadTimestamp(secondLead)
+        },
+        formatLeadTime(time) {
+            if (!time) {
+                return '—'
+            }
+
+            return String(time).slice(0, 8)
         },
         setNewStatus(status, lead) {
             

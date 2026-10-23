@@ -9,6 +9,14 @@ dotenv.config()
 
 const { skorozvonAPI, skorozvonUSER, skorozvonID, skorozvonSecret } = process.env
 
+function parseLeadDateTime(date, time) {
+    const normalizedDate = String(date || '').trim()
+    const normalizedTime = String(time || '00:00:00').trim()
+    const dateTime = dayjs(`${normalizedDate}T${normalizedTime}`)
+
+    return dateTime.isValid() ? dateTime.valueOf() : 0
+}
+
 
 async function getSkorozvonToken() {
     try {
@@ -432,11 +440,12 @@ async function getLeadTimeline(transfer, onlyTransfers = false) {
             .sort((a, b) => parseLeadDateTime(b.date, b.time) - parseLeadDateTime(a.date, a.time))[0];
 
         const leadProject = latestTransfer?.project ?? null;
+        const leadTime = latestTransfer?.time ?? null;
 
         if (onlyTransfers === true) {
             return leadPhoneInfo
         } else {
-            return { userName, leadProject, leadPhoneInfo }
+            return { userName, leadProject, leadTime, leadPhoneInfo }
         }
 
     } catch (e) {
