@@ -68,6 +68,49 @@ router.get('/api/leads/get', async (req, res) => {
     }
 });
 
+router.get('/api/leads/aggregateByProject', async (req, res) => {
+    try {
+
+        const { gte, lte } = req.query
+
+        const leadsList = await leadsModel.find({
+            date: {
+                $gte: gte,
+                $let: lte
+            }
+        })
+
+        let aggregatedByProjectObject = {}
+
+        leadsList.forEach((lead) => {
+            if (aggregatedByProjectObject[lead.leadProject]) {
+                aggregatedByProjectObject[lead.leadProject].countLeads += 1
+                aggregatedByProjectObject[lead.leadProject].countHolds += lead.countHold
+                aggregatedByProjectObject[lead.leadProject].phones.push(lead.phone)
+                aggregatedByProjectObject[lead.leadProject].countTargets += lead.statusOKK ? 1 : 0
+            } else {
+                aggregatedByProjectObject[lead.leadProject] = {
+                    countLeads: 1,
+                    countHolds: lead.countHold,
+                    phones: [lead.phone],
+                    countTargets: lead.statusOKK ? 1 : 0
+                }
+            }
+        })
+
+        let aggregatedByProjectArray = Object.values(aggregatedByProjectObject)
+
+        res.status(200).json({
+            data: aggregatedByProjectArray
+        })
+
+    } catch (e) {
+        console.log(e.message)
+        res.status(500).json({
+            msg: e.message
+        })
+    }
+})
 
 router.post('/api/leads/upsert', async (req, res) => {
     try {

@@ -48,6 +48,7 @@ const leadsModel = new Schema({
     uniqueState: String,
     leadSalaryPrice: Number,
     isBreakedStatus: Boolean, // если это был обрыв (true) то не считать в зарплатной и окк (PS позже дообсудить это)
+    leadProject: String
 })
 
 module.exports = model('leadsModel', leadsModel);

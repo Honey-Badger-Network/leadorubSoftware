@@ -411,6 +411,7 @@ async function getLeadTimeline(transfer, onlyTransfers = false) {
             let isAttemptTransfer = lead.transfered
             let transferId = lead.id
             let seconds = lead.seconds
+            let project = lead.call_project
             
             // TODO те которые не сегодняшней даты их не пушить в масив 
 
@@ -421,14 +422,21 @@ async function getLeadTimeline(transfer, onlyTransfers = false) {
                 isSuccessTransfer: isAttemptTransfer === 't' && seconds !== '0' ? true : false,
                 time: lead.time,
                 date: lead.date,
-                user: currentUser
+                user: currentUser,
+                project: project
             })
         })
+
+        const latestTransfer = leadPhoneInfo
+            .filter(item => item.isAttemptTransfer === 't')
+            .sort((a, b) => parseLeadDateTime(b.date, b.time) - parseLeadDateTime(a.date, a.time))[0];
+
+        const leadProject = latestTransfer?.project ?? null;
 
         if (onlyTransfers === true) {
             return leadPhoneInfo
         } else {
-            return { userName, leadPhoneInfo }
+            return { userName, leadProject, leadPhoneInfo }
         }
 
     } catch (e) {
