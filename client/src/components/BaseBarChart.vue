@@ -29,11 +29,11 @@ function render() {
       datasets: [{ label: props.title, data: props.rows.map(row => row.value), backgroundColor: props.color, borderRadius: 5, maxBarThickness: 24 }]
     },
     options: {
-      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      indexAxis: 'x', responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { padding: 12 } },
       scales: {
-        x: { beginAtZero: true, ticks: { color, precision: 0 }, grid: { color: 'rgba(148,163,184,.15)' } },
-        y: { grid: { display: false }, ticks: { color, callback(value) {
+        y: { beginAtZero: true, ticks: { color, precision: 0 }, grid: { color: 'rgba(148,163,184,.15)' } },
+        x: { grid: { display: false }, ticks: { color, maxRotation: 35, autoSkip: false, callback(value) {
           const label = this.getLabelForValue(value)
           return label.length > 24 ? `${label.slice(0, 23)}…` : label
         } } }

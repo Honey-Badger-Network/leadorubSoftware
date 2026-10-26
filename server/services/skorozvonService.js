@@ -455,6 +455,7 @@ async function getLeadTimeline(transfer, onlyTransfers = false) {
 }
 
 async function getSkorozvonBaseCalls(gte, lte) {
+    const { attachCallProjects } = require('./baseCallHistory')
     const token = await getSkorozvonToken()
     if (!token) throw new Error('Не удалось авторизоваться в Скорозвоне')
     const calls = []
@@ -472,13 +473,17 @@ async function getSkorozvonBaseCalls(gte, lte) {
         if (!Array.isArray(data?.calls) || !Number.isFinite(Number(data.total))) {
             throw new Error('Некорректный ответ Скорозвона при загрузке звонков баз')
         }
-        if (data.calls.some(call => !Object.hasOwn(call, 'call_project') && !Object.hasOwn(call, 'project'))) {
-            throw new Error('В ответе Скорозвона нет поля проекта звонка (call_project/project); статистика баз не перезаписана')
-        }
         calls.push(...data.calls)
-        if (calls.length >= Number(data.total)) return calls
+        if (calls.length >= Number(data.total)) break
         if (!data.calls.length) throw new Error('Скорозвон вернул неполный список звонков')
     }
+    return attachCallProjects(calls, async leadUrl => {
+        const response = await axios.get(`https://pod5-shard2-lb1.skorozvon.ru/${leadUrl}/history`, {
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 60000
+        })
+        return response.data?.data?.data
+    })
 }
 
 module.exports = { getSkorozvonBaseCalls, getSkorozvonToken, getSkorozvonCalls, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls, getSkorozvonCallsFromProfile, getDifferenceByCalls }

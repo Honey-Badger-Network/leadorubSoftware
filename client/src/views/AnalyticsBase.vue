@@ -210,7 +210,6 @@ dayjs.locale('ru')
 
 const PROJECT_METRICS = [
   { key: 'countCalls', title: 'Звонки' },
-  { key: 'countCalls60Plus', title: 'Звонки 60+ сек' },
   { key: 'countLeads', title: 'Лиды' },
   { key: 'countTargets', title: 'Целевые' },
   { key: 'countHolds', title: 'Холды' }
@@ -218,7 +217,6 @@ const PROJECT_METRICS = [
 
 const DISTRIBUTION_METRICS = [
   { key: 'countCalls', title: 'Звонки', color: '#3b82f6' },
-  { key: 'countCalls60Plus', title: 'Звонки 60+ сек', color: '#8b5cf6' },
   { key: 'countLeads', title: 'Лиды', color: '#6366f1' },
   { key: 'countTargets', title: 'Целевые', color: '#10b981' },
   { key: 'countHolds', title: 'Холды', color: '#f59e0b' }
@@ -264,7 +262,6 @@ export default {
     totals() {
       return this.projects.reduce((result, project) => {
         result.countCalls += project.countCalls
-        result.countCalls60Plus += project.countCalls60Plus
         result.countLeads += project.countLeads
         result.countTargets += project.countTargets
         result.countHolds += project.countHolds
@@ -273,7 +270,6 @@ export default {
         return result
       }, {
         countCalls: 0,
-        countCalls60Plus: 0,
         countLeads: 0,
         countTargets: 0,
         countHolds: 0,
@@ -284,7 +280,6 @@ export default {
       return [
         { key: 'projects', title: 'Базы', value: this.projects.length, icon: DataAnalysis },
         { key: 'calls', title: 'Звонки', value: this.totals.countCalls, icon: Phone },
-        { key: 'longCalls', title: 'Звонки 60+ сек', value: this.totals.countCalls60Plus, icon: Phone },
         { key: 'leads', title: 'Лиды', value: this.totals.countLeads, icon: Tickets },
         { key: 'targets', title: 'Целевые', value: this.totals.countTargets, icon: Aim },
         { key: 'holds', title: 'Холды', value: this.totals.countHolds, icon: DataAnalysis },
@@ -319,7 +314,6 @@ export default {
       return {
         projectName: project.name || project.projectName || project.leadProject || `Без названия ${index + 1}`,
         countCalls: this.toNumber(project.countCalls),
-        countCalls60Plus: this.toNumber(project.countCalls60Plus),
         countLeads: this.toNumber(project.countLeads),
         countTargets: this.toNumber(project.countTargets),
         countHolds: this.toNumber(project.countHolds),
@@ -478,7 +472,7 @@ export default {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
   min-height: 94px;
   margin-bottom: 20px;
@@ -570,7 +564,7 @@ export default {
 
 .distribution-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -685,7 +679,7 @@ export default {
 
 .project-metrics {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 16px 18px;
   border-bottom: 1px solid var(--el-border-color-lighter);
 }

@@ -1,13 +1,7 @@
-const METRICS = ['countCalls', 'countCalls60Plus', 'countLeads', 'countTargets', 'countHolds']
+const METRICS = ['countCalls', 'countLeads', 'countTargets', 'countHolds']
 
 function normalizeName(value) {
     return typeof value === 'string' && value.trim() ? value.trim() : 'Без названия'
-}
-
-function durationSeconds(value) {
-    const parts = String(value ?? '').split(':').map(Number)
-    if (!parts.length || parts.some(part => !Number.isFinite(part) || part < 0)) return 0
-    return parts.reduce((seconds, part) => seconds * 60 + part, 0)
 }
 
 function aggregateBases(calls = [], leads = [], snapshots = []) {
@@ -21,13 +15,12 @@ function aggregateBases(calls = [], leads = [], snapshots = []) {
     }
     for (const row of snapshots) {
         const base = getBase(row.name)
-        for (const key of ['countCalls', 'countCalls60Plus']) base[key] += Number(row[key]) || 0
+        base.countCalls += Number(row.countCalls) || 0
     }
     for (const call of calls) {
         const project = call.call_project ?? call.project
         const base = getBase(typeof project === 'object' && project ? project.name : project)
         base.countCalls++
-        if (durationSeconds(call.duration) >= 60) base.countCalls60Plus++
     }
     for (const lead of leads) {
         const base = getBase(lead.leadProject)
@@ -46,4 +39,4 @@ function isValidPeriod(gte, lte) {
     return valid(gte) && valid(lte) && gte <= lte
 }
 
-module.exports = { aggregateBases, durationSeconds, isValidPeriod }
+module.exports = { aggregateBases, isValidPeriod }
