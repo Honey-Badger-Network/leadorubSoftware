@@ -20,6 +20,8 @@ const residenceRoute = require('./routes/residenceRoute.js')
 const skorozvonRoute = require('./routes/skorozvonRoute.js')
 const bonusesRoute = require('./routes/bonusesRoute.js')
 const ropRoute = require('./routes/ropRoute.js')
+const baseStatsRoute = require('./routes/baseStatsRoute.js')
+const { setBasesStatsCrone } = require('./crones/setBasesStats.js')
 
 setBonusesDataCron()
 setTransfersCrone()
@@ -82,12 +84,14 @@ app.use(residenceRoute)
 app.use(skorozvonRoute)
 app.use(bonusesRoute)
 app.use(ropRoute)
+app.use(baseStatsRoute)
 
 
 async function startConnectToDB() {
     try {
         const uri = `mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_URL}:${MONGO_PORT}/${DATABASE_NAME}?authSource=admin`;
         await mongoose.connect(uri);
+        setBasesStatsCrone()
     } catch (err) {
         console.log(err);
     }

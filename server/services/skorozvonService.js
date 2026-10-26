@@ -454,4 +454,31 @@ async function getLeadTimeline(transfer, onlyTransfers = false) {
     }
 }
 
-module.exports = { getSkorozvonToken, getSkorozvonCalls, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls, getSkorozvonCallsFromProfile, getDifferenceByCalls }
+async function getSkorozvonBaseCalls(gte, lte) {
+    const token = await getSkorozvonToken()
+    if (!token) throw new Error('Не удалось авторизоваться в Скорозвоне')
+    const calls = []
+    for (let page = 1; ; page++) {
+        const response = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/calls', {
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 60000,
+            params: {
+                limit: 100, page, offset: (page - 1) * 100,
+                'date[from]': gte, 'date[to]': lte,
+                'duration[from]': 1, type: 'all'
+            }
+        })
+        const data = response.data?.data
+        if (!Array.isArray(data?.calls) || !Number.isFinite(Number(data.total))) {
+            throw new Error('Некорректный ответ Скорозвона при загрузке звонков баз')
+        }
+        if (data.calls.some(call => !Object.hasOwn(call, 'call_project') && !Object.hasOwn(call, 'project'))) {
+            throw new Error('В ответе Скорозвона нет поля проекта звонка (call_project/project); статистика баз не перезаписана')
+        }
+        calls.push(...data.calls)
+        if (calls.length >= Number(data.total)) return calls
+        if (!data.calls.length) throw new Error('Скорозвон вернул неполный список звонков')
+    }
+}
+
+module.exports = { getSkorozvonBaseCalls, getSkorozvonToken, getSkorozvonCalls, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls, getSkorozvonCallsFromProfile, getDifferenceByCalls }

@@ -3,7 +3,7 @@
     <PageHeader
       eyebrow="Аналитика лидов"
       title="Аналитика баз"
-      description="Сводка по проектам: лиды, целевые обращения, холды и номера телефонов."
+      description="От звонка до результата: активность, лиды и эффективность каждой базы."
     >
       <template #actions>
         <span class="selected-period">
@@ -55,6 +55,9 @@
     />
 
     <template v-if="hasRequested">
+      <el-alert v-if="coverage && coverage.days < coverage.expectedDays" class="base-analytics-alert"
+        type="warning" show-icon :closable="false" title="Статистика звонков собрана не за весь период"
+        :description="`Данные звонков доступны за ${coverage.days} из ${coverage.expectedDays} дней. Лиды, целевые и холды показаны за весь период. Для прошлых дат нужен пересчёт статистики баз.`" />
       <section v-if="projects.length || isLoading" class="summary-grid" v-loading="isLoading">
         <article v-for="card in summaryCards" :key="card.key" class="summary-card">
           <span class="summary-card__icon">
@@ -70,7 +73,7 @@
       <section v-if="projects.length" class="distribution-section">
         <div class="distribution-section__header">
           <div>
-            <span class="section-eyebrow">Динамика по базам</span>
+            <span class="section-eyebrow">Сравнение баз · топ-6</span>
             <h2>Распределение по ключевым метрикам</h2>
           </div>
           <span class="distribution-section__badge">{{ distributionCards.length }} графиков</span>
@@ -86,17 +89,8 @@
               <small>Top {{ chart.rows.length }}</small>
             </header>
 
-            <ul class="distribution-chart">
-              <li v-for="row in chart.rows" :key="`${chart.key}-${row.name}`" class="distribution-chart__item">
-                <div class="distribution-chart__meta">
-                  <span>{{ row.name }}</span>
-                  <strong>{{ formatNumber(row.value) }}</strong>
-                </div>
-                <div class="distribution-chart__track">
-                  <span :style="{ width: `${row.width}%`, background: chart.color }"></span>
-                </div>
-              </li>
-            </ul>
+            <BaseBarChart v-if="chart.rows.length" :rows="chart.rows" :title="chart.title" :color="chart.color" />
+            <el-empty v-else description="Нет данных по метрике" :image-size="70" />
           </article>
         </div>
       </section>
@@ -181,7 +175,7 @@
 
           <el-empty
             v-else-if="!isLoading"
-            description="За выбранный период базы с лидами не найдены"
+            description="За выбранный период базы не найдены"
           />
         </div>
       </PagePanel>
@@ -201,6 +195,7 @@
 import dayjs from 'dayjs'
 import 'dayjs/locale/ru'
 import { ElMessage } from 'element-plus'
+import BaseBarChart from '../components/BaseBarChart.vue'
 import {
   Aim,
   ArrowDown,
@@ -214,12 +209,16 @@ import {
 dayjs.locale('ru')
 
 const PROJECT_METRICS = [
+  { key: 'countCalls', title: 'Звонки' },
+  { key: 'countCalls60Plus', title: 'Звонки 60+ сек' },
   { key: 'countLeads', title: 'Лиды' },
   { key: 'countTargets', title: 'Целевые' },
   { key: 'countHolds', title: 'Холды' }
 ]
 
 const DISTRIBUTION_METRICS = [
+  { key: 'countCalls', title: 'Звонки', color: '#3b82f6' },
+  { key: 'countCalls60Plus', title: 'Звонки 60+ сек', color: '#8b5cf6' },
   { key: 'countLeads', title: 'Лиды', color: '#6366f1' },
   { key: 'countTargets', title: 'Целевые', color: '#10b981' },
   { key: 'countHolds', title: 'Холды', color: '#f59e0b' }
@@ -228,6 +227,7 @@ const DISTRIBUTION_METRICS = [
 export default {
   name: 'AnalyticsBase',
   components: {
+    BaseBarChart,
     ArrowDown,
     Calendar,
     CopyDocument,
@@ -240,6 +240,7 @@ export default {
       gte: today,
       lte: today,
       projects: [],
+      coverage: null,
       isLoading: false,
       hasRequested: false,
       errorMessage: '',
@@ -262,6 +263,8 @@ export default {
     },
     totals() {
       return this.projects.reduce((result, project) => {
+        result.countCalls += project.countCalls
+        result.countCalls60Plus += project.countCalls60Plus
         result.countLeads += project.countLeads
         result.countTargets += project.countTargets
         result.countHolds += project.countHolds
@@ -269,6 +272,8 @@ export default {
 
         return result
       }, {
+        countCalls: 0,
+        countCalls60Plus: 0,
         countLeads: 0,
         countTargets: 0,
         countHolds: 0,
@@ -278,10 +283,11 @@ export default {
     summaryCards() {
       return [
         { key: 'projects', title: 'Базы', value: this.projects.length, icon: DataAnalysis },
+        { key: 'calls', title: 'Звонки', value: this.totals.countCalls, icon: Phone },
+        { key: 'longCalls', title: 'Звонки 60+ сек', value: this.totals.countCalls60Plus, icon: Phone },
         { key: 'leads', title: 'Лиды', value: this.totals.countLeads, icon: Tickets },
         { key: 'targets', title: 'Целевые', value: this.totals.countTargets, icon: Aim },
         { key: 'holds', title: 'Холды', value: this.totals.countHolds, icon: DataAnalysis },
-        { key: 'phones', title: 'Телефоны', value: this.totals.countPhones, icon: Phone }
       ]
     },
     distributionCards() {
@@ -295,15 +301,10 @@ export default {
             value: Number(project[metric.key]) || 0
           }))
 
-        const maxValue = rows.reduce((result, item) => Math.max(result, item.value), 0)
-
         return {
           ...metric,
           total: rows.reduce((result, item) => result + item.value, 0),
-          rows: rows.map((row) => ({
-            ...row,
-            width: maxValue > 0 ? (row.value / maxValue) * 100 : 0
-          }))
+          rows
         }
       })
     }
@@ -316,7 +317,9 @@ export default {
     },
     normalizeProject(project, index) {
       return {
-        projectName: project.projectName || project.leadProject || `Без названия ${index + 1}`,
+        projectName: project.name || project.projectName || project.leadProject || `Без названия ${index + 1}`,
+        countCalls: this.toNumber(project.countCalls),
+        countCalls60Plus: this.toNumber(project.countCalls60Plus),
         countLeads: this.toNumber(project.countLeads),
         countTargets: this.toNumber(project.countTargets),
         countHolds: this.toNumber(project.countHolds),
@@ -350,16 +353,18 @@ export default {
 
       try {
         const response = await this.$store.dispatch('getDataList', {
-          col: 'api/leads/aggregateByProject',
+          col: 'api/bases/analytics',
           params: {
             gte: this.gte,
             lte: this.lte
           }
         })
 
+        this.coverage = response.coverage || null
         this.projects = (response.data || [])
           .map((project, index) => this.normalizeProject(project, index))
       } catch (error) {
+        this.coverage = null
         this.projects = []
         this.errorMessage = error.response?.data?.msg || error.message || 'Неизвестная ошибка'
       } finally {
@@ -473,7 +478,7 @@ export default {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
   min-height: 94px;
   margin-bottom: 20px;
@@ -615,52 +620,6 @@ export default {
   font-weight: 700;
 }
 
-.distribution-chart {
-  display: grid;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.distribution-chart__item {
-  min-width: 0;
-}
-
-.distribution-chart__meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 7px;
-}
-
-.distribution-chart__meta span {
-  overflow: hidden;
-  color: var(--el-text-color-regular);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.distribution-chart__meta strong {
-  color: var(--el-text-color-primary);
-  font-size: 12px;
-}
-
-.distribution-chart__track {
-  overflow: hidden;
-  height: 9px;
-  border-radius: 999px;
-  background: var(--el-fill-color-light);
-}
-
-.distribution-chart__track span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-}
-
 .projects-area {
   min-height: 180px;
 }
@@ -677,6 +636,8 @@ export default {
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 16px;
   background: var(--el-bg-color);
+  box-shadow: 0 8px 28px rgba(30, 41, 59, 0.05);
+  border-top: 3px solid #6366f1;
 }
 
 .project-card__header {
@@ -724,7 +685,7 @@ export default {
 
 .project-metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   padding: 16px 18px;
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
@@ -913,5 +874,10 @@ export default {
     grid-column: 1 / -1;
     justify-self: start;
   }
+  .project-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .project-metric { padding: 0; border: 0; }
 }
 </style>
