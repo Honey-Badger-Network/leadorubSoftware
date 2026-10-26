@@ -67,6 +67,40 @@
         </article>
       </section>
 
+      <section v-if="projects.length" class="distribution-section">
+        <div class="distribution-section__header">
+          <div>
+            <span class="section-eyebrow">Динамика по базам</span>
+            <h2>Распределение по ключевым метрикам</h2>
+          </div>
+          <span class="distribution-section__badge">{{ distributionCards.length }} графиков</span>
+        </div>
+
+        <div class="distribution-grid">
+          <article v-for="chart in distributionCards" :key="chart.key" class="distribution-card">
+            <header class="distribution-card__header">
+              <div>
+                <span>{{ chart.title }}</span>
+                <strong>{{ formatNumber(chart.total) }}</strong>
+              </div>
+              <small>Top {{ chart.rows.length }}</small>
+            </header>
+
+            <ul class="distribution-chart">
+              <li v-for="row in chart.rows" :key="`${chart.key}-${row.name}`" class="distribution-chart__item">
+                <div class="distribution-chart__meta">
+                  <span>{{ row.name }}</span>
+                  <strong>{{ formatNumber(row.value) }}</strong>
+                </div>
+                <div class="distribution-chart__track">
+                  <span :style="{ width: `${row.width}%`, background: chart.color }"></span>
+                </div>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
       <PagePanel
         eyebrow="Результат"
         title="Базы и проекты"
@@ -185,6 +219,12 @@ const PROJECT_METRICS = [
   { key: 'countHolds', title: 'Холды' }
 ]
 
+const DISTRIBUTION_METRICS = [
+  { key: 'countLeads', title: 'Лиды', color: '#6366f1' },
+  { key: 'countTargets', title: 'Целевые', color: '#10b981' },
+  { key: 'countHolds', title: 'Холды', color: '#f59e0b' }
+]
+
 export default {
   name: 'AnalyticsBase',
   components: {
@@ -205,7 +245,8 @@ export default {
       errorMessage: '',
       expandedProjects: {},
       phonesPreviewLimit: 8,
-      projectMetrics: PROJECT_METRICS
+      projectMetrics: PROJECT_METRICS,
+      distributionMetrics: DISTRIBUTION_METRICS
     }
   },
   computed: {
@@ -242,6 +283,29 @@ export default {
         { key: 'holds', title: 'Холды', value: this.totals.countHolds, icon: DataAnalysis },
         { key: 'phones', title: 'Телефоны', value: this.totals.countPhones, icon: Phone }
       ]
+    },
+    distributionCards() {
+      return this.distributionMetrics.map((metric) => {
+        const rows = [...this.projects]
+          .filter((project) => Number(project[metric.key]) > 0)
+          .sort((a, b) => Number(b[metric.key]) - Number(a[metric.key]))
+          .slice(0, 6)
+          .map((project) => ({
+            name: project.projectName,
+            value: Number(project[metric.key]) || 0
+          }))
+
+        const maxValue = rows.reduce((result, item) => Math.max(result, item.value), 0)
+
+        return {
+          ...metric,
+          total: rows.reduce((result, item) => result + item.value, 0),
+          rows: rows.map((row) => ({
+            ...row,
+            width: maxValue > 0 ? (row.value / maxValue) * 100 : 0
+          }))
+        }
+      })
     }
   },
   methods: {
@@ -461,6 +525,142 @@ export default {
   letter-spacing: -0.04em;
 }
 
+.distribution-section {
+  margin: 0 0 24px;
+}
+
+.distribution-section__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.section-eyebrow {
+  display: block;
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.distribution-section h2 {
+  margin: 6px 0 0;
+  color: var(--el-text-color-primary);
+  font-size: clamp(21px, 2.4vw, 28px);
+  letter-spacing: -0.035em;
+}
+
+.distribution-section__badge {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-regular);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.distribution-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.distribution-card {
+  min-width: 0;
+  padding: 18px 18px 14px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 16px;
+  background: var(--el-bg-color);
+  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.04);
+}
+
+.distribution-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.distribution-card__header span,
+.distribution-card__header small {
+  display: block;
+}
+
+.distribution-card__header span {
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.distribution-card__header strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--el-text-color-primary);
+  font-size: 26px;
+  letter-spacing: -0.04em;
+}
+
+.distribution-card__header small {
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-secondary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.distribution-chart {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.distribution-chart__item {
+  min-width: 0;
+}
+
+.distribution-chart__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+}
+
+.distribution-chart__meta span {
+  overflow: hidden;
+  color: var(--el-text-color-regular);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.distribution-chart__meta strong {
+  color: var(--el-text-color-primary);
+  font-size: 12px;
+}
+
+.distribution-chart__track {
+  overflow: hidden;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--el-fill-color-light);
+}
+
+.distribution-chart__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
 .projects-area {
   min-height: 180px;
 }
@@ -662,6 +862,10 @@ export default {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .distribution-grid {
+    grid-template-columns: 1fr;
+  }
+
   .projects-grid {
     grid-template-columns: 1fr;
   }
@@ -694,6 +898,11 @@ export default {
 @media (max-width: 520px) {
   .summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .distribution-section__header {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .project-card__header {
