@@ -102,7 +102,7 @@
 <script>
 import { markRaw } from 'vue'
 import { useRoute } from 'vue-router'
-import { User, House, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin, Histogram, DataAnalysis } from '@element-plus/icons-vue'
+import { User, House, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin, Histogram, DataAnalysis, Discount } from '@element-plus/icons-vue'
 import AppHeader from './components/AppHeader.vue'
 
 export default {
@@ -186,7 +186,7 @@ export default {
         {
           label: 'ЗП РОПа',
           path: '/rop-salary',
-          icon: markRaw(Money),
+          icon: markRaw(Discount),
           condition: () => this.rankName === 'admin',
         },
         {

@@ -198,7 +198,19 @@ async function getLeadsByUser(gte, lte, name) {
 function calculateClearByUser(userObject, countUsers, date) {
     const dayOfWeek = dayjs(date).day()
     const brokerSalary = Math.floor(userObject.sumHold * 0.6 * 0.15)
-    const minusOfBase = Math.floor((dayOfWeek === 0 ? 5000 : 84000) / countUsers)
+    // const minusOfBase = Math.floor((dayOfWeek === 0 ? 5000 : 84000) / countUsers)
+
+    // ЕБАНА НЕЙРОНКА БЛЯТЬ ВМЕСТО 8400 ВЬЕБАЛА МНЕ 84000 (Я ДУМАЛ ПОЧЕМУ РАЩЕТ ПО ПИЗДЕ ПОШОЛ)
+    // ТАК И ЗНАЛ ЧТО ЛУЧШЕ МНЕ САОММУ ТУ БЛЯДСКУЮ ФИЧУ БЫЛО СДЕЛАТЬ
+
+    let minusOfBase = 0
+
+    if (dayOfWeek === 0) {
+        minusOfBase = 5000 / countUsers
+    } else {
+        minusOfBase = 8400 / countUsers
+    }
+
     const allSumHold = userObject.sumHold * 0.6
     const clear = Math.floor(allSumHold - minusOfBase - brokerSalary - userObject.salary)
 
