@@ -86,7 +86,7 @@ async function setUsersStatsToDB(gte, lte) {
             user.salary = await calculateSalaryHoldorub(gte, lte, user)
         }
 
-        let clearData = await calculateClearByUser(user, usersCallsWithoutZeroCalls.length)
+        let clearData = await calculateClearByUser(user, usersCallsWithoutZeroCalls.length, dayjs(gte).format('YYYY-MM-DD'))
 
         user.clear = clearData.clear
         user.brokerSalary = clearData.brokerSalary

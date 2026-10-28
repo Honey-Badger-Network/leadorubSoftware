@@ -195,18 +195,14 @@ async function getLeadsByUser(gte, lte, name) {
     }
 }
 
-function calculateClearByUser(userObject, countUsers) {
-
+function calculateClearByUser(userObject, countUsers, date) {
+    const dayOfWeek = dayjs(date).day()
     const brokerSalary = Math.floor(userObject.sumHold * 0.6 * 0.15)
-    const minusOfBase = Math.floor(5000 / countUsers)
+    const minusOfBase = Math.floor((dayOfWeek === 0 ? 5000 : 84000) / countUsers)
     const allSumHold = userObject.sumHold * 0.6
-
     const clear = Math.floor(allSumHold - minusOfBase - brokerSalary - userObject.salary)
 
-    return {
-        clear: clear,
-        brokerSalary: brokerSalary
-    }
+    return { clear, brokerSalary }
 }
 
 function getDistintBetweenUnUniqueLeads(lead) {

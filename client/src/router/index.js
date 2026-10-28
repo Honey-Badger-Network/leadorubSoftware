@@ -47,6 +47,12 @@ const router = createRouter({
       meta: { requiresAuth: true, onlyAdmin: false }
     },
     {
+      path: '/rop-salary',
+      name: 'ropSalary',
+      component: () => import('../views/RopSalaryView.vue'),
+      meta: { requiresAuth: true, onlyAdmin: true }
+    },
+    {
       path: '/okk',
       name: "okk",
       component: () => import('../views/OKKView.vue'),

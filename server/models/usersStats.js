@@ -9,6 +9,7 @@ const usersStats = new Schema({
     email: String,
     name: String,
     date: String,
+    rankName: String,
     countCalls: numberWithDefault,
     countMissedCalls: numberWithDefault,
 

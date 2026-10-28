@@ -21,6 +21,25 @@ const router = Router()
 
 dayjs.extend(isoWeek)
 
+router.get('/api/salary/rop', async (req, res) => {
+    const { getWeekDates, getRopSalary } = require('../services/payrollService')
+    let dates
+    try {
+        dates = getWeekDates(req.query.date)
+    } catch (error) {
+        return res.status(400).json({ msg: error.message })
+    }
+    try {
+        const [rows, users] = await Promise.all([
+            usersStatsModel.find({ date: { $gte: dates[0], $lte: dates[6] } }).lean(),
+            usersModel.find().select('_id email rankName').lean()
+        ])
+        res.json({ data: getRopSalary(rows, users, req.query.date) })
+    } catch (error) {
+        res.status(500).json({ msg: error.message })
+    }
+})
+
 router.get('/api/salary/updateInfo', async (req, res) => {
 
     try {

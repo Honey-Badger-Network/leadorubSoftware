@@ -184,6 +184,12 @@ export default {
           condition: null,
         },
         {
+          label: 'ЗП РОПа',
+          path: '/rop-salary',
+          icon: markRaw(Money),
+          condition: () => this.rankName === 'admin',
+        },
+        {
           label: 'ОКК',
           path: '/okk',
           icon: markRaw(Star),
