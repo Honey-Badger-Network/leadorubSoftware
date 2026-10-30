@@ -1,39 +1,28 @@
 const dayjs = require('dayjs')
 const cron = require('node-cron')
-const baseStats = require('../models/baseStats')
-const leadsModel = require('../models/leadsModel')
-const { getSkorozvonBaseCalls } = require('../services/skorozvonService')
-const { aggregateBases, isValidPeriod } = require('../services/baseStatsService')
-
-async function setBasesStatsToDB(gte, lte = gte) {
-    if (!isValidPeriod(gte, lte)) throw new Error('Укажите корректный период YYYY-MM-DD')
-    for (let date = dayjs(gte); date.format('YYYY-MM-DD') <= lte; date = date.add(1, 'day')) {
-        const key = date.format('YYYY-MM-DD')
-        const [calls, leads] = await Promise.all([
-            getSkorozvonBaseCalls(key, key),
-            leadsModel.find({ date: key }).lean()
-        ])
-        const bases = aggregateBases(calls, leads)
-        await baseStats.updateOne({ date: key }, { $set: { bases } }, { upsert: true })
-    }
-}
+const analytics = require('../services/baseAnalyticsService')
+let task
 
 function setBasesStatsCrone() {
-    let running = false
+    if (task) return task
     const update = async () => {
-        if (running) return
-        running = true
+        if (analytics.getState().running) return
+        const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Moscow' }).format(new Date())
+        const yesterday = dayjs(today).subtract(1, 'day').format('YYYY-MM-DD')
         try {
-            // Refresh yesterday too, so calls completed around midnight are included.
-            await setBasesStatsToDB(dayjs().subtract(1, 'day').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD'))
+            const results = await analytics.sync(yesterday, today)
+            for (const result of results) {
+                const message = `[Аналитика баз] ${result.date}: ${result.status}; без базы: ${result.unresolvedCalls || 0}`
+                if (result.error) console.error(message, result.error)
+                else console.log(message)
+            }
         } catch (error) {
-            console.error('Не удалось обновить статистику баз:', error.message)
-        } finally {
-            running = false
+            console.error('[Аналитика баз] Ошибка запуска:', error.message)
         }
     }
+    task = cron.schedule('0,30 * * * *', update, { timezone: 'Europe/Moscow' })
     update()
-    return cron.schedule('0,30 * * * *', update)
+    return task
 }
 
-module.exports = { setBasesStatsCrone, setBasesStatsToDB }
+module.exports = { setBasesStatsCrone, setBasesStatsToDB: analytics.sync }

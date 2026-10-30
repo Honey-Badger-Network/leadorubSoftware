@@ -26,7 +26,7 @@ async function getSkorozvonToken() {
             api_key: skorozvonAPI,
             client_id: skorozvonID,
             client_secret: skorozvonSecret,
-        });
+        }, { timeout: 60000 });
         return response.data.access_token;
     } catch (error) {
         console.error('Ошибка авторизации Skorozvon:', error);
@@ -454,36 +454,4 @@ async function getLeadTimeline(transfer, onlyTransfers = false) {
     }
 }
 
-async function getSkorozvonBaseCalls(gte, lte) {
-    const { attachCallProjects } = require('./baseCallHistory')
-    const token = await getSkorozvonToken()
-    if (!token) throw new Error('Не удалось авторизоваться в Скорозвоне')
-    const calls = []
-    for (let page = 1; ; page++) {
-        const response = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/calls', {
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 60000,
-            params: {
-                limit: 100, page, offset: (page - 1) * 100,
-                'date[from]': gte, 'date[to]': lte,
-                'duration[from]': 1, type: 'all'
-            }
-        })
-        const data = response.data?.data
-        if (!Array.isArray(data?.calls) || !Number.isFinite(Number(data.total))) {
-            throw new Error('Некорректный ответ Скорозвона при загрузке звонков баз')
-        }
-        calls.push(...data.calls)
-        if (calls.length >= Number(data.total)) break
-        if (!data.calls.length) throw new Error('Скорозвон вернул неполный список звонков')
-    }
-    return attachCallProjects(calls, async leadUrl => {
-        const response = await axios.get(`https://pod5-shard2-lb1.skorozvon.ru/${leadUrl}/history`, {
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 60000
-        })
-        return response.data?.data?.data
-    })
-}
-
-module.exports = { getSkorozvonBaseCalls, getSkorozvonToken, getSkorozvonCalls, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls, getSkorozvonCallsFromProfile, getDifferenceByCalls }
+module.exports = { getSkorozvonToken, getSkorozvonCalls, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls, getSkorozvonCallsFromProfile, getDifferenceByCalls }

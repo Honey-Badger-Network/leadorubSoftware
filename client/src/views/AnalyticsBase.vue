@@ -57,7 +57,7 @@
     <template v-if="hasRequested">
       <el-alert v-if="coverage && coverage.days < coverage.expectedDays" class="base-analytics-alert"
         type="warning" show-icon :closable="false" title="Статистика звонков собрана не за весь период"
-        :description="`Данные звонков доступны за ${coverage.days} из ${coverage.expectedDays} дней. Лиды, целевые и холды показаны за весь период. Для прошлых дат нужен пересчёт статистики баз.`" />
+        :description="`Полные данные звонков: ${coverage.days} из ${coverage.expectedDays} дней. Обновляются: ${coverage.runningDays || 0}, с ошибками: ${coverage.failedDays || 0}, с неполной привязкой баз: ${coverage.partialDays || 0}. Звонков без определённой базы: ${coverage.unresolvedCalls || 0}. Лиды, целевые и холды показаны за весь период.`" />
       <section v-if="projects.length || isLoading" class="summary-grid" v-loading="isLoading">
         <article v-for="card in summaryCards" :key="card.key" class="summary-card">
           <span class="summary-card__icon">

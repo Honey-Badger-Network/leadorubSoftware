@@ -15,18 +15,33 @@ function projectFromHistory(call, history) {
     return projects.size === 1 ? [...projects][0] : null
 }
 
-async function attachCallProjects(calls, loadHistory) {
+async function attachCallProjects(calls, loadHistory, { tolerateErrors = false, onUnresolved = () => {} } = {}) {
     const histories = new Map()
-    const result = []
-    for (const call of calls) {
-        if (!call.lead_url) throw new Error('У звонка нет lead_url для получения истории базы')
-        if (!histories.has(call.lead_url)) {
-            const history = await loadHistory(call.lead_url)
-            if (!Array.isArray(history)) throw new Error('Некорректный ответ истории звонков Скорозвона')
-            histories.set(call.lead_url, history)
+    const result = new Array(calls.length)
+    let next = 0
+    async function worker() {
+        while (next < calls.length) {
+            const index = next++
+            const call = calls[index]
+            let project = null
+            let reason = 'База не найдена в истории звонка'
+            try {
+                if (!call.lead_url) throw new Error('У звонка нет lead_url')
+                if (!histories.has(call.lead_url)) {
+                    histories.set(call.lead_url, Promise.resolve().then(() => loadHistory(call.lead_url)))
+                }
+                const history = await histories.get(call.lead_url)
+                if (!Array.isArray(history)) throw new Error('Некорректный ответ истории звонков')
+                project = projectFromHistory(call, history)
+            } catch (error) {
+                if (!tolerateErrors) throw error
+                reason = error.message
+            }
+            if (!project) onUnresolved(reason)
+            result[index] = { ...call, call_project: project, project: null }
         }
-        result.push({ ...call, call_project: projectFromHistory(call, histories.get(call.lead_url)), project: null })
     }
+    await Promise.all(Array.from({ length: Math.min(4, calls.length) }, worker))
     return result
 }
 

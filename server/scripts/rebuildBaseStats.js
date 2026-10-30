@@ -9,8 +9,9 @@ async function main() {
     const { DATABASE_URL, DATABASE_USERNAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_NAME } = process.env
     try {
         await mongoose.connect(`mongodb://${encodeURIComponent(DATABASE_USERNAME)}:${encodeURIComponent(DATABASE_PASSWORD)}@${DATABASE_URL}:${DATABASE_PORT}/${DATABASE_NAME}?authSource=admin`)
-        await setBasesStatsToDB(gte, lte)
-        console.log(`Статистика баз обновлена: ${gte} — ${lte}`)
+        const results = await setBasesStatsToDB(gte, lte)
+        console.table(results)
+        if (results.some(day => day.status !== 'success')) process.exitCode = 1
     } finally {
         await mongoose.disconnect()
     }
