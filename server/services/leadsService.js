@@ -204,7 +204,7 @@ function calculateClearByUser(userObject, countUsers, date) {
     // ТАК И ЗНАЛ ЧТО ЛУЧШЕ МНЕ САОММУ ТУ БЛЯДСКУЮ ФИЧУ БЫЛО СДЕЛАТЬ
 
     // TODO пока убираем ту фичу с изменением изначаьного минуса (потом вернуть или изменить как мне скажут)
-    let minusOfBase = 5000
+    let minusOfBase = 5000 / countUsers
 
     // let minusOfBase = 0
 
