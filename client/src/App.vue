@@ -183,12 +183,13 @@ export default {
           icon: markRaw(Money),
           condition: null,
         },
-        {
-          label: 'ЗП РОПа',
-          path: '/rop-salary',
-          icon: markRaw(Discount),
-          condition: () => this.rankName === 'admin',
-        },
+        // TODO потмо мб вернуть когда то когад скажут мб
+        // {
+        //   label: 'ЗП РОПа',
+        //   path: '/rop-salary',
+        //   icon: markRaw(Discount),
+        //   condition: () => this.rankName === 'admin',
+        // },
         {
           label: 'ОКК',
           path: '/okk',

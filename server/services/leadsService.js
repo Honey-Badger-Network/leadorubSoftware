@@ -203,13 +203,16 @@ function calculateClearByUser(userObject, countUsers, date) {
     // ЕБАНА НЕЙРОНКА БЛЯТЬ ВМЕСТО 8400 ВЬЕБАЛА МНЕ 84000 (Я ДУМАЛ ПОЧЕМУ РАЩЕТ ПО ПИЗДЕ ПОШОЛ)
     // ТАК И ЗНАЛ ЧТО ЛУЧШЕ МНЕ САОММУ ТУ БЛЯДСКУЮ ФИЧУ БЫЛО СДЕЛАТЬ
 
-    let minusOfBase = 0
+    // TODO пока убираем ту фичу с изменением изначаьного минуса (потом вернуть или изменить как мне скажут)
+    let minusOfBase = 5000
 
-    if (dayOfWeek === 0) {
-        minusOfBase = 5000 / countUsers
-    } else {
-        minusOfBase = 8400 / countUsers
-    }
+    // let minusOfBase = 0
+
+    // if (dayOfWeek === 0) {
+    //     minusOfBase = 5000 / countUsers
+    // } else {
+    //     minusOfBase = 8400 / countUsers
+    // }
 
     const allSumHold = userObject.sumHold * 0.6
     const clear = Math.floor(allSumHold - minusOfBase - brokerSalary - userObject.salary)
