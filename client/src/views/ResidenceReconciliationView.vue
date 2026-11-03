@@ -7,9 +7,20 @@
         <el-radio-group v-model="mode" :disabled="loading" @change="resetReport">
           <el-radio-button value="week">Неделя</el-radio-button>
           <el-radio-button value="month">Месяц</el-radio-button>
+          <el-radio-button value="custom">По дням / произвольный</el-radio-button>
         </el-radio-group>
       </el-form-item>
-      <el-form-item :label="mode === 'week' ? 'Выберите неделю' : 'Выберите месяц'">
+      <template v-if="mode === 'custom'">
+        <el-form-item label="Период лидов из БД">
+          <el-date-picker v-model="localRange" type="daterange" format="DD.MM.YYYY" value-format="YYYY-MM-DD"
+            start-placeholder="С даты" end-placeholder="По дату" range-separator="—" :disabled="loading" @change="resetReport" />
+        </el-form-item>
+        <el-form-item label="Период записей резиденции">
+          <el-date-picker v-model="residenceRange" type="daterange" format="DD.MM.YYYY" value-format="YYYY-MM-DD"
+            start-placeholder="С даты" end-placeholder="По дату" range-separator="—" :disabled="loading" @change="resetReport" />
+        </el-form-item>
+      </template>
+      <el-form-item v-else :label="mode === 'week' ? 'Выберите неделю' : 'Выберите месяц'">
         <el-space wrap :size="12">
           <el-button :disabled="loading" @click="shiftPeriod(-1)">← Назад</el-button>
           <el-date-picker :key="mode" v-model="selectedDate" :type="mode" :format="mode === 'week' ? 'DD.MM.YYYY' : 'MM.YYYY'"
@@ -18,10 +29,10 @@
           <el-tag>{{ formatDate(period.gte) }} — {{ formatDate(period.lte) }}</el-tag>
         </el-space>
       </el-form-item>
-      <el-button type="primary" native-type="submit" :loading="loading" :disabled="!period.gte">Сверить резиденцию</el-button>
+      <el-button type="primary" native-type="submit" :loading="loading" :disabled="!isPeriodValid">Сверить резиденцию</el-button>
     </el-form>
     <el-divider />
-    <el-text type="info">В БД и резиденции используется один и тот же период. Из резиденции берутся все записи с телефонами лидов из БД.</el-text>
+    <el-text type="info">{{ mode === 'custom' ? 'Диапазоны независимы: в каждом можно выбрать один или несколько дней, включая обе даты.' : 'В БД и резиденции используется один и тот же период.' }} Из резиденции берутся все записи с телефонами выбранных лидов из БД.</el-text>
   </el-card>
   <el-divider />
   <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" />
@@ -62,7 +73,7 @@
       </el-table>
       <el-divider />
       <el-space direction="vertical" alignment="start">
-        <el-text type="info">Холды — количество записей со статусами hold, confirmed или refused на каждой стороне. Сумма — только по этим статусам: price в БД и price.offer в резиденции. Если совпадений по телефону нет, в резиденции учитывается 0. Повторные телефоны не умножают записи резиденции.</el-text>
+        <el-text type="info">Холды в БД — сумма countHold выбранных лидов. В резиденции считаются все записи со статусами hold, confirmed или refused. Сумма холдов: price в БД и price.offer в резиденции. Если совпадений по телефону нет, в резиденции учитывается 0. Повторные телефоны не умножают записи резиденции.</el-text>
         <el-text type="info">* Прирост от холдов = (сумма после × 0.6 − ЗП брокера после) − (сумма до × 0.6 − ЗП брокера до). ЗП брокера = floor(сумма холдов × 0.6 × 0.15), рассчитывается по каждому дню. Показана только разница; зарплата лидоруба и постоянные расходы не меняются.</el-text>
       </el-space>
     </el-card>
@@ -96,12 +107,13 @@
         <el-table-column label="Офферы резиденции" min-width="340">
           <template #default="{ row }">
             <el-space direction="vertical" alignment="start" :size="8">
-              <el-space v-for="(offer, index) in row.offers" :key="offer.id || index" wrap :size="6">
-                <el-tag v-if="offer.added" type="success" effect="plain" size="small">Добавился</el-tag>
+              <el-space v-for="(offer, index) in row.newOffers" :key="offer.id || index" wrap :size="6">
+                <el-tag type="success" effect="plain" size="small">Добавился</el-tag>
                 <el-text>{{ offer.offerName || 'Без названия' }} · {{ number(offer.offerPrice) }} ₽</el-text>
                 <el-tag :type="statusType(offer.status)" size="small">{{ offer.status }}</el-tag>
               </el-space>
               <el-text v-if="!row.offers?.length" type="info">Нет офферов</el-text>
+              <el-text v-else-if="!row.newOffers?.length" type="primary">Всё без изменений</el-text>
             </el-space>
           </template>
         </el-table-column>
@@ -122,14 +134,24 @@ dayjs.extend(isoWeek)
 const store = useStore()
 const mode = ref('week')
 const selectedDate = ref(dayjs().format('YYYY-MM-DD'))
+const localRange = ref([selectedDate.value, selectedDate.value])
+const residenceRange = ref([selectedDate.value, selectedDate.value])
 const loading = ref(false)
 const report = ref(null)
 const message = ref('')
 const error = ref('')
 const period = computed(() => {
+  if (mode.value === 'custom') return {
+    gte: localRange.value?.[0], lte: localRange.value?.[1],
+    residenceGte: residenceRange.value?.[0], residenceLte: residenceRange.value?.[1]
+  }
   if (!selectedDate.value || !dayjs(selectedDate.value).isValid()) return { gte: '', lte: '' }
   const unit = mode.value === 'week' ? 'isoWeek' : 'month'
   return { gte: dayjs(selectedDate.value).startOf(unit).format('YYYY-MM-DD'), lte: dayjs(selectedDate.value).endOf(unit).format('YYYY-MM-DD') }
+})
+const isPeriodValid = computed(() => {
+  const { gte, lte, residenceGte, residenceLte } = period.value
+  return Boolean(gte && lte && gte <= lte && (mode.value !== 'custom' || (residenceGte && residenceLte && residenceGte <= residenceLte)))
 })
 const userRows = computed(() => report.value ? [...report.value.users, report.value.total] : [])
 const number = value => new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value || 0)
@@ -143,7 +165,7 @@ function shiftPeriod(direction) {
   resetReport()
 }
 async function reconcile() {
-  if (loading.value || !period.value.gte) return
+  if (loading.value || !isPeriodValid.value) return
   resetReport()
   loading.value = true
   try {

@@ -4,7 +4,13 @@ const HOLD_STATUSES = new Set(['hold', 'confirmed', 'refused'])
 function resolvePeriod(input) {
     const options = typeof input === 'string' ? { date: input } : (input || {})
     const mode = options.mode || 'week'
-    if (!['week', 'month'].includes(mode)) throw new Error('Выберите неделю или месяц')
+    if (!['week', 'month', 'custom'].includes(mode)) throw new Error('Выберите неделю, месяц или произвольный период')
+    if (mode === 'custom') {
+        const { gte, lte, residenceGte, residenceLte } = options
+        for (const date of [gte, lte, residenceGte, residenceLte]) getWeekDates(date)
+        if (gte > lte || residenceGte > residenceLte) throw new Error('Начало периода не может быть позже окончания')
+        return { mode, gte, lte, residenceGte, residenceLte }
+    }
     const date = options.gte || options.date
     const week = getWeekDates(date) // Strict YYYY-MM-DD validation.
     let gte = week[0]
@@ -17,7 +23,7 @@ function resolvePeriod(input) {
     if ((options.gte !== undefined || options.lte !== undefined) && (options.gte !== gte || options.lte !== lte)) {
         throw new Error('Укажите полную неделю пн–вс или полный календарный месяц')
     }
-    return { mode, gte, lte }
+    return { mode, gte, lte, residenceGte: gte, residenceLte: lte }
 }
 
 function normalizePhone(value) {
@@ -30,17 +36,19 @@ function summarizeRecords(rows, source) {
         const status = source === 'local' ? row.residenceStatus : row.status
         const amount = Number((source === 'local' ? row.price : row.price?.offer) ?? 0)
         const hold = HOLD_STATUSES.has(status)
+        const countHold = source === 'local' ? Number(row.countHold ?? 0) : Number(hold)
+        if (!Number.isInteger(countHold) || countHold < 0) throw new Error('Некорректное количество холдов')
         if (hold && (!Number.isFinite(amount) || amount < 0)) throw new Error('Некорректная сумма холда')
         return {
             id: String(row._id || ''), status: status || 'created',
             date: source === 'local' ? row.date : String(row.startedAt || '').slice(0, 10),
-            price: hold ? amount : 0, offerPrice: Number.isFinite(amount) ? amount : 0, hold,
+            price: hold ? amount : 0, offerPrice: Number.isFinite(amount) ? amount : 0, hold, countHold,
             offerName: row.offerId?.name || '', broker: row.userId?.name || row.broker || ''
         }
     })
     return {
         totalLeads: records.length,
-        countHold: records.filter(row => row.hold).length,
+        countHold: records.reduce((sum, row) => sum + row.countHold, 0),
         price: records.reduce((sum, row) => sum + row.price, 0),
         statuses: [...new Set(records.map(row => row.status))].sort(), records
     }
@@ -81,6 +89,9 @@ function buildReconciliation(localLeads, residenceLeads) {
         const userName = sharedPhone ? `Общий телефон: ${[...owners.values()].sort().join(', ')}` : [...owners.values()][0]
         const before = summarizeRecords(leads, 'local')
         const after = summarizeRecords(matches, 'remote')
+        // Like the cron: a hold status takes precedence over non-hold offers.
+        const holdRecords = after.records.filter(record => record.hold)
+        if (holdRecords.length) after.statuses = [holdRecords[holdRecords.length - 1].status]
         // Stored offers have no residence ID; match occurrences by name and broker.
         const savedOffers = leads.flatMap(lead => lead.offersList || [])
         const remaining = [...savedOffers]
@@ -95,7 +106,7 @@ function buildReconciliation(localLeads, residenceLeads) {
             id: phone, phone: leads[0].phone || '', date: leads.map(lead => lead.date).sort()[0],
             localIds: leads.map(lead => String(lead._id)), userKey, userName, sharedPhone,
             leadProject: [...new Set(leads.map(lead => lead.leadProject).filter(Boolean))].join(', '),
-            before, after, offers, changedFields,
+            before, after, offers, newOffers: offers.filter(offer => offer.added), changedFields,
             fromStatuses: before.statuses, toStatuses: after.statuses
         })
     }
@@ -142,7 +153,7 @@ function aggregateByUsers(comparisons) {
 function createResidenceReconciliation({ model, fetchResidence }) {
     let running = false
     return async function previewReconciliation(input) {
-        const { mode, gte, lte } = resolvePeriod(input)
+        const { mode, gte, lte, residenceGte, residenceLte } = resolvePeriod(input)
         if (running) {
             const error = new Error('Сверка резиденции уже выполняется')
             error.status = 409
@@ -151,9 +162,9 @@ function createResidenceReconciliation({ model, fetchResidence }) {
         running = true
         try {
             const selected = await model.find({ date: { $gte: gte, $lte: lte } }).lean()
-            const result = { mode, gte, lte, readOnly: true, checked: selected.length, matched: 0, changed: 0, skipped: [], changes: [] }
+            const result = { mode, gte, lte, residenceGte, residenceLte, readOnly: true, checked: selected.length, matched: 0, changed: 0, skipped: [], changes: [] }
             if (!selected.length) return { ...result, ...aggregateByUsers([]) }
-            const payload = await fetchResidence(gte, lte)
+            const payload = await fetchResidence(residenceGte, residenceLte)
             if (!Array.isArray(payload?.data)) throw new Error('Интеграция вернула некорректный список лидов; сверка отменена')
             if (payload.total != null && Number(payload.total) > payload.data.length) throw new Error('Интеграция вернула неполный список лидов; сверка отменена')
             const plan = buildReconciliation(selected, payload.data)

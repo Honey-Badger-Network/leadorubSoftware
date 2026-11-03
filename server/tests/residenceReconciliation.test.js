@@ -1,14 +1,14 @@
 const test = require('node:test')
 const assert = require('node:assert/strict')
 const { buildReconciliation, aggregateByUsers, resolvePeriod, createResidenceReconciliation } = require('../services/residenceReconciliation')
-const local = { _id: 'l1', user: 'u1', userName: 'Operator', date: '2026-11-01', phone: '9991234567', residenceStatus: 'hold', price: 1000, countHold: 99 }
+const local = { _id: 'l1', user: 'u1', userName: 'Operator', date: '2026-11-01', phone: '9991234567', residenceStatus: 'hold', price: 1000, countHold: 1 }
 const remote = { _id: 'r1', phone: '+7 (999) 123-45-67', startedAt: '2026-11-01', status: 'hold', price: { offer: 2000 } }
 const summary = (leads, rows) => aggregateByUsers(buildReconciliation(leads, rows).comparisons)
 
 test('compares invalid, breaked and hold phones against all their residence offers', () => {
     const leads = [
-        { ...local, _id: 'l123', phone: '123', residenceStatus: 'invalid', price: 0 },
-        { ...local, _id: 'l124', phone: '124', residenceStatus: 'breaked', price: 0 },
+        { ...local, _id: 'l123', phone: '123', residenceStatus: 'invalid', countHold: 0, price: 0 },
+        { ...local, _id: 'l124', phone: '124', residenceStatus: 'breaked', countHold: 0, price: 0 },
         { ...local, _id: 'l125', phone: '125', residenceStatus: 'hold', price: 10000 }
     ]
     const offers = [
@@ -45,7 +45,7 @@ test('marks extra offers without treating status or amount updates as new offers
 })
 
 test('counts every matching residence hold separately, filters both sums by status', () => {
-    const result = summary([local, { ...local, _id: 'l2', phone: '9992223344', residenceStatus: 'invalid', price: 99999 }], [
+    const result = summary([local, { ...local, _id: 'l2', phone: '9992223344', residenceStatus: 'invalid', countHold: 0, price: 99999 }], [
         remote, { ...remote, _id: 'r2', status: 'confirmed', price: { offer: 3000 } },
         { ...remote, _id: 'r3', status: 'refused', price: { offer: 4000 } },
         { ...remote, _id: 'r4', status: 'created', price: { offer: 99999 } },
@@ -109,12 +109,59 @@ test('validates calendar months and weeks', () => {
     assert.throws(() => resolvePeriod({ mode: 'month', date: '2026-02-30' }))
 })
 
+test('custom periods query DB and residence independently, including single days', async () => {
+    const input = { mode: 'custom', gte: '2026-09-03', lte: '2026-09-03', residenceGte: '2026-09-03', residenceLte: '2026-09-06' }
+    const reconcile = createResidenceReconciliation({
+        model: { find: filter => {
+            assert.deepEqual(filter.date, { $gte: input.gte, $lte: input.lte })
+            return { lean: async () => [{ ...local, date: input.gte, countHold: 3 }] }
+        } },
+        fetchResidence: async (gte, lte) => {
+            assert.equal(gte, input.residenceGte)
+            assert.equal(lte, input.residenceLte)
+            return { data: [{ ...remote, startedAt: '2026-09-06' }] }
+        }
+    })
+    const result = await reconcile(input)
+    assert.equal(result.total.holdsBefore, 3)
+    assert.equal(result.total.holdsAfter, 1)
+    assert.equal(result.residenceLte, input.residenceLte)
+    assert.equal(result.readOnly, true)
+    assert.deepEqual(resolvePeriod({ ...input, lte: '2026-09-08', residenceLte: input.residenceGte }),
+        { ...input, lte: '2026-09-08', residenceLte: input.residenceGte })
+    for (const invalid of [
+        { ...input, gte: '2026-09-04' }, { ...input, residenceLte: '2026-09-02' },
+        { ...input, residenceLte: undefined }, { ...input, lte: '2026-02-30' }
+    ]) assert.throws(() => resolvePeriod(invalid))
+})
+
+test('hold status takes priority while all offers remain available and existing offers are not new', () => {
+    const offersList = [
+        { offerName: 'A', broker: 'Broker', status: 'breaked', price: 0 },
+        { offerName: 'B', broker: 'Broker', status: 'hold', price: 1000 },
+        { offerName: 'C', broker: 'Broker', status: 'breaked', price: 0 }
+    ]
+    const records = offersList.map((offer, index) => ({
+        ...remote, _id: `offer-${index}`, offerId: { name: offer.offerName },
+        userId: { name: offer.broker }, status: offer.status, price: { offer: offer.price }
+    }))
+    const item = buildReconciliation([{ ...local, offersList, countHold: 2 }], records).comparisons[0]
+    assert.deepEqual(item.toStatuses, ['hold'])
+    assert.equal(item.before.countHold, 2)
+    assert.equal(item.after.countHold, 1)
+    assert.equal(item.offers.length, 3)
+    assert.equal(item.newOffers.length, 0)
+    const empty = buildReconciliation([local], []).comparisons[0]
+    assert.equal(empty.offers.length, 0)
+    assert.equal(empty.newOffers.length, 0)
+})
+
 test('comparison exposes all source records and leaves originals intact', () => {
     const snapshot = structuredClone(local)
     const plan = buildReconciliation([local], [remote, { ...remote, _id: 'r2', status: 'confirmed' }])
     assert.deepEqual(local, snapshot)
     assert.deepEqual(plan.changes[0].fromStatuses, ['hold'])
-    assert.deepEqual(plan.changes[0].toStatuses, ['confirmed', 'hold'])
+    assert.deepEqual(plan.changes[0].toStatuses, ['confirmed'])
     assert.equal(plan.changes[0].after.records.length, 2)
     assert.equal(Object.hasOwn(plan, 'operations'), false)
 })
