@@ -36,6 +36,14 @@
           <span class="admin-action__arrow">→</span>
         </button>
       </div>
+      <el-divider />
+      <el-space direction="vertical" alignment="start">
+        <el-button type="primary" plain :loading="isLoading" @click="reconcileResidenceWeek">
+          Сверить резиденцию за неделю
+        </el-button>
+        <el-text type="info">Неделя выбранной даты: пн–вс. В интеграции также проверяется следующий понедельник для запоздавших лидов.</el-text>
+        <el-alert v-if="reconciliationResult" :title="reconciliationResult" type="info" :closable="false" show-icon />
+      </el-space>
     </section>
 
     <section v-else class="welcome-panel">
@@ -62,6 +70,7 @@
         userRank: '',
         isAdmin: false,
         isLoading: false,
+        reconciliationResult: '',
         updateActions: [
           { index: '01', value: 'updateSalary', title: 'Обновить зарплатную', description: 'Пересчитать показатели и выплаты' },
           { index: '02', value: 'updateLeads', title: 'Обновить лиды', description: 'Синхронизировать данные по лидам' },
@@ -70,6 +79,24 @@
       }
     },
     methods: {
+      async reconcileResidenceWeek() {
+        if (this.isLoading) return
+        this.isLoading = true
+        this.reconciliationResult = ''
+        try {
+          const response = await this.$store.dispatch('createDataList', {
+            col: 'api/residence/reconcile-week', data: { date: this.gte }
+          })
+          const days = response.data.changedDates
+          this.reconciliationResult = response.msg + (days.length
+            ? `. Для обновления зарплатной пересчитайте userStats за даты: ${days.join(', ')}.` : '')
+          ElMessage.success('Сверка резиденции завершена')
+        } catch (error) {
+          ElMessage.error(error.response?.data?.msg || error.message)
+        } finally {
+          this.isLoading = false
+        }
+      },
       async startUpdateUsersStats(mode) {
         try {
 

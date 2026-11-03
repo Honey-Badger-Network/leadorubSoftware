@@ -9,9 +9,10 @@ dotenv.config()
 
 const { residenceBaseUrl, residenceToken } = process.env
 
-async function getResidenceLeads(gte, lte) {
+async function getResidenceLeads(gte, lte, { strict = false } = {}) {
     try {
         const responseLeads = await axios.get(`${residenceBaseUrl}leads`, {
+            timeout: 60000,
             httpsAgent: new https.Agent({ rejectUnauthorized: false }),
             headers: { Authorization: `Bearer ${residenceToken}` },
             params: {
@@ -25,6 +26,7 @@ async function getResidenceLeads(gte, lte) {
         return responseLeads.data
 
     } catch (e) {
+        if (strict) throw e
         console.log(e.message)
     }
 }

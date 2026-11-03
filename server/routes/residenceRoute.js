@@ -16,6 +16,23 @@ const { residenceBaseUrl, residenceToken } = process.env
 
 const router = Router()
 
+router.post('/api/residence/reconcile-week', async (req, res) => {
+    const { getWeekDates } = require('../services/payrollService')
+    const { reconcileResidenceWeek } = require('../services/residenceWeeklyService')
+    const date = req.body?.date
+    try {
+        getWeekDates(date)
+    } catch (error) {
+        return res.status(400).json({ msg: error.message })
+    }
+    try {
+        const data = await reconcileResidenceWeek(date)
+        res.json({ data, msg: `Сверка ${data.gte} — ${data.lte}: проверено ${data.checked}, обновлено ${data.modified}, пропущено ${data.skipped.length}` })
+    } catch (error) {
+        res.status(error.status || 500).json({ msg: error.message })
+    }
+})
+
 router.get('/api/residence/brokersList', async (req, res) => {
     try {
 
