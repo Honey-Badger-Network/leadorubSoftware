@@ -47,7 +47,7 @@ function buildReconciliation(localLeads, residenceLeads) {
         if (!remote.has(phone)) remote.set(phone, [])
         remote.get(phone).push(lead)
     }
-    const operations = []
+
     const changes = []
     const skipped = []
     const changedDates = new Set()
@@ -70,7 +70,7 @@ function buildReconciliation(localLeads, residenceLeads) {
         }
         if (values.broker !== undefined) current.broker = lead.broker
         if (JSON.stringify(current) === JSON.stringify(values)) continue
-        operations.push({ updateOne: { filter: { _id: lead._id }, update: { $set: values }, upsert: false } })
+
         changes.push({
             id: String(lead._id), date: lead.date, phone: lead.phone || '',
             userName: lead.userName || '', leadProject: lead.leadProject || '',
@@ -80,13 +80,79 @@ function buildReconciliation(localLeads, residenceLeads) {
         })
         changedDates.add(lead.date)
     }
-    return { operations, changes, matched, skipped, changedDates: [...changedDates].sort() }
+    return { changes, matched, skipped, changedDates: [...changedDates].sort() }
+}
+
+function resolvePeriod(input) {
+    const options = typeof input === 'string' ? { date: input } : (input || {})
+    const mode = options.mode || 'week'
+    if (!['week', 'month'].includes(mode)) throw new Error('Выберите неделю или месяц')
+    const date = options.gte || options.date
+    const week = getWeekDates(date) // Strict YYYY-MM-DD validation.
+    let gte = week[0]
+    let lte = week[6]
+    if (mode === 'month') {
+        const current = new Date(`${date}T00:00:00Z`)
+        gte = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), 1)).toISOString().slice(0, 10)
+        lte = new Date(Date.UTC(current.getUTCFullYear(), current.getUTCMonth() + 1, 0)).toISOString().slice(0, 10)
+    }
+    if ((options.gte !== undefined || options.lte !== undefined) && (options.gte !== gte || options.lte !== lte)) {
+        throw new Error('Укажите полную неделю пн–вс или полный календарный месяц')
+    }
+    return { mode, gte, lte }
+}
+
+function aggregateByUsers(leads, changes, skipped) {
+    const byLead = new Map(changes.map(change => [change.id, change]))
+    const skippedIds = new Set(skipped.map(lead => lead.id))
+    const users = new Map()
+    const dailySums = new Map()
+    const numeric = value => Number.isFinite(Number(value)) ? Number(value) : 0
+    for (const lead of leads) {
+        const userKey = lead.user ? `id:${lead.user}` : `name:${lead.userName || 'Без лидоруба'}`
+        if (!users.has(userKey)) users.set(userKey, {
+            userKey, userName: lead.userName || 'Без лидоруба',
+            totalLeads: 0, holdsBefore: 0, holdsAfter: 0,
+            sumBefore: 0, sumAfter: 0, skipped: 0
+        })
+        const user = users.get(userKey)
+        const change = byLead.get(String(lead._id))
+        const after = change?.after || lead
+        user.totalLeads++
+        user.holdsBefore += HOLD_STATUSES.has(lead.residenceStatus) ? 1 : 0
+        user.holdsAfter += HOLD_STATUSES.has(after.residenceStatus) ? 1 : 0
+        user.sumBefore += numeric(lead.price)
+        user.sumAfter += numeric(after.price)
+        const dayKey = JSON.stringify([userKey, lead.date])
+        if (!dailySums.has(dayKey)) dailySums.set(dayKey, { userKey, before: 0, after: 0 })
+        dailySums.get(dayKey).before += numeric(lead.price)
+        dailySums.get(dayKey).after += numeric(after.price)
+        user.skipped += skippedIds.has(String(lead._id)) ? 1 : 0
+        if (change) change.userKey = userKey
+    }
+    const clearDeltas = new Map()
+    const incomeFromHolds = sum => sum * 0.6 - Math.floor(sum * 0.6 * 0.15)
+    for (const day of dailySums.values()) {
+        const delta = incomeFromHolds(day.after) - incomeFromHolds(day.before)
+        clearDeltas.set(day.userKey, (clearDeltas.get(day.userKey) || 0) + delta)
+    }
+    const rows = [...users.values()].map(user => ({
+        ...user,
+        holdsDelta: user.holdsAfter - user.holdsBefore,
+        // Compare hold income before/after, preserving daily broker salary rounding.
+        clearDelta: Math.round((clearDeltas.get(user.userKey) || 0) * 100) / 100
+    })).sort((a, b) => a.userName.localeCompare(b.userName, 'ru'))
+    const total = { userKey: 'total', userName: 'Итого', isTotal: true }
+    for (const key of ['totalLeads', 'holdsBefore', 'holdsAfter', 'holdsDelta', 'sumBefore', 'sumAfter', 'clearDelta', 'skipped']) {
+        total[key] = Math.round(rows.reduce((sum, user) => sum + user[key], 0) * 100) / 100
+    }
+    return { users: rows, total }
 }
 
 function createResidenceReconciliation({ model, fetchResidence }) {
     let running = false
-    return async function reconcileWeek(date) {
-        const dates = getWeekDates(date)
+    return async function previewReconciliation(input) {
+        const { mode, gte, lte } = resolvePeriod(input)
         if (running) {
             const error = new Error('Сверка резиденции уже выполняется')
             error.status = 409
@@ -94,39 +160,28 @@ function createResidenceReconciliation({ model, fetchResidence }) {
         }
         running = true
         try {
-            const [gte, lte] = [dates[0], dates[6]]
-            // Include Monday after the selected week to catch Sunday leads registered a day late.
             const nextDay = new Date(`${lte}T00:00:00Z`)
             nextDay.setUTCDate(nextDay.getUTCDate() + 1)
             const integrationLte = nextDay.toISOString().slice(0, 10)
-            // Include boundary-day local leads in ambiguity checks, but never update them.
             const allLocal = await model.find({ date: { $gte: gte, $lte: integrationLte } }).lean()
             const selected = allLocal.filter(lead => lead.date <= lte)
-            const result = { gte, lte, integrationLte, checked: selected.length, matched: 0, modified: 0, skipped: [], changedDates: [], changes: [] }
-            if (!selected.length) return result
+            const result = { mode, gte, lte, integrationLte, readOnly: true, checked: selected.length, matched: 0, changed: 0, skipped: [], changes: [] }
+            if (!selected.length) return { ...result, ...aggregateByUsers([], [], []) }
             const payload = await fetchResidence(gte, integrationLte)
             if (!Array.isArray(payload?.data)) throw new Error('Интеграция вернула некорректный список лидов; сверка отменена')
             if (payload.total != null && Number(payload.total) > payload.data.length) throw new Error('Интеграция вернула неполный список лидов; сверка отменена')
             const plan = buildReconciliation(allLocal, payload.data)
             const selectedIds = new Set(selected.map(lead => String(lead._id)))
-            const operations = plan.operations.filter(operation => selectedIds.has(String(operation.updateOne.filter._id)))
+            const changes = plan.changes.filter(change => selectedIds.has(change.id))
             const skipped = plan.skipped.filter(item => selectedIds.has(item.id))
-            const changesById = new Map(plan.changes.map(change => [change.id, change]))
-            const changes = []
-            // Per-lead write results identify actual changes, including concurrent deletion/no-op cases.
-            for (const operation of operations) {
-                const write = await model.bulkWrite([operation], { ordered: true })
-                if (write.modifiedCount > 0) changes.push(changesById.get(String(operation.updateOne.filter._id)))
-            }
-            return {
-                ...result, matched: selected.length - skipped.length,
-                modified: changes.length, skipped, changes,
-                changedDates: [...new Set(changes.map(change => change.date))].sort()
-            }
+            const summary = aggregateByUsers(selected, changes, skipped)
+            changes.sort((a, b) => a.userName.localeCompare(b.userName, 'ru') || a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
+            // Preview only: there are deliberately no write operations on leads or usersStats.
+            return { ...result, matched: selected.length - skipped.length, changed: changes.length, skipped, changes, ...summary }
         } finally {
             running = false
         }
     }
 }
 
-module.exports = { normalizePhone, summarizeResidence, buildReconciliation, createResidenceReconciliation }
+module.exports = { normalizePhone, summarizeResidence, buildReconciliation, resolvePeriod, aggregateByUsers, createResidenceReconciliation }

@@ -25,7 +25,7 @@
           v-for="action in updateActions"
           :key="action.value"
           class="admin-action"
-          :disabled="isLoading || isReconciling"
+          :disabled="isLoading"
           @click="startUpdateUsersStats(action.value)"
         >
           <span class="admin-action__index">{{ action.index }}</span>
@@ -43,81 +43,16 @@
       <h2>{{ userName }}</h2>
       <p>Используйте меню слева, чтобы перейти к лидам, зарплатной и личной статистике.</p>
     </section>
-    <template v-if="isAdmin">
-      <el-divider />
-      <el-card shadow="never">
-        <template #header>
-          <el-space wrap>
-            <el-text tag="b" size="large">Недельная сверка резиденции</el-text>
-            <el-tag type="info" effect="plain">Понедельник — воскресенье</el-tag>
-          </el-space>
-        </template>
-        <el-form label-position="top" @submit.prevent="reconcileResidenceWeek">
-          <el-form-item label="Неделя сверки">
-            <el-space wrap :size="12">
-              <el-button :disabled="isReconciling" @click="shiftReconciliationWeek(-1)">← Предыдущая</el-button>
-              <el-date-picker v-model="reconciliationWeek" type="week" format="DD.MM.YYYY"
-                value-format="YYYY-MM-DD" :clearable="false" :disabled="isReconciling"
-                placeholder="Выберите неделю" @change="clearReconciliationResult" />
-              <el-button :disabled="isReconciling" @click="shiftReconciliationWeek(1)">Следующая →</el-button>
-            </el-space>
-          </el-form-item>
-          <el-form-item label="Период обновления лидов">
-            <el-space wrap>
-              <el-tag>Пн: {{ formatReconciliationDate(reconciliationPeriod.gte) }}</el-tag>
-              <el-text>—</el-text>
-              <el-tag>Вс: {{ formatReconciliationDate(reconciliationPeriod.lte) }}</el-tag>
-            </el-space>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" native-type="submit" :loading="isReconciling" :disabled="isLoading || !reconciliationPeriod.gte">
-              Сверить резиденцию
-            </el-button>
-          </el-form-item>
-        </el-form>
-        <el-text type="info">В интеграции также проверяется следующий понедельник для запоздавших лидов.</el-text>
-        <el-alert v-if="reconciliationResult" :title="reconciliationResult" type="info" :closable="false" show-icon />
-        <template v-if="reconciliationResult">
-          <el-divider />
-          <el-table :data="reconciliationChanges" row-key="id" border max-height="520" empty-text="Обновлённых лидов нет">
-            <el-table-column label="Лид" min-width="190">
-              <template #default="{ row }">
-                <el-space direction="vertical" alignment="start" :size="2">
-                  <el-text tag="b">{{ row.userName || 'Без лидоруба' }}</el-text>
-                  <el-text size="small">{{ formatReconciliationDate(row.date) }} · {{ row.leadProject || 'Без базы' }}</el-text>
-                  <el-text size="small" type="info">ID: {{ row.id }}</el-text>
-                </el-space>
-              </template>
-            </el-table-column>
-            <el-table-column prop="phone" label="Телефон" min-width="150" />
-            <el-table-column label="Изменение статуса" min-width="240">
-              <template #default="{ row }">
-                <el-space wrap>
-                  <el-tag :type="getResidenceStatusType(row.fromStatus)">{{ row.fromStatus || 'Не указан' }}</el-tag>
-                  <el-text>→</el-text>
-                  <el-tag :type="getResidenceStatusType(row.toStatus)">{{ row.toStatus }}</el-tag>
-                </el-space>
-              </template>
-            </el-table-column>
-            <el-table-column label="Сумма: было → стало" min-width="180">
-              <template #default="{ row }">{{ row.before.price ?? '—' }} → {{ row.after.price }} ₽</template>
-            </el-table-column>
-            <el-table-column label="Что обновлено" min-width="180">
-              <template #default="{ row }">{{ formatChangedFields(row.changedFields) }}</template>
-            </el-table-column>
-          </el-table>
-        </template>
-      </el-card>
-    </template>
+
   </div>
 </template>
 
 <script>
 
   import dayjs from 'dayjs'
-  import isoWeek from 'dayjs/plugin/isoWeek'
+
   import { ElMessage } from 'element-plus';
-  dayjs.extend(isoWeek)
+
 
   export default {
 
@@ -129,10 +64,6 @@
         userRank: '',
         isAdmin: false,
         isLoading: false,
-        reconciliationResult: '',
-        reconciliationChanges: [],
-        reconciliationWeek: dayjs().startOf('isoWeek').format('YYYY-MM-DD'),
-        isReconciling: false,
         updateActions: [
           { index: '01', value: 'updateSalary', title: 'Обновить зарплатную', description: 'Пересчитать показатели и выплаты' },
           { index: '02', value: 'updateLeads', title: 'Обновить лиды', description: 'Синхронизировать данные по лидам' },
@@ -140,60 +71,9 @@
         ]
       }
     },
-    computed: {
-      reconciliationPeriod() {
-        if (!this.reconciliationWeek || !dayjs(this.reconciliationWeek).isValid()) return { gte: '', lte: '' }
-        const week = dayjs(this.reconciliationWeek)
-        return {
-          gte: week.startOf('isoWeek').format('YYYY-MM-DD'),
-          lte: week.endOf('isoWeek').format('YYYY-MM-DD')
-        }
-      }
-    },
     methods: {
-      getResidenceStatusType(status) {
-        const types = {
-          breaked: 'primary', hold: 'success', invalid: 'danger',
-          created: 'info', confirmed: 'warning', refused: 'danger'
-        }
-        return types[status] || 'info'
-      },
-      clearReconciliationResult() {
-        this.reconciliationResult = ''
-        this.reconciliationChanges = []
-      },
-      formatChangedFields(fields) {
-        const labels = { residenceStatus: 'Статус', price: 'Сумма', countHold: 'Холды', offersList: 'Офферы', broker: 'Брокер' }
-        return fields.map(field => labels[field] || field).join(', ')
-      },
-      formatReconciliationDate(date) {
-        return date ? dayjs(date).format('DD.MM.YYYY') : '—'
-      },
-      shiftReconciliationWeek(direction) {
-        this.reconciliationWeek = dayjs(this.reconciliationWeek || undefined).add(direction, 'week').startOf('isoWeek').format('YYYY-MM-DD')
-        this.clearReconciliationResult()
-      },
-      async reconcileResidenceWeek() {
-        if (this.isLoading || this.isReconciling || !this.reconciliationPeriod.gte) return
-        this.isReconciling = true
-        this.clearReconciliationResult()
-        try {
-          const response = await this.$store.dispatch('createDataList', {
-            col: 'api/residence/reconcile-week', data: { ...this.reconciliationPeriod }
-          })
-          const days = response.data.changedDates
-          this.reconciliationChanges = response.data.changes || []
-          this.reconciliationResult = response.msg + (days.length
-            ? `. Для обновления зарплатной пересчитайте userStats за даты: ${days.join(', ')}.` : '')
-          ElMessage.success('Сверка резиденции завершена')
-        } catch (error) {
-          ElMessage.error(error.response?.data?.msg || error.message)
-        } finally {
-          this.isReconciling = false
-        }
-      },
       async startUpdateUsersStats(mode) {
-        if (this.isLoading || this.isReconciling) return
+        if (this.isLoading) return
         try {
 
           this.isLoading = true

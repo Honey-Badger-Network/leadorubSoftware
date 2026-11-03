@@ -219,6 +219,12 @@ export default {
           path: '/base-analytics',
           icon: markRaw(DataAnalysis),
           condition: () => this.rankName === 'admin'
+        },
+        {
+          label: 'Сверка резиденции',
+          path: '/residence-reconciliation',
+          icon: markRaw(DataAnalysis),
+          condition: () => this.rankName === 'admin'
         }
         // {
         //   label: 'Сверка',

@@ -16,23 +16,17 @@ const { residenceBaseUrl, residenceToken } = process.env
 
 const router = Router()
 
-router.post('/api/residence/reconcile-week', async (req, res) => {
-    const { getWeekDates } = require('../services/payrollService')
+router.post(['/api/residence/reconcile', '/api/residence/reconcile-week'], async (req, res) => {
+    const { resolvePeriod } = require('../services/residenceReconciliation')
     const { reconcileResidenceWeek } = require('../services/residenceWeeklyService')
-    const { gte, lte } = req.body || {}
-    const hasPeriod = gte !== undefined || lte !== undefined
-    const date = hasPeriod ? gte : req.body?.date
     try {
-        const dates = getWeekDates(date)
-        if (hasPeriod && (gte !== dates[0] || lte !== dates[6])) {
-            return res.status(400).json({ msg: 'Период сверки должен быть полной неделей с понедельника по воскресенье' })
-        }
+        resolvePeriod(req.body)
     } catch (error) {
         return res.status(400).json({ msg: error.message })
     }
     try {
-        const data = await reconcileResidenceWeek(date)
-        res.json({ data, msg: `Сверка ${data.gte} — ${data.lte}: проверено ${data.checked}, обновлено ${data.modified}, пропущено ${data.skipped.length}` })
+        const data = await reconcileResidenceWeek(req.body)
+        res.json({ data, msg: `Сверка ${data.gte} — ${data.lte}: проверено ${data.checked}, с отличиями ${data.changed}, не сопоставлено ${data.skipped.length}. Данные в БД не изменены.` })
     } catch (error) {
         res.status(error.status || 500).json({ msg: error.message })
     }
