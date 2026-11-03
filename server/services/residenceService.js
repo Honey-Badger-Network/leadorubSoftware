@@ -18,7 +18,7 @@ async function getResidenceLeads(gte, lte, { strict = false } = {}) {
             params: {
                 startedAt: ['gte:' + dayjs(gte).format('YYYY-MM-DD'), 'lte:' + dayjs(lte).format('YYYY-MM-DD')],
                 _populate: 'userId offerId',
-                _select: 'status phone startedAt price',
+                _select: 'status phone startedAt price offerId userId',
                 _limit: 0,
             },
         })

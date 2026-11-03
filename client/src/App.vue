@@ -102,7 +102,7 @@
 <script>
 import { markRaw } from 'vue'
 import { useRoute } from 'vue-router'
-import { User, House, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin, Histogram, DataAnalysis, Discount } from '@element-plus/icons-vue'
+import { User, House, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin, Histogram, DataAnalysis, Discount, DocumentChecked } from '@element-plus/icons-vue'
 import AppHeader from './components/AppHeader.vue'
 
 export default {
@@ -223,7 +223,7 @@ export default {
         {
           label: 'Сверка резиденции',
           path: '/residence-reconciliation',
-          icon: markRaw(DataAnalysis),
+          icon: markRaw(DocumentChecked),
           condition: () => this.rankName === 'admin'
         }
         // {

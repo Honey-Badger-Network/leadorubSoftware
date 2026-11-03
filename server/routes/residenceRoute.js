@@ -26,7 +26,7 @@ router.post(['/api/residence/reconcile', '/api/residence/reconcile-week'], async
     }
     try {
         const data = await reconcileResidenceWeek(req.body)
-        res.json({ data, msg: `Сверка ${data.gte} — ${data.lte}: проверено ${data.checked}, с отличиями ${data.changed}, не сопоставлено ${data.skipped.length}. Данные в БД не изменены.` })
+        res.json({ data, msg: `Сверка ${data.gte} — ${data.lte}: лидов в БД ${data.checked}, записей резиденции по их телефонам ${data.total.remoteLeads}, телефонов с отличиями ${data.changed}. Данные в БД не изменены.` })
     } catch (error) {
         res.status(error.status || 500).json({ msg: error.message })
     }

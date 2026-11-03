@@ -21,7 +21,7 @@
       <el-button type="primary" native-type="submit" :loading="loading" :disabled="!period.gte">Сверить резиденцию</el-button>
     </el-form>
     <el-divider />
-    <el-text type="info">Дополнительно проверяется следующий день после периода для запоздавших записей интеграции.</el-text>
+    <el-text type="info">В БД и резиденции используется один и тот же период. Из резиденции берутся все записи с телефонами лидов из БД.</el-text>
   </el-card>
   <el-divider />
   <el-alert v-if="error" :title="error" type="error" show-icon :closable="false" />
@@ -35,17 +35,16 @@
           <template #default="{ row }">
             <el-space direction="vertical" alignment="start" :size="2">
               <el-text :tag="row.isTotal ? 'b' : 'span'">{{ row.userName }}</el-text>
-              <el-text v-if="row.skipped" size="small" type="warning">Не сопоставлено: {{ row.skipped }}</el-text>
+              <el-text v-if="row.sharedPhone" size="small" type="warning">Телефон у нескольких сотрудников — учтён один раз общей строкой.</el-text>
             </el-space>
           </template>
         </el-table-column>
         <el-table-column label="Лиды" align="center">
-          <el-table-column prop="totalLeads" label="Всего" min-width="90" align="right" />
-          <el-table-column prop="holdsBefore" label="С холдом: было" min-width="130" align="right" />
-          <el-table-column label="С холдом: стало" min-width="165" align="right">
+          <el-table-column prop="totalLeads" label="Всего в БД" min-width="100" align="right" />
+          <el-table-column prop="holdsBefore" label="Холды в БД" min-width="130" align="right" />
+          <el-table-column label="Холды в резиденции" min-width="175" align="right">
             <template #default="{ row }">
-              {{ row.holdsAfter }}
-              <el-text :type="deltaType(row.holdsDelta)">[{{ signed(row.holdsDelta) }}]</el-text>
+              <el-text :type="row.holdsAfter !== row.holdsBefore ? 'success' : undefined">{{ row.holdsAfter }}</el-text>
             </template>
           </el-table-column>
         </el-table-column>
@@ -63,47 +62,52 @@
       </el-table>
       <el-divider />
       <el-space direction="vertical" alignment="start">
-        <el-text type="info">С холдом — число лидов со статусами hold, confirmed или refused. Несопоставленные лиды сохраняют в отчёте исходные значения.</el-text>
+        <el-text type="info">Холды — количество записей со статусами hold, confirmed или refused на каждой стороне. Сумма — только по этим статусам: price в БД и price.offer в резиденции. Если совпадений по телефону нет, в резиденции учитывается 0. Повторные телефоны не умножают записи резиденции.</el-text>
         <el-text type="info">* Прирост от холдов = (сумма после × 0.6 − ЗП брокера после) − (сумма до × 0.6 − ЗП брокера до). ЗП брокера = floor(сумма холдов × 0.6 × 0.15), рассчитывается по каждому дню. Показана только разница; зарплата лидоруба и постоянные расходы не меняются.</el-text>
       </el-space>
     </el-card>
     <el-divider />
     <el-card shadow="never">
-      <template #header><el-text tag="b" size="large">Изменения лидов по сотрудникам</el-text></template>
-      <el-empty v-if="!changeGroups.length" description="Отличий от сохранённых данных не найдено" />
-      <el-collapse v-else v-model="expandedUsers">
-        <el-collapse-item v-for="group in changeGroups" :key="group.userKey" :name="group.userKey" :title="`${group.userName} · ${group.changes.length} лидов с отличиями`">
-          <el-table :data="group.changes" row-key="id" border max-height="520">
-            <el-table-column label="Лид" min-width="170">
-              <template #default="{ row }">
-                <el-space direction="vertical" alignment="start" :size="2">
-                  <el-text>{{ formatDate(row.date) }} · {{ row.leadProject || 'Без базы' }}</el-text>
-                  <el-text type="info" size="small">ID: {{ row.id }}</el-text>
-                </el-space>
-              </template>
-            </el-table-column>
-            <el-table-column prop="phone" label="Телефон" min-width="140" />
-            <el-table-column label="Статус: БД → резиденция" min-width="250">
-              <template #default="{ row }">
-                <el-space wrap>
-                  <el-tag :type="statusType(row.fromStatus)">{{ row.fromStatus || 'Не указан' }}</el-tag>
-                  <el-text>→</el-text>
-                  <el-tag :type="statusType(row.toStatus)">{{ row.toStatus }}</el-tag>
-                </el-space>
-              </template>
-            </el-table-column>
-            <el-table-column label="Сумма: было → стало, ₽" min-width="190">
-              <template #default="{ row }">{{ number(row.before.price) }} → {{ number(row.after.price) }}</template>
-            </el-table-column>
-            <el-table-column label="Офферы с холдом: было → стало" min-width="190">
-              <template #default="{ row }">{{ row.before.countHold || 0 }} → {{ row.after.countHold || 0 }}</template>
-            </el-table-column>
-            <el-table-column label="Что отличается" min-width="180">
-              <template #default="{ row }">{{ changedFields(row.changedFields) }}</template>
-            </el-table-column>
-          </el-table>
-        </el-collapse-item>
-      </el-collapse>
+      <template #header><el-text tag="b" size="large">Изменения лидов</el-text></template>
+      <el-table :data="report.changes" row-key="id" border max-height="600" empty-text="Отличий от сохранённых данных не найдено">
+        <el-table-column prop="userName" label="Лидоруб" min-width="150" />
+        <el-table-column prop="phone" label="Телефон" min-width="140" />
+        <el-table-column label="Было в БД" min-width="190">
+          <template #default="{ row }">
+            <el-space direction="vertical" alignment="start" :size="4">
+              <el-space wrap>
+                <el-tag v-for="status in row.fromStatuses" :key="status" :type="statusType(status)">{{ status }}</el-tag>
+              </el-space>
+              <el-text>Холды: {{ row.before.countHold }} · {{ number(row.before.price) }} ₽</el-text>
+            </el-space>
+          </template>
+        </el-table-column>
+        <el-table-column label="Стало в резиденции" min-width="190">
+          <template #default="{ row }">
+            <el-space direction="vertical" alignment="start" :size="4">
+              <el-space wrap>
+                <el-tag v-for="status in row.toStatuses" :key="status" :type="statusType(status)">{{ status }}</el-tag>
+                <el-text v-if="!row.toStatuses.length" type="info">Нет записей</el-text>
+              </el-space>
+              <el-text>Холды: <el-text :type="row.after.countHold !== row.before.countHold ? 'success' : undefined">{{ row.after.countHold }}</el-text> · {{ number(row.after.price) }} ₽</el-text>
+            </el-space>
+          </template>
+        </el-table-column>
+        <el-table-column label="Офферы резиденции" min-width="340">
+          <template #default="{ row }">
+            <el-space direction="vertical" alignment="start" :size="8">
+              <el-space v-for="(offer, index) in row.offers" :key="offer.id || index" wrap :size="6">
+                <el-tag v-if="offer.added" type="success" effect="plain" size="small">Добавился</el-tag>
+                <el-text>{{ offer.offerName || 'Без названия' }} · {{ number(offer.offerPrice) }} ₽</el-text>
+                <el-tag :type="statusType(offer.status)" size="small">{{ offer.status }}</el-tag>
+              </el-space>
+              <el-text v-if="!row.offers?.length" type="info">Нет офферов</el-text>
+            </el-space>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-divider />
+      <el-text type="info">«Добавился» — оффер отсутствует в сохранённом списке лидов. Сопоставляем по названию и брокеру, учитывая повторные офферы.</el-text>
     </el-card>
   </template>
 </template>
@@ -122,26 +126,18 @@ const loading = ref(false)
 const report = ref(null)
 const message = ref('')
 const error = ref('')
-const expandedUsers = ref([])
 const period = computed(() => {
   if (!selectedDate.value || !dayjs(selectedDate.value).isValid()) return { gte: '', lte: '' }
   const unit = mode.value === 'week' ? 'isoWeek' : 'month'
   return { gte: dayjs(selectedDate.value).startOf(unit).format('YYYY-MM-DD'), lte: dayjs(selectedDate.value).endOf(unit).format('YYYY-MM-DD') }
 })
 const userRows = computed(() => report.value ? [...report.value.users, report.value.total] : [])
-const changeGroups = computed(() => {
-  if (!report.value) return []
-  const groups = new Map(report.value.users.map(user => [user.userKey, { ...user, changes: [] }]))
-  for (const change of report.value.changes) groups.get(change.userKey)?.changes.push(change)
-  return [...groups.values()].filter(group => group.changes.length)
-})
 const number = value => new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value || 0)
 const signed = value => `${value >= 0 ? '+' : ''}${number(value)}`
 const deltaType = value => value > 0 ? 'success' : value < 0 ? 'danger' : 'info'
 const formatDate = date => date ? dayjs(date).format('DD.MM.YYYY') : '—'
 const statusType = status => ({ breaked: 'primary', hold: 'success', invalid: 'danger', refused: 'danger', created: 'info', confirmed: 'warning' }[status] || 'info')
-const changedFields = fields => fields.map(field => ({ residenceStatus: 'Статус', price: 'Сумма', countHold: 'Холды', offersList: 'Офферы', broker: 'Брокер' }[field] || field)).join(', ')
-function resetReport() { report.value = null; message.value = ''; error.value = ''; expandedUsers.value = [] }
+function resetReport() { report.value = null; message.value = ''; error.value = '' }
 function shiftPeriod(direction) {
   selectedDate.value = dayjs(selectedDate.value).add(direction, mode.value).format('YYYY-MM-DD')
   resetReport()
@@ -154,7 +150,6 @@ async function reconcile() {
     const response = await store.dispatch('createDataList', { col: 'api/residence/reconcile', data: { mode: mode.value, ...period.value } })
     report.value = response.data
     message.value = response.msg
-    expandedUsers.value = changeGroups.value.map(group => group.userKey)
   } catch (e) {
     error.value = e.response?.data?.msg || e.message
   } finally { loading.value = false }

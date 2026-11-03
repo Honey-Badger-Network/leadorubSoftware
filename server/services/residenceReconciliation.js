@@ -1,88 +1,6 @@
 const { getWeekDates } = require('./payrollService')
 const HOLD_STATUSES = new Set(['hold', 'confirmed', 'refused'])
 
-function normalizePhone(value) {
-    const digits = String(value || '').replace(/\D/g, '')
-    return digits.length === 11 && /^[78]/.test(digits) ? digits.slice(1) : digits
-}
-
-function summarizeResidence(rows) {
-    let holdStatus
-    const result = { price: 0, countHold: 0, residenceStatus: 'created', offersList: [] }
-    for (const row of rows) {
-        const status = row.status || 'created'
-        const hold = HOLD_STATUSES.has(status)
-        const amount = Number(row.price?.offer ?? 0)
-        if (hold && (!Number.isFinite(amount) || amount < 0)) throw new Error('Некорректная сумма price.offer в интеграции')
-        const price = hold ? amount : 0
-        if (hold) {
-            result.price += price
-            result.countHold++
-            holdStatus = status
-        }
-        result.residenceStatus = holdStatus || status
-        if (row.userId?.name) result.broker = row.userId.name
-        result.offersList.push({ offerName: row.offerId?.name || '', broker: row.userId?.name || '', price, status })
-    }
-    return result
-}
-
-function buildReconciliation(localLeads, residenceLeads) {
-    const locals = new Map()
-    const remote = new Map()
-    const remoteIds = new Set()
-    for (const lead of localLeads) {
-        const phone = normalizePhone(lead.phone)
-        if (!locals.has(phone)) locals.set(phone, [])
-        locals.get(phone).push(lead)
-    }
-    for (const lead of residenceLeads) {
-        if (lead._id != null) {
-            const id = String(lead._id)
-            if (remoteIds.has(id)) continue
-            remoteIds.add(id)
-        }
-        const phone = normalizePhone(lead.phone)
-        if (!phone) continue
-        if (!remote.has(phone)) remote.set(phone, [])
-        remote.get(phone).push(lead)
-    }
-
-    const changes = []
-    const skipped = []
-    const changedDates = new Set()
-    let matched = 0
-    for (const [phone, leads] of locals) {
-        const matches = remote.get(phone)
-        if (!phone || !matches?.length || leads.length !== 1) {
-            const reason = !phone ? 'emptyPhone' : !matches?.length ? 'notFound' : 'ambiguousPhone'
-            skipped.push(...leads.map(lead => ({ id: String(lead._id), reason })))
-            continue
-        }
-        const lead = leads[0]
-        const values = summarizeResidence(matches)
-        matched++
-        const current = {
-            price: lead.price, countHold: lead.countHold, residenceStatus: lead.residenceStatus,
-            offersList: (lead.offersList || []).map(offer => ({
-                offerName: offer.offerName || '', broker: offer.broker || '', price: offer.price, status: offer.status
-            }))
-        }
-        if (values.broker !== undefined) current.broker = lead.broker
-        if (JSON.stringify(current) === JSON.stringify(values)) continue
-
-        changes.push({
-            id: String(lead._id), date: lead.date, phone: lead.phone || '',
-            userName: lead.userName || '', leadProject: lead.leadProject || '',
-            fromStatus: lead.residenceStatus || null, toStatus: values.residenceStatus,
-            before: current, after: values,
-            changedFields: Object.keys(values).filter(key => JSON.stringify(current[key]) !== JSON.stringify(values[key]))
-        })
-        changedDates.add(lead.date)
-    }
-    return { changes, matched, skipped, changedDates: [...changedDates].sort() }
-}
-
 function resolvePeriod(input) {
     const options = typeof input === 'string' ? { date: input } : (input || {})
     const mode = options.mode || 'week'
@@ -102,48 +20,120 @@ function resolvePeriod(input) {
     return { mode, gte, lte }
 }
 
-function aggregateByUsers(leads, changes, skipped) {
-    const byLead = new Map(changes.map(change => [change.id, change]))
-    const skippedIds = new Set(skipped.map(lead => lead.id))
-    const users = new Map()
-    const dailySums = new Map()
-    const numeric = value => Number.isFinite(Number(value)) ? Number(value) : 0
-    for (const lead of leads) {
-        const userKey = lead.user ? `id:${lead.user}` : `name:${lead.userName || 'Без лидоруба'}`
-        if (!users.has(userKey)) users.set(userKey, {
-            userKey, userName: lead.userName || 'Без лидоруба',
-            totalLeads: 0, holdsBefore: 0, holdsAfter: 0,
-            sumBefore: 0, sumAfter: 0, skipped: 0
+function normalizePhone(value) {
+    const digits = String(value || '').replace(/\D/g, '')
+    return digits.length === 11 && /^[78]/.test(digits) ? digits.slice(1) : digits
+}
+
+function summarizeRecords(rows, source) {
+    const records = rows.map(row => {
+        const status = source === 'local' ? row.residenceStatus : row.status
+        const amount = Number((source === 'local' ? row.price : row.price?.offer) ?? 0)
+        const hold = HOLD_STATUSES.has(status)
+        if (hold && (!Number.isFinite(amount) || amount < 0)) throw new Error('Некорректная сумма холда')
+        return {
+            id: String(row._id || ''), status: status || 'created',
+            date: source === 'local' ? row.date : String(row.startedAt || '').slice(0, 10),
+            price: hold ? amount : 0, offerPrice: Number.isFinite(amount) ? amount : 0, hold,
+            offerName: row.offerId?.name || '', broker: row.userId?.name || row.broker || ''
+        }
+    })
+    return {
+        totalLeads: records.length,
+        countHold: records.filter(row => row.hold).length,
+        price: records.reduce((sum, row) => sum + row.price, 0),
+        statuses: [...new Set(records.map(row => row.status))].sort(), records
+    }
+}
+
+function buildReconciliation(localLeads, residenceLeads) {
+    const locals = new Map()
+    const remote = new Map()
+    const seen = new Set()
+    const skipped = []
+    for (const lead of localLeads) {
+        const phone = normalizePhone(lead.phone)
+        // Empty phones have no match but still contribute to the local totals.
+        const key = phone || `empty:${lead._id}`
+        if (!phone) skipped.push({ id: String(lead._id), reason: 'emptyPhone' })
+        if (!locals.has(key)) locals.set(key, [])
+        locals.get(key).push(lead)
+    }
+    for (const lead of residenceLeads) {
+        const phone = normalizePhone(lead.phone)
+        if (!phone || !locals.has(phone)) continue
+        if (lead._id != null) {
+            const id = String(lead._id)
+            if (seen.has(id)) continue
+            seen.add(id)
+        }
+        if (!remote.has(phone)) remote.set(phone, [])
+        remote.get(phone).push(lead)
+    }
+    const comparisons = []
+    let matched = 0
+    for (const [phone, leads] of locals) {
+        const matches = remote.get(phone) || []
+        if (matches.length) matched += leads.length
+        const owners = new Map(leads.map(lead => [lead.user ? `id:${lead.user}` : `name:${lead.userName || 'Без лидоруба'}`, lead.userName || 'Без лидоруба']))
+        const sharedPhone = owners.size > 1
+        const userKey = sharedPhone ? `shared:${[...owners.keys()].sort().join('|')}` : [...owners.keys()][0]
+        const userName = sharedPhone ? `Общий телефон: ${[...owners.values()].sort().join(', ')}` : [...owners.values()][0]
+        const before = summarizeRecords(leads, 'local')
+        const after = summarizeRecords(matches, 'remote')
+        // Stored offers have no residence ID; match occurrences by name and broker.
+        const savedOffers = leads.flatMap(lead => lead.offersList || [])
+        const remaining = [...savedOffers]
+        const offers = after.records.map(record => {
+            const index = remaining.findIndex(offer => offer.offerName === record.offerName && (offer.broker || '') === record.broker)
+            if (index >= 0) remaining.splice(index, 1)
+            return { ...record, added: index < 0 }
         })
-        const user = users.get(userKey)
-        const change = byLead.get(String(lead._id))
-        const after = change?.after || lead
-        user.totalLeads++
-        user.holdsBefore += HOLD_STATUSES.has(lead.residenceStatus) ? 1 : 0
-        user.holdsAfter += HOLD_STATUSES.has(after.residenceStatus) ? 1 : 0
-        user.sumBefore += numeric(lead.price)
-        user.sumAfter += numeric(after.price)
-        const dayKey = JSON.stringify([userKey, lead.date])
-        if (!dailySums.has(dayKey)) dailySums.set(dayKey, { userKey, before: 0, after: 0 })
-        dailySums.get(dayKey).before += numeric(lead.price)
-        dailySums.get(dayKey).after += numeric(after.price)
-        user.skipped += skippedIds.has(String(lead._id)) ? 1 : 0
-        if (change) change.userKey = userKey
+        const changedFields = ['totalLeads', 'countHold', 'price', 'statuses'].filter(key => JSON.stringify(before[key]) !== JSON.stringify(after[key]))
+        if (offers.some(offer => offer.added) || remaining.length) changedFields.push('offers')
+        comparisons.push({
+            id: phone, phone: leads[0].phone || '', date: leads.map(lead => lead.date).sort()[0],
+            localIds: leads.map(lead => String(lead._id)), userKey, userName, sharedPhone,
+            leadProject: [...new Set(leads.map(lead => lead.leadProject).filter(Boolean))].join(', '),
+            before, after, offers, changedFields,
+            fromStatuses: before.statuses, toStatuses: after.statuses
+        })
     }
-    const clearDeltas = new Map()
-    const incomeFromHolds = sum => sum * 0.6 - Math.floor(sum * 0.6 * 0.15)
-    for (const day of dailySums.values()) {
-        const delta = incomeFromHolds(day.after) - incomeFromHolds(day.before)
-        clearDeltas.set(day.userKey, (clearDeltas.get(day.userKey) || 0) + delta)
+    return { comparisons, changes: comparisons.filter(row => row.changedFields.length), matched, skipped }
+}
+
+function aggregateByUsers(comparisons) {
+    const users = new Map()
+    const daily = new Map()
+    for (const item of comparisons) {
+        if (!users.has(item.userKey)) users.set(item.userKey, {
+            userKey: item.userKey, userName: item.userName, sharedPhone: item.sharedPhone,
+            totalLeads: 0, remoteLeads: 0, holdsBefore: 0, holdsAfter: 0, sumBefore: 0, sumAfter: 0
+        })
+        const user = users.get(item.userKey)
+        user.totalLeads += item.before.totalLeads
+        user.remoteLeads += item.after.totalLeads
+        user.holdsBefore += item.before.countHold
+        user.holdsAfter += item.after.countHold
+        user.sumBefore += item.before.price
+        user.sumAfter += item.after.price
+        for (const side of ['before', 'after']) {
+            for (const row of item[side].records) {
+                const key = JSON.stringify([item.userKey, row.date || item.date])
+                if (!daily.has(key)) daily.set(key, { userKey: item.userKey, before: 0, after: 0 })
+                daily.get(key)[side] += row.price
+            }
+        }
     }
+    const deltas = new Map()
+    const income = sum => sum * 0.6 - Math.floor(sum * 0.6 * 0.15)
+    for (const day of daily.values()) deltas.set(day.userKey, (deltas.get(day.userKey) || 0) + income(day.after) - income(day.before))
     const rows = [...users.values()].map(user => ({
-        ...user,
-        holdsDelta: user.holdsAfter - user.holdsBefore,
-        // Compare hold income before/after, preserving daily broker salary rounding.
-        clearDelta: Math.round((clearDeltas.get(user.userKey) || 0) * 100) / 100
+        ...user, holdsDelta: user.holdsAfter - user.holdsBefore,
+        clearDelta: Math.round((deltas.get(user.userKey) || 0) * 100) / 100
     })).sort((a, b) => a.userName.localeCompare(b.userName, 'ru'))
     const total = { userKey: 'total', userName: 'Итого', isTotal: true }
-    for (const key of ['totalLeads', 'holdsBefore', 'holdsAfter', 'holdsDelta', 'sumBefore', 'sumAfter', 'clearDelta', 'skipped']) {
+    for (const key of ['totalLeads', 'remoteLeads', 'holdsBefore', 'holdsAfter', 'holdsDelta', 'sumBefore', 'sumAfter', 'clearDelta']) {
         total[key] = Math.round(rows.reduce((sum, user) => sum + user[key], 0) * 100) / 100
     }
     return { users: rows, total }
@@ -160,28 +150,19 @@ function createResidenceReconciliation({ model, fetchResidence }) {
         }
         running = true
         try {
-            const nextDay = new Date(`${lte}T00:00:00Z`)
-            nextDay.setUTCDate(nextDay.getUTCDate() + 1)
-            const integrationLte = nextDay.toISOString().slice(0, 10)
-            const allLocal = await model.find({ date: { $gte: gte, $lte: integrationLte } }).lean()
-            const selected = allLocal.filter(lead => lead.date <= lte)
-            const result = { mode, gte, lte, integrationLte, readOnly: true, checked: selected.length, matched: 0, changed: 0, skipped: [], changes: [] }
-            if (!selected.length) return { ...result, ...aggregateByUsers([], [], []) }
-            const payload = await fetchResidence(gte, integrationLte)
+            const selected = await model.find({ date: { $gte: gte, $lte: lte } }).lean()
+            const result = { mode, gte, lte, readOnly: true, checked: selected.length, matched: 0, changed: 0, skipped: [], changes: [] }
+            if (!selected.length) return { ...result, ...aggregateByUsers([]) }
+            const payload = await fetchResidence(gte, lte)
             if (!Array.isArray(payload?.data)) throw new Error('Интеграция вернула некорректный список лидов; сверка отменена')
             if (payload.total != null && Number(payload.total) > payload.data.length) throw new Error('Интеграция вернула неполный список лидов; сверка отменена')
-            const plan = buildReconciliation(allLocal, payload.data)
-            const selectedIds = new Set(selected.map(lead => String(lead._id)))
-            const changes = plan.changes.filter(change => selectedIds.has(change.id))
-            const skipped = plan.skipped.filter(item => selectedIds.has(item.id))
-            const summary = aggregateByUsers(selected, changes, skipped)
-            changes.sort((a, b) => a.userName.localeCompare(b.userName, 'ru') || a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
-            // Preview only: there are deliberately no write operations on leads or usersStats.
-            return { ...result, matched: selected.length - skipped.length, changed: changes.length, skipped, changes, ...summary }
-        } finally {
-            running = false
-        }
+            const plan = buildReconciliation(selected, payload.data)
+            return {
+                ...result, matched: plan.matched, changed: plan.changes.length, skipped: plan.skipped,
+                changes: plan.changes, ...aggregateByUsers(plan.comparisons)
+            }
+        } finally { running = false }
     }
 }
 
-module.exports = { normalizePhone, summarizeResidence, buildReconciliation, resolvePeriod, aggregateByUsers, createResidenceReconciliation }
+module.exports = { normalizePhone, summarizeRecords, buildReconciliation, resolvePeriod, aggregateByUsers, createResidenceReconciliation }
