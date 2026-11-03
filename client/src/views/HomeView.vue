@@ -93,9 +93,9 @@
             <el-table-column label="Изменение статуса" min-width="240">
               <template #default="{ row }">
                 <el-space wrap>
-                  <el-tag type="info">{{ row.fromStatus || 'Не указан' }}</el-tag>
+                  <el-tag :type="getResidenceStatusType(row.fromStatus)">{{ row.fromStatus || 'Не указан' }}</el-tag>
                   <el-text>→</el-text>
-                  <el-tag :type="row.fromStatus === row.toStatus ? 'info' : 'success'">{{ row.toStatus }}</el-tag>
+                  <el-tag :type="getResidenceStatusType(row.toStatus)">{{ row.toStatus }}</el-tag>
                 </el-space>
               </template>
             </el-table-column>
@@ -151,6 +151,13 @@
       }
     },
     methods: {
+      getResidenceStatusType(status) {
+        const types = {
+          breaked: 'primary', hold: 'success', invalid: 'danger',
+          created: 'info', confirmed: 'warning', refused: 'danger'
+        }
+        return types[status] || 'info'
+      },
       clearReconciliationResult() {
         this.reconciliationResult = ''
         this.reconciliationChanges = []
