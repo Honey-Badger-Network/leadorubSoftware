@@ -25,7 +25,7 @@
           v-for="action in updateActions"
           :key="action.value"
           class="admin-action"
-          :disabled="isLoading"
+          :disabled="isLoading || isReconciling"
           @click="startUpdateUsersStats(action.value)"
         >
           <span class="admin-action__index">{{ action.index }}</span>
@@ -36,14 +36,6 @@
           <span class="admin-action__arrow">→</span>
         </button>
       </div>
-      <el-divider />
-      <el-space direction="vertical" alignment="start">
-        <el-button type="primary" plain :loading="isLoading" @click="reconcileResidenceWeek">
-          Сверить резиденцию за неделю
-        </el-button>
-        <el-text type="info">Неделя выбранной даты: пн–вс. В интеграции также проверяется следующий понедельник для запоздавших лидов.</el-text>
-        <el-alert v-if="reconciliationResult" :title="reconciliationResult" type="info" :closable="false" show-icon />
-      </el-space>
     </section>
 
     <section v-else class="welcome-panel">
@@ -51,14 +43,51 @@
       <h2>{{ userName }}</h2>
       <p>Используйте меню слева, чтобы перейти к лидам, зарплатной и личной статистике.</p>
     </section>
+    <template v-if="isAdmin">
+      <el-divider />
+      <el-card shadow="never">
+        <template #header>
+          <el-space wrap>
+            <el-text tag="b" size="large">Недельная сверка резиденции</el-text>
+            <el-tag type="info" effect="plain">Понедельник — воскресенье</el-tag>
+          </el-space>
+        </template>
+        <el-form label-position="top" @submit.prevent="reconcileResidenceWeek">
+          <el-form-item label="Неделя сверки">
+            <el-space wrap :size="12">
+              <el-button :disabled="isReconciling" @click="shiftReconciliationWeek(-1)">← Предыдущая</el-button>
+              <el-date-picker v-model="reconciliationWeek" type="week" format="DD.MM.YYYY"
+                value-format="YYYY-MM-DD" :clearable="false" :disabled="isReconciling"
+                placeholder="Выберите неделю" @change="reconciliationResult = ''" />
+              <el-button :disabled="isReconciling" @click="shiftReconciliationWeek(1)">Следующая →</el-button>
+            </el-space>
+          </el-form-item>
+          <el-form-item label="Период обновления лидов">
+            <el-space wrap>
+              <el-tag>Пн: {{ formatReconciliationDate(reconciliationPeriod.gte) }}</el-tag>
+              <el-text>—</el-text>
+              <el-tag>Вс: {{ formatReconciliationDate(reconciliationPeriod.lte) }}</el-tag>
+            </el-space>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" native-type="submit" :loading="isReconciling" :disabled="isLoading || !reconciliationPeriod.gte">
+              Сверить резиденцию
+            </el-button>
+          </el-form-item>
+        </el-form>
+        <el-text type="info">В интеграции также проверяется следующий понедельник для запоздавших лидов.</el-text>
+        <el-alert v-if="reconciliationResult" :title="reconciliationResult" type="info" :closable="false" show-icon />
+      </el-card>
+    </template>
   </div>
 </template>
 
 <script>
 
   import dayjs from 'dayjs'
+  import isoWeek from 'dayjs/plugin/isoWeek'
   import { ElMessage } from 'element-plus';
-
+  dayjs.extend(isoWeek)
 
   export default {
 
@@ -71,6 +100,8 @@
         isAdmin: false,
         isLoading: false,
         reconciliationResult: '',
+        reconciliationWeek: dayjs().startOf('isoWeek').format('YYYY-MM-DD'),
+        isReconciling: false,
         updateActions: [
           { index: '01', value: 'updateSalary', title: 'Обновить зарплатную', description: 'Пересчитать показатели и выплаты' },
           { index: '02', value: 'updateLeads', title: 'Обновить лиды', description: 'Синхронизировать данные по лидам' },
@@ -78,14 +109,31 @@
         ]
       }
     },
+    computed: {
+      reconciliationPeriod() {
+        if (!this.reconciliationWeek || !dayjs(this.reconciliationWeek).isValid()) return { gte: '', lte: '' }
+        const week = dayjs(this.reconciliationWeek)
+        return {
+          gte: week.startOf('isoWeek').format('YYYY-MM-DD'),
+          lte: week.endOf('isoWeek').format('YYYY-MM-DD')
+        }
+      }
+    },
     methods: {
+      formatReconciliationDate(date) {
+        return date ? dayjs(date).format('DD.MM.YYYY') : '—'
+      },
+      shiftReconciliationWeek(direction) {
+        this.reconciliationWeek = dayjs(this.reconciliationWeek || undefined).add(direction, 'week').startOf('isoWeek').format('YYYY-MM-DD')
+        this.reconciliationResult = ''
+      },
       async reconcileResidenceWeek() {
-        if (this.isLoading) return
-        this.isLoading = true
+        if (this.isLoading || this.isReconciling || !this.reconciliationPeriod.gte) return
+        this.isReconciling = true
         this.reconciliationResult = ''
         try {
           const response = await this.$store.dispatch('createDataList', {
-            col: 'api/residence/reconcile-week', data: { date: this.gte }
+            col: 'api/residence/reconcile-week', data: { ...this.reconciliationPeriod }
           })
           const days = response.data.changedDates
           this.reconciliationResult = response.msg + (days.length
@@ -94,10 +142,11 @@
         } catch (error) {
           ElMessage.error(error.response?.data?.msg || error.message)
         } finally {
-          this.isLoading = false
+          this.isReconciling = false
         }
       },
       async startUpdateUsersStats(mode) {
+        if (this.isLoading || this.isReconciling) return
         try {
 
           this.isLoading = true

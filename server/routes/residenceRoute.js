@@ -19,9 +19,14 @@ const router = Router()
 router.post('/api/residence/reconcile-week', async (req, res) => {
     const { getWeekDates } = require('../services/payrollService')
     const { reconcileResidenceWeek } = require('../services/residenceWeeklyService')
-    const date = req.body?.date
+    const { gte, lte } = req.body || {}
+    const hasPeriod = gte !== undefined || lte !== undefined
+    const date = hasPeriod ? gte : req.body?.date
     try {
-        getWeekDates(date)
+        const dates = getWeekDates(date)
+        if (hasPeriod && (gte !== dates[0] || lte !== dates[6])) {
+            return res.status(400).json({ msg: 'Период сверки должен быть полной неделей с понедельника по воскресенье' })
+        }
     } catch (error) {
         return res.status(400).json({ msg: error.message })
     }
