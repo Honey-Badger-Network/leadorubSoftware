@@ -55,7 +55,7 @@
           <el-table-column prop="holdsBefore" label="Холды в БД" min-width="130" align="right" />
           <el-table-column label="Холды в резиденции" min-width="175" align="right">
             <template #default="{ row }">
-              <el-text :type="row.holdsAfter !== row.holdsBefore ? 'success' : undefined">{{ row.holdsAfter }}</el-text>
+              <el-text :type="row.holdsAfter !== row.holdsBefore ? 'success' : undefined" :tag="row.holdsAfter !== row.holdsBefore ? 'b' : 'span'">{{ row.holdsAfter }}</el-text>
             </template>
           </el-table-column>
         </el-table-column>
@@ -64,7 +64,9 @@
             <template #default="{ row }">{{ number(row.sumBefore) }}</template>
           </el-table-column>
           <el-table-column label="Сумма: стало" min-width="140" align="right">
-            <template #default="{ row }">{{ number(row.sumAfter) }}</template>
+            <template #default="{ row }">
+              <el-text :type="row.sumAfter !== row.sumBefore ? 'success' : undefined" :tag="row.sumAfter !== row.sumBefore ? 'b' : 'span'">{{ number(row.sumAfter) }}</el-text>
+            </template>
           </el-table-column>
           <el-table-column label="Прирост чистой от холдов*" min-width="190" align="right">
             <template #default="{ row }"><el-text tag="b" :type="deltaType(row.clearDelta)">{{ signed(row.clearDelta) }}</el-text></template>
@@ -80,7 +82,7 @@
     <el-divider />
     <el-card shadow="never">
       <template #header><el-text tag="b" size="large">Изменения лидов</el-text></template>
-      <el-table :data="report.changes" row-key="id" border max-height="600" empty-text="Отличий от сохранённых данных не найдено">
+      <el-table :data="sortedChanges" row-key="id" border max-height="600" empty-text="Отличий от сохранённых данных не найдено">
         <el-table-column prop="userName" label="Лидоруб" min-width="150" />
         <el-table-column prop="phone" label="Телефон" min-width="140" />
         <el-table-column label="Было в БД" min-width="190">
@@ -154,6 +156,9 @@ const isPeriodValid = computed(() => {
   return Boolean(gte && lte && gte <= lte && (mode.value !== 'custom' || (residenceGte && residenceLte && residenceGte <= residenceLte)))
 })
 const userRows = computed(() => report.value ? [...report.value.users, report.value.total] : [])
+const offerSortOrder = row => row.newOffers?.length ? 0 : row.offers?.length ? 1 : 2
+const sortedChanges = computed(() => [...(report.value?.changes || [])]
+  .sort((a, b) => offerSortOrder(a) - offerSortOrder(b)))
 const number = value => new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value || 0)
 const signed = value => `${value >= 0 ? '+' : ''}${number(value)}`
 const deltaType = value => value > 0 ? 'success' : value < 0 ? 'danger' : 'info'
