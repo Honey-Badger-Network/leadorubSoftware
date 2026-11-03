@@ -58,7 +58,7 @@
               <el-button :disabled="isReconciling" @click="shiftReconciliationWeek(-1)">← Предыдущая</el-button>
               <el-date-picker v-model="reconciliationWeek" type="week" format="DD.MM.YYYY"
                 value-format="YYYY-MM-DD" :clearable="false" :disabled="isReconciling"
-                placeholder="Выберите неделю" @change="reconciliationResult = ''" />
+                placeholder="Выберите неделю" @change="clearReconciliationResult" />
               <el-button :disabled="isReconciling" @click="shiftReconciliationWeek(1)">Следующая →</el-button>
             </el-space>
           </el-form-item>
@@ -77,6 +77,36 @@
         </el-form>
         <el-text type="info">В интеграции также проверяется следующий понедельник для запоздавших лидов.</el-text>
         <el-alert v-if="reconciliationResult" :title="reconciliationResult" type="info" :closable="false" show-icon />
+        <template v-if="reconciliationResult">
+          <el-divider />
+          <el-table :data="reconciliationChanges" row-key="id" border max-height="520" empty-text="Обновлённых лидов нет">
+            <el-table-column label="Лид" min-width="190">
+              <template #default="{ row }">
+                <el-space direction="vertical" alignment="start" :size="2">
+                  <el-text tag="b">{{ row.userName || 'Без лидоруба' }}</el-text>
+                  <el-text size="small">{{ formatReconciliationDate(row.date) }} · {{ row.leadProject || 'Без базы' }}</el-text>
+                  <el-text size="small" type="info">ID: {{ row.id }}</el-text>
+                </el-space>
+              </template>
+            </el-table-column>
+            <el-table-column prop="phone" label="Телефон" min-width="150" />
+            <el-table-column label="Изменение статуса" min-width="240">
+              <template #default="{ row }">
+                <el-space wrap>
+                  <el-tag type="info">{{ row.fromStatus || 'Не указан' }}</el-tag>
+                  <el-text>→</el-text>
+                  <el-tag :type="row.fromStatus === row.toStatus ? 'info' : 'success'">{{ row.toStatus }}</el-tag>
+                </el-space>
+              </template>
+            </el-table-column>
+            <el-table-column label="Сумма: было → стало" min-width="180">
+              <template #default="{ row }">{{ row.before.price ?? '—' }} → {{ row.after.price }} ₽</template>
+            </el-table-column>
+            <el-table-column label="Что обновлено" min-width="180">
+              <template #default="{ row }">{{ formatChangedFields(row.changedFields) }}</template>
+            </el-table-column>
+          </el-table>
+        </template>
       </el-card>
     </template>
   </div>
@@ -100,6 +130,7 @@
         isAdmin: false,
         isLoading: false,
         reconciliationResult: '',
+        reconciliationChanges: [],
         reconciliationWeek: dayjs().startOf('isoWeek').format('YYYY-MM-DD'),
         isReconciling: false,
         updateActions: [
@@ -120,22 +151,31 @@
       }
     },
     methods: {
+      clearReconciliationResult() {
+        this.reconciliationResult = ''
+        this.reconciliationChanges = []
+      },
+      formatChangedFields(fields) {
+        const labels = { residenceStatus: 'Статус', price: 'Сумма', countHold: 'Холды', offersList: 'Офферы', broker: 'Брокер' }
+        return fields.map(field => labels[field] || field).join(', ')
+      },
       formatReconciliationDate(date) {
         return date ? dayjs(date).format('DD.MM.YYYY') : '—'
       },
       shiftReconciliationWeek(direction) {
         this.reconciliationWeek = dayjs(this.reconciliationWeek || undefined).add(direction, 'week').startOf('isoWeek').format('YYYY-MM-DD')
-        this.reconciliationResult = ''
+        this.clearReconciliationResult()
       },
       async reconcileResidenceWeek() {
         if (this.isLoading || this.isReconciling || !this.reconciliationPeriod.gte) return
         this.isReconciling = true
-        this.reconciliationResult = ''
+        this.clearReconciliationResult()
         try {
           const response = await this.$store.dispatch('createDataList', {
             col: 'api/residence/reconcile-week', data: { ...this.reconciliationPeriod }
           })
           const days = response.data.changedDates
+          this.reconciliationChanges = response.data.changes || []
           this.reconciliationResult = response.msg + (days.length
             ? `. Для обновления зарплатной пересчитайте userStats за даты: ${days.join(', ')}.` : '')
           ElMessage.success('Сверка резиденции завершена')

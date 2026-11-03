@@ -48,6 +48,7 @@ function buildReconciliation(localLeads, residenceLeads) {
         remote.get(phone).push(lead)
     }
     const operations = []
+    const changes = []
     const skipped = []
     const changedDates = new Set()
     let matched = 0
@@ -70,9 +71,16 @@ function buildReconciliation(localLeads, residenceLeads) {
         if (values.broker !== undefined) current.broker = lead.broker
         if (JSON.stringify(current) === JSON.stringify(values)) continue
         operations.push({ updateOne: { filter: { _id: lead._id }, update: { $set: values }, upsert: false } })
+        changes.push({
+            id: String(lead._id), date: lead.date, phone: lead.phone || '',
+            userName: lead.userName || '', leadProject: lead.leadProject || '',
+            fromStatus: lead.residenceStatus || null, toStatus: values.residenceStatus,
+            before: current, after: values,
+            changedFields: Object.keys(values).filter(key => JSON.stringify(current[key]) !== JSON.stringify(values[key]))
+        })
         changedDates.add(lead.date)
     }
-    return { operations, matched, skipped, changedDates: [...changedDates].sort() }
+    return { operations, changes, matched, skipped, changedDates: [...changedDates].sort() }
 }
 
 function createResidenceReconciliation({ model, fetchResidence }) {
@@ -94,7 +102,7 @@ function createResidenceReconciliation({ model, fetchResidence }) {
             // Include boundary-day local leads in ambiguity checks, but never update them.
             const allLocal = await model.find({ date: { $gte: gte, $lte: integrationLte } }).lean()
             const selected = allLocal.filter(lead => lead.date <= lte)
-            const result = { gte, lte, integrationLte, checked: selected.length, matched: 0, modified: 0, skipped: [], changedDates: [] }
+            const result = { gte, lte, integrationLte, checked: selected.length, matched: 0, modified: 0, skipped: [], changedDates: [], changes: [] }
             if (!selected.length) return result
             const payload = await fetchResidence(gte, integrationLte)
             if (!Array.isArray(payload?.data)) throw new Error('Интеграция вернула некорректный список лидов; сверка отменена')
@@ -103,11 +111,17 @@ function createResidenceReconciliation({ model, fetchResidence }) {
             const selectedIds = new Set(selected.map(lead => String(lead._id)))
             const operations = plan.operations.filter(operation => selectedIds.has(String(operation.updateOne.filter._id)))
             const skipped = plan.skipped.filter(item => selectedIds.has(item.id))
-            const write = operations.length ? await model.bulkWrite(operations, { ordered: true }) : null
+            const changesById = new Map(plan.changes.map(change => [change.id, change]))
+            const changes = []
+            // Per-lead write results identify actual changes, including concurrent deletion/no-op cases.
+            for (const operation of operations) {
+                const write = await model.bulkWrite([operation], { ordered: true })
+                if (write.modifiedCount > 0) changes.push(changesById.get(String(operation.updateOne.filter._id)))
+            }
             return {
                 ...result, matched: selected.length - skipped.length,
-                modified: write?.modifiedCount || 0, skipped,
-                changedDates: plan.changedDates.filter(value => value <= lte)
+                modified: changes.length, skipped, changes,
+                changedDates: [...new Set(changes.map(change => change.date))].sort()
             }
         } finally {
             running = false

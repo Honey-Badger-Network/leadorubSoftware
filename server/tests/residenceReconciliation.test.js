@@ -15,6 +15,12 @@ test('late hold updates only integration fields and deduplicates remote IDs', ()
     assert.equal(operation.update.$set.countHold, 2)
     assert.equal(operation.update.$set.offersList.length, 2)
     assert.equal(operation.update.$set.residenceStatus, 'confirmed')
+    assert.equal(plan.changes[0].phone, local.phone)
+    assert.equal(plan.changes[0].userName, 'Operator')
+    assert.equal(plan.changes[0].fromStatus, 'created')
+    assert.equal(plan.changes[0].toStatus, 'confirmed')
+    assert.equal(plan.changes[0].before.price, 0)
+    assert.equal(plan.changes[0].after.price, 7500)
     for (const key of ['statusOKK', 'commentOKK', 'userName', 'isEdited', 'date', 'phone']) {
         assert.equal(Object.hasOwn(operation.update.$set, key), false)
     }
@@ -60,6 +66,10 @@ test('weekly sync fetches integration once including next Monday and reports cha
     assert.equal(requests, 1)
     assert.equal(writes, 1)
     assert.equal(result.modified, 1)
+    assert.equal(result.changes.length, 1)
+    assert.equal(result.changes[0].id, local._id)
+    assert.equal(result.changes[0].fromStatus, 'created')
+    assert.equal(result.changes[0].toStatus, 'hold')
     assert.deepEqual(result.changedDates, ['2026-11-01'])
 })
 
@@ -88,5 +98,28 @@ test('next Monday local lead prevents ambiguous attribution but is never updated
     })
     const result = await reconcile('2026-11-01')
     assert.equal(result.checked, 1)
+    assert.deepEqual(result.changes, [])
     assert.deepEqual(result.skipped, [{ id: local._id, reason: 'ambiguousPhone' }])
+})
+
+test('price-only changes are included even when status stays the same', () => {
+    const prior = { ...local, residenceStatus: 'hold', price: 1000, countHold: 1 }
+    const change = buildReconciliation([prior], [remote]).changes[0]
+    assert.equal(change.fromStatus, 'hold')
+    assert.equal(change.toStatus, 'hold')
+    assert.ok(change.changedFields.includes('price'))
+    assert.ok(!change.changedFields.includes('residenceStatus'))
+})
+
+test('write with no modified document is not reported as an updated lead', async () => {
+    const reconcile = createResidenceReconciliation({
+        model: {
+            find: () => ({ lean: async () => [local] }),
+            bulkWrite: async () => ({ modifiedCount: 0 })
+        }, fetchResidence: async () => ({ data: [remote] })
+    })
+    const result = await reconcile('2026-11-01')
+    assert.equal(result.modified, 0)
+    assert.deepEqual(result.changes, [])
+    assert.deepEqual(result.changedDates, [])
 })
