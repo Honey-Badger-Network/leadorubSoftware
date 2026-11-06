@@ -1,6 +1,16 @@
 const test = require('node:test')
 const assert = require('node:assert/strict')
-const { calculateCallStats, calculateUserFinanceData } = require('../services/userFinanceService')
+const { calculateCallStats, calculateUserFinanceData, calculateBrokerBonus } = require('../services/userFinanceService')
+
+test('broker bonus for five holds is 650 and reduces new clear by that amount', () => {
+    const brokerBonus = calculateBrokerBonus(5)
+    assert.equal(brokerBonus, 650)
+    assert.equal(calculateBrokerBonus(0), 0)
+    assert.equal(calculateBrokerBonus(undefined), 0)
+    const before = calculateUserFinanceData({ sumHold: 10000 }, 1, '2026-11-07')
+    const after = calculateUserFinanceData({ sumHold: 10000, brokerBonus }, 1, '2026-11-07')
+    assert.equal(before.newClear - after.newClear, 650)
+})
 
 test('sums seconds before converting to minutes and preserves existing call metrics', () => {
     assert.deepEqual(calculateCallStats([

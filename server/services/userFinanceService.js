@@ -1,5 +1,7 @@
 const number = value => Number.isFinite(Number(value)) ? Number(value) : 0
 
+const calculateBrokerBonus = countHolds => number(countHolds) * 130
+
 function calculateCallStats(calls) {
     let totalSeconds = 0
     let countCallsManyMinute = 0
@@ -39,4 +41,4 @@ function calculateUserFinanceData(user, countUsers, date, bonuses = []) {
     return { sumSvyat, nalog, totalSpentMinutesOnLine, totalSpentToCalls, RopSalary, totalSumBonuses, newClear }
 }
 
-module.exports = { calculateCallStats, calculateUserFinanceData }
+module.exports = { calculateCallStats, calculateUserFinanceData, calculateBrokerBonus }

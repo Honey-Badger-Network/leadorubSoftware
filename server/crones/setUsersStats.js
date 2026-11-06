@@ -7,7 +7,7 @@ const dotenv = require('dotenv')
 const leadsModel = require('../models/leadsModel.js')
 const usersModel = require('../models/usersModel.js')
 const bonusesModel = require('../models/bonusesModel.js')
-const { calculateUserFinanceData } = require('../services/userFinanceService.js')
+const { calculateUserFinanceData, calculateBrokerBonus } = require('../services/userFinanceService.js')
 
 const { getSkorozvonCalls, getSkorozvonCallsFromProfile, getDifferenceByCalls } = require('../services/skorozvonService.js')
 const { getLeadsToDate, aggregateUsersLeads, calculateClearByUser } = require('../services/leadsService.js')
@@ -103,6 +103,7 @@ async function setUsersStatsToDB(gte, lte) {
 
         user.scriptBonus = scriptBonus
         user.date = dayjs(gte).format('YYYY-MM-DD')
+        user.brokerBonus = calculateBrokerBonus(user.countHolds)
         user.userFinanceData = calculateUserFinanceData(user, usersCallsWithoutZeroCalls.length, user.date, dailyBonuses)
 
         const result = await upserUsersStatsToDB(user)
