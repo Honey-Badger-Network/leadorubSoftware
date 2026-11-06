@@ -6,6 +6,8 @@ const dotenv = require('dotenv')
 
 const leadsModel = require('../models/leadsModel.js')
 const usersModel = require('../models/usersModel.js')
+const bonusesModel = require('../models/bonusesModel.js')
+const { calculateUserFinanceData } = require('../services/userFinanceService.js')
 
 const { getSkorozvonCalls, getSkorozvonCallsFromProfile, getDifferenceByCalls } = require('../services/skorozvonService.js')
 const { getLeadsToDate, aggregateUsersLeads, calculateClearByUser } = require('../services/leadsService.js')
@@ -35,6 +37,8 @@ async function setUsersStatsToDB(gte, lte) {
     //     })
 
     let allUsersInModel = await usersModel.find()
+    const statsDate = dayjs(gte).format('YYYY-MM-DD')
+    const dailyBonuses = await bonusesModel.find({ bonusDate: statsDate }).lean()
 
     for (let user of usersCallsWithoutZeroCalls) {
 
@@ -99,6 +103,7 @@ async function setUsersStatsToDB(gte, lte) {
 
         user.scriptBonus = scriptBonus
         user.date = dayjs(gte).format('YYYY-MM-DD')
+        user.userFinanceData = calculateUserFinanceData(user, usersCallsWithoutZeroCalls.length, user.date, dailyBonuses)
 
         const result = await upserUsersStatsToDB(user)
     }

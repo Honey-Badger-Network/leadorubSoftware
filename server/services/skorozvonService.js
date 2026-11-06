@@ -1,3 +1,4 @@
+const { calculateCallStats } = require('./userFinanceService.js')
 const dayjs = require('dayjs')
 const axios = require('axios')
 const mongoose = require('mongoose')
@@ -262,38 +263,26 @@ async function getSkorozvonCalls(gte, lte) {
                 }
             });
 
-            countCallsManyMinute = 0 // кол-во звонков где общался больше минуты
-            countCallsWithMan = 0 // кол-во звонков гед общался не с роботом
-            countCallsResultReCall = 0 // кол-во звонков перезвонить
-
-            responseCalls.data.data.calls.forEach((call) => {
-
-                const [minutes, seconds] = call.duration.split(':').map(Number);
-                const durationInSeconds = minutes * 60 + seconds;
-
-                if (durationInSeconds > 60) {
-                    countCallsManyMinute += 1;
-                }
-
-                if (call.result !== 'Автоответчик') {
-                    countCallsWithMan += 1
-                }
-
-                if (call.result === 'Перезвонить') {
-                    countCallsResultReCall += 1
-                }
-
-            })
-
+            const calls = [...responseCalls.data.data.calls]
+            const total = Number(responseCalls.data.data.total)
+            for (let offset = calls.length; offset < total;) {
+                const response = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/calls', {
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: { ...userParams, page: Math.floor(offset / params.limit) + 1, offset }
+                })
+                const pageCalls = response.data.data.calls
+                if (!Array.isArray(pageCalls) || !pageCalls.length) throw new Error('Неполный список звонков для статистики')
+                calls.push(...pageCalls)
+                offset += pageCalls.length
+            }
+            const callStats = calculateCallStats(calls)
 
             usersCallsArray.push({
                 email: user.email,
                 name: user.name,
                 countCalls: responseCalls.data.data.total,
                 countMissedCalls: responseCallsMissed.data.data.total,
-                countCallsWithMan,
-                countCallsManyMinute,
-                countCallsResultReCall
+                ...callStats
             })
         }
         
