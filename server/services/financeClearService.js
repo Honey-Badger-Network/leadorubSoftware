@@ -1,6 +1,5 @@
 const number = value => Number.isFinite(Number(value)) ? Number(value) : 0
 
-const calculateBrokerBonus = countHolds => number(countHolds) * 130
 
 function calculateCallStats(calls) {
     let totalSeconds = 0
@@ -22,7 +21,7 @@ function calculateCallStats(calls) {
     return { totalMinutesOnLine: totalSeconds / 60, countCallsManyMinute, countCallsWithMan, countCallsResultReCall }
 }
 
-function calculateUserFinanceData(user, countUsers, date, bonuses = []) {
+function calculateFinanceClear(user, countUsers, date, bonuses = []) {
     const parsedDate = new Date(`${date}T00:00:00Z`)
     if (!Number.isFinite(parsedDate.valueOf()) || parsedDate.toISOString().slice(0, 10) !== date) {
         throw new Error('Некорректная дата финансовой статистики')
@@ -40,9 +39,11 @@ function calculateUserFinanceData(user, countUsers, date, bonuses = []) {
     )).reduce((sum, bonus) => sum + number(bonus.bonusValue), 0)
 
     const totalSumBonuses = savedBonuses + number(user.scriptBonus)
-    const newClear = sumSvyat - nalog - totalSpentMinutesOnLine - totalSpentToCalls - RopSalary - number(user.brokerBonus) - number(user.brokerSalary) - totalSumBonuses - baseMinuse
+    const commission = Math.floor(number(user.sumHold) * 0.6 * 0.15)
+    const holdReward = number(user.countHolds) * 130
+    const financeClear = sumSvyat - nalog - totalSpentMinutesOnLine - totalSpentToCalls - RopSalary - holdReward - commission - totalSumBonuses - baseMinuse
     
-    return newClear
+    return financeClear
 }
 
-module.exports = { calculateCallStats, calculateUserFinanceData, calculateBrokerBonus }
+module.exports = { calculateCallStats, calculateFinanceClear }

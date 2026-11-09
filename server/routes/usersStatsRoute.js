@@ -221,7 +221,7 @@ router.get('/api/salary/get', async (req, res) => {
                 resultObject[userEmail].sumHold += item.sumHold
                 resultObject[userEmail].salary += Math.round(item.salary)
                 resultObject[userEmail].clear += item.clear
-                resultObject[userEmail].brokerSalary += item.brokerSalary
+                resultObject[userEmail].financeClear += item.financeClear || 0
                 resultObject[userEmail].salaryToLeads += item.salaryToLeads
             } else {
                 // resultObject[item.name] = {
@@ -237,9 +237,8 @@ router.get('/api/salary/get', async (req, res) => {
                     salary: Math.round(item.salary),
                     // scriptBonus: bonusByDate,
                     clear: item.clear,
-                    brokerSalary: item.brokerSalary,
-                    salaryToLeads: item.salaryToLeads,
-                    financeDays: []
+                    financeClear: item.financeClear || 0,
+                    salaryToLeads: item.salaryToLeads
                 }
             }
         })
@@ -258,7 +257,7 @@ router.get('/api/salary/get', async (req, res) => {
             salary: 0,
             scriptBonus: 0,
             clear: 0,
-            brokerSalary: 0,
+            financeClear: 0,
             targetLeadsArray: [],
             salaryToLeads: 0
         };
@@ -272,7 +271,7 @@ router.get('/api/salary/get', async (req, res) => {
             total.sumHold += item.sumHold || 0;
             total.salary += item.salary || 0;
             total.clear += item.clear || 0;
-            total.brokerSalary += item.brokerSalary || 0;
+            total.financeClear += item.financeClear || 0;
             total.salaryToLeads += item.salaryToLeads || 0
 
             let lidorubObjectKey = aggregatedBonusesArray.find((user) => {

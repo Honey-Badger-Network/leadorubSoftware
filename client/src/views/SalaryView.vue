@@ -102,16 +102,25 @@
                 <strong :class="row.clear >= 0 ? 'salary-positive' : 'salary-negative'">{{ row.clear }}</strong>
             </template>
         </el-table-column>
-        <!-- <el-table-column prop="brokerSalary" label="ЗП брокерам"></el-table-column> -->
-        <el-table-column v-if="userRole === 'admin'" label="Правила расчёта" :width="160">
+        <el-table-column v-if="userRole === 'admin'" label="Новая чистая" :width="140">
             <template #default="{ row }">
-                <el-button v-if="row.email !== 'total@total.com'" type="primary" link @click="openFinanceDetails(row)">Подробнее</el-button>
+                <el-text tag="b" :type="row.financeClear >= 0 ? 'success' : 'danger'">{{ new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(row.financeClear || 0) }}</el-text>
+            </template>
+        </el-table-column>
+        <el-table-column v-if="userRole === 'admin'" label="Правила расчёта" :width="140" align="center">
+            <template #default="{ row }">
+                <el-tooltip v-if="row.email !== 'total@total.com'" content="Как рассчитывается новая чистая" placement="top">
+                    <el-button circle type="warning" aria-label="Правила расчёта новой чистой" @click="openFinanceRules(row)">
+                        <el-icon><InfoFilled /></el-icon>
+                    </el-button>
+                </el-tooltip>
             </template>
         </el-table-column>
     </el-table>
     </PagePanel>
 
-    <SalaryFinanceDialog v-if="userRole === 'admin'" v-model="financeDialogVisible" :user="financeUser" :period="salaryPeriod" />
+
+    <SalaryFinanceDialog v-if="userRole === 'admin'" v-model="financeRulesVisible" :user-name="financeRulesUser" />
 
     <el-dialog title="Топ лидорубов" v-model="modalWithBestLidorub" width="500px">
         <h3>Топ лидорубов за месяц <span>{{ monthToBestLidorub }}</span></h3>
@@ -202,15 +211,14 @@
 
     dayjs.locale('ru')
 
-    import { ArrowRight, ArrowDown, User } from '@element-plus/icons-vue'
+    import { ArrowRight, ArrowDown, User, InfoFilled } from '@element-plus/icons-vue'
 
     export default {
         data() {
             return {
                 salaryTableData: [],
-                financeDialogVisible: false,
-                financeUser: null,
-                salaryPeriod: null,
+                financeRulesVisible: false,
+                financeRulesUser: '',
                 gte: dayjs(new Date).format('YYYY-MM-DD'),
                 lte: dayjs(new Date).format('YYYY-MM-DD'),
                 userObject: null,
@@ -230,15 +238,16 @@
         },
         components: {
             SalaryFinanceDialog,
+            InfoFilled,
             ArrowRight,
             ArrowDown,
             User
         },
         methods: {
-            openFinanceDetails(row) {
+            openFinanceRules(row) {
                 if (this.userRole !== 'admin') return
-                this.financeUser = row
-                this.financeDialogVisible = true
+                this.financeRulesUser = row.name
+                this.financeRulesVisible = true
             },
             async getSalaryData() {
                 const period = { gte: dayjs(this.gte).format('YYYY-MM-DD'), lte: dayjs(this.lte).format('YYYY-MM-DD') }
@@ -247,8 +256,6 @@
                     params: period
                 })
                 this.salaryTableData = response.data
-                this.salaryPeriod = period
-                this.financeDialogVisible = false
                 await this.getBestLidorub()
             },
             showLeadsByUser(user) {

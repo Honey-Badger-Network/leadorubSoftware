@@ -1,15 +1,11 @@
 const test = require('node:test')
 const assert = require('node:assert/strict')
-const { calculateCallStats, calculateUserFinanceData, calculateBrokerBonus } = require('../services/userFinanceService')
+const { calculateCallStats, calculateFinanceClear } = require('../services/financeClearService')
 
 test('broker bonus for five holds is 650 and reduces new clear by that amount', () => {
-    const brokerBonus = calculateBrokerBonus(5)
-    assert.equal(brokerBonus, 650)
-    assert.equal(calculateBrokerBonus(0), 0)
-    assert.equal(calculateBrokerBonus(undefined), 0)
-    const before = calculateUserFinanceData({ sumHold: 10000 }, 1, '2026-11-07')
-    const after = calculateUserFinanceData({ sumHold: 10000, brokerBonus }, 1, '2026-11-07')
-    assert.equal(before.newClear - after.newClear, 650)
+    const before = calculateFinanceClear({ sumHold: 10000 }, 1, '2026-11-07')
+    const after = calculateFinanceClear({ sumHold: 10000, countHolds: 5 }, 1, '2026-11-07')
+    assert.equal(before - after, 650)
 })
 
 test('sums seconds before converting to minutes and preserves existing call metrics', () => {
@@ -26,25 +22,21 @@ test('sums seconds before converting to minutes and preserves existing call metr
 
 test('calculates finance from model formulas and only this user daily bonuses', () => {
     const user = { _id: 'u1', email: 'one', sumHold: 10000, totalMinutesOnLine: 100,
-        countCalls: 200, scriptBonus: 50, brokerSalary: 900, brokerBonus: 100 }
-    const result = calculateUserFinanceData(user, 4, '2026-11-06', [
+        countCalls: 200, scriptBonus: 50, countHolds: 5 }
+    const result = calculateFinanceClear(user, 4, '2026-11-06', [
         { userEmail: 'one', bonusDate: '2026-11-06', bonusValue: 200 },
         { bonusUserId: 'u1', bonusDate: '2026-11-06', bonusValue: 100 },
         { userEmail: 'two', bonusDate: '2026-11-06', bonusValue: 9999 },
         { userEmail: 'one', bonusDate: '2026-11-05', bonusValue: 9999 }
     ])
-    const expected = { sumSvyat: 5000, nalog: 350, totalSpentMinutesOnLine: 170,
-        totalSpentToCalls: 60, RopSalary: 1000, baseMinuse: 1250, totalSumBonuses: 350, newClear: 820 }
-    for (const [field, value] of Object.entries(expected)) assert.ok(Math.abs(result[field] - value) < 1e-9, field)
-    assert.deepEqual(result.inputs, { countUsers: 4, savedBonuses: 300, scriptBonus: 50 })
+    assert.ok(Math.abs(result - 270) < 1e-9)
 })
 
 test('ROP cost is zero on both weekend days and new clear may be negative', () => {
     for (const date of ['2026-11-07', '2026-11-08']) {
-        const result = calculateUserFinanceData({ countCalls: 10 }, 4, date)
-        assert.equal(result.RopSalary, 0)
-        assert.equal(result.newClear, -1253)
+        const result = calculateFinanceClear({ countCalls: 10 }, 4, date)
+        assert.equal(result, -1253)
     }
-    assert.equal(calculateUserFinanceData({}, 4, '2026-11-09').RopSalary, 1000)
-    assert.equal(calculateUserFinanceData({}, 0, '2026-11-09').newClear, 0)
+    assert.equal(calculateFinanceClear({}, 4, '2026-11-09'), -2250)
+    assert.equal(calculateFinanceClear({}, 0, '2026-11-09'), 0)
 })

@@ -55,6 +55,6 @@
 [bonus]                  | Number    |  общий бонус который он получил в этот день
 [scriptBonus]            | Number    |  системный бонус ЛД который расчитан кроном за чистую и тд
 [clear]                  | Number    |  чистая (чистая прибыль дял компании) за этот день
-[brokerSalary]           | Number    |  зп брокеров от ЛД за этот день
+[financeClear]           | Number    | новая чистая за день
 [user]                   | ObjectId  |  userId (objectId) в этой записи
 [salaryToLeads]          | Number    |  зп за лиды (сума leadSalaryPrice всех его лидов за этот день)

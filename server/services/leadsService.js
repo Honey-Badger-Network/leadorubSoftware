@@ -197,7 +197,7 @@ async function getLeadsByUser(gte, lte, name) {
 
 function calculateClearByUser(userObject, countUsers, date) {
     const dayOfWeek = dayjs(date).day()
-    const brokerSalary = Math.floor(userObject.sumHold * 0.6 * 0.15)
+    const commission = Math.floor(userObject.sumHold * 0.6 * 0.15)
     // const minusOfBase = Math.floor((dayOfWeek === 0 ? 5000 : 84000) / countUsers)
 
     // ЕБАНА НЕЙРОНКА БЛЯТЬ ВМЕСТО 8400 ВЬЕБАЛА МНЕ 84000 (Я ДУМАЛ ПОЧЕМУ РАЩЕТ ПО ПИЗДЕ ПОШОЛ)
@@ -215,9 +215,9 @@ function calculateClearByUser(userObject, countUsers, date) {
     // }
 
     const allSumHold = userObject.sumHold * 0.6
-    const clear = Math.floor(allSumHold - minusOfBase - brokerSalary - userObject.salary)
+    const clear = Math.floor(allSumHold - minusOfBase - commission - userObject.salary)
 
-    return { clear, brokerSalary }
+    return { clear }
 }
 
 function getDistintBetweenUnUniqueLeads(lead) {
