@@ -47,7 +47,6 @@
 [name]                   | String    |  имя ЛД для зарпльной
 [date]                   | String    |  дата записи статистики по зарпалты в этот день
 [countCalls]             | Number    |  Кол-во звонков ЛД в SKOROZVON в этот день
-[countCallsWithProfile]  | Number    |  кол-во звонокв ЛД в SKOROZVON через его ЛК в этот день
 [countLeads]             | Number    |  кол-во лидов ЛД в SKOROZVON и ручных в этот день
 [countTargets]           | Number    |  кол-во целевых лидов ЛД в этот день
 [countHolds]             | Number    |  кол-во холдов ЛД в этот день 

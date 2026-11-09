@@ -50,7 +50,6 @@ async function upserUsersStatsToDB(userObject) {
             userFinanceData: userObject.userFinanceData,
             brokerBonus: userObject.brokerBonus || 0,
 
-            countCallsWithProfile: userObject.countCallsWithProfile || 0,
             rankName: userObject.rankName,
             salary: userObject.salary,
             clear: userObject.clear,

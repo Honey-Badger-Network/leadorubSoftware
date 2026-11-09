@@ -213,10 +213,8 @@ router.get('/api/salary/get', async (req, res) => {
 
             // if (resultObject[item.name]) {
             if (resultObject[userEmail]) {
-                // resultObject[userEmail].countCallsWithProfile += item.countCallsWithProfile
                 resultObject[userEmail].countCalls += item.countCalls || 0
                 resultObject[userEmail].countCallsManyMinute += item.countCallsManyMinute || 0
-                resultObject[userEmail].countCallsWithProfile += 0
                 resultObject[userEmail].countLeads += item.countLeads
                 resultObject[userEmail].countTargets += item.countTargets
                 resultObject[userEmail].countHolds += item.countHolds
@@ -229,12 +227,10 @@ router.get('/api/salary/get', async (req, res) => {
             } else {
                 // resultObject[item.name] = {
                 resultObject[userEmail] = {
-                    // countCallsWithProfile: item.countCallsWithProfile,
                     name: item.name,
                     email: item.email,
                     countCalls: item.countCalls || 0,
                     countCallsManyMinute: item.countCallsManyMinute || 0,
-                    countCallsWithProfile: 0,
                     countLeads: item.countLeads,
                     countTargets: item.countTargets,
                     countHolds: item.countHolds,
@@ -275,7 +271,6 @@ router.get('/api/salary/get', async (req, res) => {
             scriptBonus: 0,
             clear: 0,
             brokerSalary: 0,
-            countCallsWithProfile: 0,
             targetLeadsArray: [],
             salaryToLeads: 0
         };
@@ -283,30 +278,14 @@ router.get('/api/salary/get', async (req, res) => {
         resultObject.forEach(item => {
             total.countCalls += item.countCalls || 0;
             total.countCallsManyMinute += item.countCallsManyMinute || 0
-            total.countCallsWithProfile += item.countCallsWithProfile || 0
             total.countLeads += item.countLeads || 0;
             total.countTargets += item.countTargets || 0;
             total.countHolds += item.countHolds || 0;
             total.sumHold += item.sumHold || 0;
             total.salary += item.salary || 0;
-            // total.scriptBonus += item.scriptBonus || 0;
             total.clear += item.clear || 0;
             total.brokerSalary += item.brokerSalary || 0;
             total.salaryToLeads += item.salaryToLeads || 0
-
-            // let lidorubObjectKey = totalSummedClearData.find((user) => {
-            //     return item.email === user._id
-            // })
-
-            // if (lidorubObjectKey) {
-            //     item.totalMonthClear = lidorubObjectKey.totalClear
-            //     if (dayjs(lte).format('YYYY-MM-DD') === dayjs(gte).endOf(dateType).format('YYYY-MM-DD')) {
-            //         item.scriptBonus = lidorubObjectKey.totalClear > 0 ? Math.round(lidorubObjectKey.totalClear * 0.2) : 0
-            //     } else {
-            //         item.scriptBonus = 0
-            //     }
-            //     total.scriptBonus += item.scriptBonus
-            // }
 
             let lidorubObjectKey = aggregatedBonusesArray.find((user) => {
                 return user.email === item.email
