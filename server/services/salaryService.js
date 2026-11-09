@@ -12,12 +12,13 @@ const usersStatsModel = require('../models/usersStats.js')
 function calculateSalaryLeadorub(userObject) {
 
     const salaryToCalls = userObject.countCalls * 1
+    // const salaryToCallManyMinute = userObject.countCallsManyMinute * 15
     const salaryToTargets = userObject.countTargets * 250
     const salaryToHolds = userObject.countHolds * 0 // для новой мотивации добавить зп за холды (0 или 250)
     const salaryToTargetAndUniqueLeads = userObject.leadSalaryPrice // зп ЛД за каждый лид в суме всех его лидов за день
 
     // TODO для новой мотивации потом как зп за целевые исопльзовать ту пременую summSalaryToTargets !!!!
-
+    
     // const leadorubSalary = salaryToCalls + salaryToTargets + salaryToHolds // старая мотивация
     const leadorubSalaryByNew = salaryToCalls + salaryToTargetAndUniqueLeads // новая мотивация
     
