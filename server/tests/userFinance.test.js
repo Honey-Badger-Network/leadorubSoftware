@@ -33,16 +33,17 @@ test('calculates finance from model formulas and only this user daily bonuses', 
         { userEmail: 'two', bonusDate: '2026-11-06', bonusValue: 9999 },
         { userEmail: 'one', bonusDate: '2026-11-05', bonusValue: 9999 }
     ])
-    const expected = { sumSvyat: 5000, nalog: 700, totalSpentMinutesOnLine: 170,
-        totalSpentToCalls: 60, RopSalary: 1000, totalSumBonuses: 350, newClear: 1720 }
+    const expected = { sumSvyat: 5000, nalog: 350, totalSpentMinutesOnLine: 170,
+        totalSpentToCalls: 60, RopSalary: 1000, baseMinuse: 1250, totalSumBonuses: 350, newClear: 820 }
     for (const [field, value] of Object.entries(expected)) assert.ok(Math.abs(result[field] - value) < 1e-9, field)
+    assert.deepEqual(result.inputs, { countUsers: 4, savedBonuses: 300, scriptBonus: 50 })
 })
 
 test('ROP cost is zero on both weekend days and new clear may be negative', () => {
     for (const date of ['2026-11-07', '2026-11-08']) {
         const result = calculateUserFinanceData({ countCalls: 10 }, 4, date)
         assert.equal(result.RopSalary, 0)
-        assert.equal(result.newClear, -3)
+        assert.equal(result.newClear, -1253)
     }
     assert.equal(calculateUserFinanceData({}, 4, '2026-11-09').RopSalary, 1000)
     assert.equal(calculateUserFinanceData({}, 0, '2026-11-09').newClear, 0)

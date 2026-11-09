@@ -29,17 +29,19 @@ function calculateUserFinanceData(user, countUsers, date, bonuses = []) {
     }
     const day = parsedDate.getUTCDay()
     const sumSvyat = number(user.sumHold) * 0.5
-    const nalog = number(user.sumHold) * 0.5 * 0.07
+    const nalog = sumSvyat * 0.07
     const totalSpentMinutesOnLine = number(user.totalMinutesOnLine) * 1.7
     const totalSpentToCalls = number(user.countCalls) * 0.3
     const RopSalary = day === 0 || day === 6 || countUsers <= 0 ? 0 : 4000 / countUsers
-    const baseMinuse = 5000 / countUsers
-    const totalSumBonuses = bonuses.filter(bonus => bonus.bonusDate === date && (
+    const baseMinuse = countUsers > 0 ? 5000 / countUsers : 0
+    const savedBonuses = bonuses.filter(bonus => bonus.bonusDate === date && (
         bonus.userEmail ? bonus.userEmail === user.email : String(bonus.bonusUserId) === String(user._id)
-    )).reduce((sum, bonus) => sum + number(bonus.bonusValue), number(user.scriptBonus))
+    )).reduce((sum, bonus) => sum + number(bonus.bonusValue), 0)
+    const totalSumBonuses = savedBonuses + number(user.scriptBonus)
     const newClear = sumSvyat - nalog - totalSpentMinutesOnLine - totalSpentToCalls
         - RopSalary - number(user.brokerBonus) - number(user.brokerSalary) - totalSumBonuses - baseMinuse
-    return { sumSvyat, nalog, totalSpentMinutesOnLine, totalSpentToCalls, RopSalary, totalSumBonuses, newClear, baseMinuse }
+    return { sumSvyat, nalog, totalSpentMinutesOnLine, totalSpentToCalls, RopSalary, totalSumBonuses, newClear, baseMinuse,
+        inputs: { countUsers, savedBonuses, scriptBonus: number(user.scriptBonus) } }
 }
 
 module.exports = { calculateCallStats, calculateUserFinanceData, calculateBrokerBonus }

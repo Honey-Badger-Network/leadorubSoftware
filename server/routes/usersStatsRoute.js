@@ -250,6 +250,10 @@ router.get('/api/salary/get', async (req, res) => {
             resultObject[userEmail].financeDays.push({
                 date: item.date,
                 userFinanceData: item.userFinanceData || null,
+                sumHold: item.sumHold,
+                countHolds: item.countHolds,
+                countCalls: item.countCalls,
+                scriptBonus: item.scriptBonus,
                 brokerSalary: item.brokerSalary,
                 brokerBonus: item.brokerBonus,
                 totalMinutesOnLine: item.totalMinutesOnLine
