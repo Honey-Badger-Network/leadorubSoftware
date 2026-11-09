@@ -47,7 +47,7 @@ async function upserUsersStatsToDB(userObject) {
             countCallsManyMinute: userObject.countCallsManyMinute,
             countCallsResultReCall: userObject.countCallsResultReCall,
             totalMinutesOnLine: userObject.totalMinutesOnLine,
-            userFinanceData: userObject.userFinanceData,
+            financeClear: userObject.financeClear,
             brokerBonus: userObject.brokerBonus || 0,
 
             rankName: userObject.rankName,

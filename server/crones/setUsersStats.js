@@ -97,7 +97,7 @@ async function setUsersStatsToDB(gte, lte) {
         user.scriptBonus = scriptBonus
         user.date = dayjs(gte).format('YYYY-MM-DD')
         user.brokerBonus = calculateBrokerBonus(user.countHolds)
-        user.userFinanceData = calculateUserFinanceData(user, usersCallsWithoutZeroCalls.length, user.date, dailyBonuses)
+        user.financeClear = calculateUserFinanceData(user, usersCallsWithoutZeroCalls.length, user.date, dailyBonuses)
 
         const result = await upserUsersStatsToDB(user)
     }

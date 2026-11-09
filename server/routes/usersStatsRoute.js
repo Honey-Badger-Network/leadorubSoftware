@@ -220,7 +220,6 @@ router.get('/api/salary/get', async (req, res) => {
                 resultObject[userEmail].countHolds += item.countHolds
                 resultObject[userEmail].sumHold += item.sumHold
                 resultObject[userEmail].salary += Math.round(item.salary)
-                // resultObject[userEmail].scriptBonus += bonusByDate
                 resultObject[userEmail].clear += item.clear
                 resultObject[userEmail].brokerSalary += item.brokerSalary
                 resultObject[userEmail].salaryToLeads += item.salaryToLeads
@@ -243,17 +242,6 @@ router.get('/api/salary/get', async (req, res) => {
                     financeDays: []
                 }
             }
-            resultObject[userEmail].financeDays.push({
-                date: item.date,
-                userFinanceData: item.userFinanceData || null,
-                sumHold: item.sumHold,
-                countHolds: item.countHolds,
-                countCalls: item.countCalls,
-                scriptBonus: item.scriptBonus,
-                brokerSalary: item.brokerSalary,
-                brokerBonus: item.brokerBonus,
-                totalMinutesOnLine: item.totalMinutesOnLine
-            })
         })
 
         resultObject = Object.values(resultObject)
