@@ -12,6 +12,7 @@ const bonusesModel = require('../models/bonusesModel.js')
 
 const { setUsersStatsToDB } = require('../crones/setUsersStats.js')
 const { getFullMonthClear } = require('../services/salaryService.js')
+const { explainFinanceClear } = require('../services/financeClearService.js')
 const { setTransfersToDB } = require('../crones/setTransfers.js')
 const { upsertBonusDataByUsers } = require('../crones/setBonuses.js')
 
@@ -180,6 +181,11 @@ router.get('/api/salary/get', async (req, res) => {
           });
 
         let resultObject = {}
+        const activeUsersByDate = new Map()
+        for (const row of result) {
+            if (!activeUsersByDate.has(row.date)) activeUsersByDate.set(row.date, new Set())
+            if (row.countCalls > 0) activeUsersByDate.get(row.date).add(row.email || String(row.user))
+        }
 
         function getBonusByDate(item) {
             let bonus = 0;
@@ -214,6 +220,7 @@ router.get('/api/salary/get', async (req, res) => {
             // if (resultObject[item.name]) {
             if (resultObject[userEmail]) {
                 resultObject[userEmail].countCalls += item.countCalls || 0
+                resultObject[userEmail].totalMinutesOnLine += item.totalMinutesOnLine || 0
                 resultObject[userEmail].countCallsManyMinute += item.countCallsManyMinute || 0
                 resultObject[userEmail].countLeads += item.countLeads
                 resultObject[userEmail].countTargets += item.countTargets
@@ -229,6 +236,7 @@ router.get('/api/salary/get', async (req, res) => {
                     name: item.name,
                     email: item.email,
                     countCalls: item.countCalls || 0,
+                    totalMinutesOnLine: item.totalMinutesOnLine || 0,
                     countCallsManyMinute: item.countCallsManyMinute || 0,
                     countLeads: item.countLeads,
                     countTargets: item.countTargets,
@@ -238,9 +246,18 @@ router.get('/api/salary/get', async (req, res) => {
                     // scriptBonus: bonusByDate,
                     clear: item.clear,
                     financeClear: item.financeClear || 0,
-                    salaryToLeads: item.salaryToLeads
+                    salaryToLeads: item.salaryToLeads,
+                    financeDays: []
                 }
             }
+            const countUsers = activeUsersByDate.get(item.date).size
+            resultObject[userEmail].financeDays.push({
+                date: item.date, countUsers,
+                sumHold: item.sumHold || 0, countHolds: item.countHolds || 0,
+                countCalls: item.countCalls || 0, totalMinutesOnLine: item.totalMinutesOnLine || 0,
+                salary: item.salary || 0, savedFinanceClear: item.financeClear,
+                calculation: explainFinanceClear(item, countUsers, item.date)
+            })
         })
 
         resultObject = Object.values(resultObject)
@@ -258,6 +275,7 @@ router.get('/api/salary/get', async (req, res) => {
             scriptBonus: 0,
             clear: 0,
             financeClear: 0,
+            totalMinutesOnLine: 0,
             targetLeadsArray: [],
             salaryToLeads: 0
         };
@@ -272,6 +290,7 @@ router.get('/api/salary/get', async (req, res) => {
             total.salary += item.salary || 0;
             total.clear += item.clear || 0;
             total.financeClear += item.financeClear || 0;
+            total.totalMinutesOnLine += item.totalMinutesOnLine || 0;
             total.salaryToLeads += item.salaryToLeads || 0
 
             let lidorubObjectKey = aggregatedBonusesArray.find((user) => {

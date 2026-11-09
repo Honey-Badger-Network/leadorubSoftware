@@ -1,6 +1,18 @@
 const test = require('node:test')
 const assert = require('node:assert/strict')
-const { calculateCallStats, calculateFinanceClear } = require('../services/financeClearService')
+const { calculateCallStats, calculateFinanceClear, explainFinanceClear } = require('../services/financeClearService')
+
+test('explanation uses the same formula as persisted financeClear across weekdays and weekends', () => {
+    const user = { sumHold: 10000, countCalls: 200, countHolds: 5, totalMinutesOnLine: 100, salary: 400 }
+    for (const date of ['2026-11-06', '2026-11-07']) {
+        const details = explainFinanceClear(user, 4, date)
+        assert.equal(details.financeClear, calculateFinanceClear(user, 4, date))
+        assert.ok(Math.abs(details.nalog - 350) < 1e-9)
+        assert.equal(details.totalSpentMinutesOnLine, 170)
+        assert.equal(details.baseMinuse, 1250)
+        assert.equal(details.RopSalary, date === '2026-11-07' ? 0 : 1000)
+    }
+})
 
 test('broker bonus for five holds is 650 and reduces new clear by that amount', () => {
     const before = calculateFinanceClear({ sumHold: 10000 }, 1, '2026-11-07')

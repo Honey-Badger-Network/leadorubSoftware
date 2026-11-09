@@ -120,7 +120,7 @@
     </PagePanel>
 
 
-    <SalaryFinanceDialog v-if="userRole === 'admin'" v-model="financeRulesVisible" :user-name="financeRulesUser" />
+    <SalaryFinanceDialog v-if="userRole === 'admin'" v-model="financeRulesVisible" :user="financeRulesUser" />
 
     <el-dialog title="Топ лидорубов" v-model="modalWithBestLidorub" width="500px">
         <h3>Топ лидорубов за месяц <span>{{ monthToBestLidorub }}</span></h3>
@@ -218,7 +218,7 @@
             return {
                 salaryTableData: [],
                 financeRulesVisible: false,
-                financeRulesUser: '',
+                financeRulesUser: null,
                 gte: dayjs(new Date).format('YYYY-MM-DD'),
                 lte: dayjs(new Date).format('YYYY-MM-DD'),
                 userObject: null,
@@ -246,7 +246,7 @@
         methods: {
             openFinanceRules(row) {
                 if (this.userRole !== 'admin') return
-                this.financeRulesUser = row.name
+                this.financeRulesUser = row
                 this.financeRulesVisible = true
             },
             async getSalaryData() {
