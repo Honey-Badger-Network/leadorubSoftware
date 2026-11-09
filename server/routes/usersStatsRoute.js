@@ -243,9 +243,17 @@ router.get('/api/salary/get', async (req, res) => {
                     // scriptBonus: bonusByDate,
                     clear: item.clear,
                     brokerSalary: item.brokerSalary,
-                    salaryToLeads: item.salaryToLeads
+                    salaryToLeads: item.salaryToLeads,
+                    financeDays: []
                 }
             }
+            resultObject[userEmail].financeDays.push({
+                date: item.date,
+                userFinanceData: item.userFinanceData || null,
+                brokerSalary: item.brokerSalary,
+                brokerBonus: item.brokerBonus,
+                totalMinutesOnLine: item.totalMinutesOnLine
+            })
         })
 
         resultObject = Object.values(resultObject)

@@ -104,8 +104,15 @@
             </template>
         </el-table-column>
         <!-- <el-table-column prop="brokerSalary" label="ЗП брокерам"></el-table-column> -->
+        <el-table-column v-if="userRole === 'admin'" label="Правила расчёта" :width="160">
+            <template #default="{ row }">
+                <el-button v-if="row.email !== 'total@total.com'" type="primary" link @click="openFinanceDetails(row)">Подробнее</el-button>
+            </template>
+        </el-table-column>
     </el-table>
     </PagePanel>
+
+    <SalaryFinanceDialog v-if="userRole === 'admin'" v-model="financeDialogVisible" :user="financeUser" :period="salaryPeriod" />
 
     <el-dialog title="Топ лидорубов" v-model="modalWithBestLidorub" width="500px">
         <h3>Топ лидорубов за месяц <span>{{ monthToBestLidorub }}</span></h3>
@@ -191,6 +198,7 @@
 
     import dayjs from 'dayjs'
     import axios from 'axios'
+    import SalaryFinanceDialog from '../components/SalaryFinanceDialog.vue'
     import 'dayjs/locale/ru'
 
     dayjs.locale('ru')
@@ -201,6 +209,9 @@
         data() {
             return {
                 salaryTableData: [],
+                financeDialogVisible: false,
+                financeUser: null,
+                salaryPeriod: null,
                 gte: dayjs(new Date).format('YYYY-MM-DD'),
                 lte: dayjs(new Date).format('YYYY-MM-DD'),
                 userObject: null,
@@ -219,20 +230,26 @@
             }
         },
         components: {
+            SalaryFinanceDialog,
             ArrowRight,
             ArrowDown,
             User
         },
         methods: {
+            openFinanceDetails(row) {
+                if (this.userRole !== 'admin') return
+                this.financeUser = row
+                this.financeDialogVisible = true
+            },
             async getSalaryData() {
+                const period = { gte: dayjs(this.gte).format('YYYY-MM-DD'), lte: dayjs(this.lte).format('YYYY-MM-DD') }
                 const response = await this.$store.dispatch('getDataList', {
                     col: 'api/salary/get',
-                    params: {
-                        gte: dayjs(this.gte).format('YYYY-MM-DD'),
-                        lte: dayjs(this.lte).format('YYYY-MM-DD')
-                    }
+                    params: period
                 })
                 this.salaryTableData = response.data
+                this.salaryPeriod = period
+                this.financeDialogVisible = false
                 await this.getBestLidorub()
             },
             showLeadsByUser(user) {
