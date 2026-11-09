@@ -42,6 +42,7 @@ const usersStats = new Schema({
         totalSpentMinutesOnLine: Number, // общее кол-во минут * 1.7
         totalSpentToCalls: Number, // общее кол-во звонков * 0.3
         RopSalary: Number, // в сб и вс по 0 у всех а в другие дни 4000 / кол-во юзеров в тот день
+        baseMinuse: Number, // 5000 / кол-во юзеров в тот день
         totalSumBonuses: Number, // сума бонусов лидоруба в тот день
         newClear: Number // sumSvyat - nalog - totalSpentMinutesOnLine - totalSpentToCalls - RopSalary - brokerBonus - brokerSalary - totalSumBonuses
     }
