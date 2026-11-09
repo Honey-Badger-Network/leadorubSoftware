@@ -94,12 +94,12 @@
         <el-table-column :width="100" prop="scriptBonus" label="Бонус"></el-table-column>
         <el-table-column :width="100" prop="salary + scriptBonus" label="Итого ЗП">
             <template #default="{ row }">
-                <strong class="salary-total">{{ row.salary + row.scriptBonus }}</strong>
+                <el-text tag="b">{{ row.salary + row.scriptBonus }}</el-text>
             </template>
         </el-table-column>
         <el-table-column :width="110" prop="clear" label="Чистая">
             <template #default="{ row }">
-                <strong :class="row.clear >= 0 ? 'salary-positive' : 'salary-negative'">{{ row.clear }}</strong>
+                <el-text tag="b" :type="row.clear >= 0 ? 'success' : 'danger'">{{ row.clear }}</el-text>
             </template>
         </el-table-column>
         <el-table-column v-if="userRole === 'admin'" label="Новая чистая" :width="140">
