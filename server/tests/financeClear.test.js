@@ -20,16 +20,12 @@ test('sums seconds before converting to minutes and preserves existing call metr
     assert.throws(() => calculateCallStats([{ duration: 'bad' }]))
 })
 
-test('calculates finance from model formulas and only this user daily bonuses', () => {
-    const user = { _id: 'u1', email: 'one', sumHold: 10000, totalMinutesOnLine: 100,
-        countCalls: 200, scriptBonus: 50, countHolds: 5 }
-    const result = calculateFinanceClear(user, 4, '2026-11-06', [
-        { userEmail: 'one', bonusDate: '2026-11-06', bonusValue: 200 },
-        { bonusUserId: 'u1', bonusDate: '2026-11-06', bonusValue: 100 },
-        { userEmail: 'two', bonusDate: '2026-11-06', bonusValue: 9999 },
-        { userEmail: 'one', bonusDate: '2026-11-05', bonusValue: 9999 }
-    ])
-    assert.ok(Math.abs(result - 270) < 1e-9)
+test('subtracts employee salary and ignores employee bonuses', () => {
+    const user = { sumHold: 10000, totalMinutesOnLine: 100, countCalls: 200, countHolds: 5, salary: 400 };
+    const result = calculateFinanceClear(user, 4, '2026-11-06');
+    assert.ok(Math.abs(result - 220) < 1e-9);
+    assert.equal(calculateFinanceClear({ ...user, scriptBonus: 9999, bonus: 8888 }, 4, '2026-11-06'), result);
+    assert.equal(calculateFinanceClear({ ...user, salary: 0 }, 4, '2026-11-06') - result, 400);
 })
 
 test('ROP cost is zero on both weekend days and new clear may be negative', () => {

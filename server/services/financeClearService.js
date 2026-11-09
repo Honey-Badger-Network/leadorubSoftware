@@ -21,7 +21,7 @@ function calculateCallStats(calls) {
     return { totalMinutesOnLine: totalSeconds / 60, countCallsManyMinute, countCallsWithMan, countCallsResultReCall }
 }
 
-function calculateFinanceClear(user, countUsers, date, bonuses = []) {
+function calculateFinanceClear(user, countUsers, date) {
     const parsedDate = new Date(`${date}T00:00:00Z`)
     if (!Number.isFinite(parsedDate.valueOf()) || parsedDate.toISOString().slice(0, 10) !== date) {
         throw new Error('Некорректная дата финансовой статистики')
@@ -34,14 +34,10 @@ function calculateFinanceClear(user, countUsers, date, bonuses = []) {
     const RopSalary = day === 0 || day === 6 || countUsers <= 0 ? 0 : 4000 / countUsers
     const baseMinuse = countUsers > 0 ? 5000 / countUsers : 0
 
-    const savedBonuses = bonuses.filter(bonus => bonus.bonusDate === date && (
-        bonus.userEmail ? bonus.userEmail === user.email : String(bonus.bonusUserId) === String(user._id)
-    )).reduce((sum, bonus) => sum + number(bonus.bonusValue), 0)
-
-    const totalSumBonuses = savedBonuses + number(user.scriptBonus)
+    const salary = number(user.salary)
     const commission = Math.floor(number(user.sumHold) * 0.6 * 0.15)
     const holdReward = number(user.countHolds) * 130
-    const financeClear = sumSvyat - nalog - totalSpentMinutesOnLine - totalSpentToCalls - RopSalary - holdReward - commission - totalSumBonuses - baseMinuse
+    const financeClear = sumSvyat - nalog - totalSpentMinutesOnLine - totalSpentToCalls - RopSalary - holdReward - commission - baseMinuse - salary
     
     return financeClear
 }
