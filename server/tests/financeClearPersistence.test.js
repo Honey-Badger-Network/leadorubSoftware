@@ -43,7 +43,7 @@ test('cron calculates and persists numeric financeClear through usersService', a
     await cron.setUsersStatsToDB('2026-11-09', '2026-11-09')
     assert.equal(saved.length, 1)
     assert.equal(typeof saved[0].financeClear, 'number')
-    assert.equal(saved[0].financeClear, -6330)
+    assert.equal(saved[0].financeClear, -6180)
     assert.equal(saved[0].clear, 123)
     assert.equal(Object.values(saved[0]).some(value => value && typeof value === 'object'), false)
 })

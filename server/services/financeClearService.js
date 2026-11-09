@@ -21,7 +21,7 @@ function calculateCallStats(calls) {
     return { totalMinutesOnLine: totalSeconds / 60, countCallsManyMinute, countCallsWithMan, countCallsResultReCall }
 }
 
-function explainFinanceClear(user, countUsers, date) {
+function calculateFinanceClear(user, countUsers, date) {
     const parsedDate = new Date(`${date}T00:00:00Z`)
     if (!Number.isFinite(parsedDate.valueOf()) || parsedDate.toISOString().slice(0, 10) !== date) {
         throw new Error('Некорректная дата финансовой статистики')
@@ -35,16 +35,11 @@ function explainFinanceClear(user, countUsers, date) {
     const baseMinuse = countUsers > 0 ? 5000 / countUsers : 0
 
     const salary = number(user.salary)
-    const commission = Math.floor(number(user.sumHold) * 0.6 * 0.15)
+    const commission = number(user.sumHold) * 0.5 * 0.15
     const holdReward = number(user.countHolds) * 130
     const financeClear = sumSvyat - nalog - totalSpentMinutesOnLine - totalSpentToCalls - RopSalary - holdReward - commission - baseMinuse - salary
     
-    return { sumSvyat, nalog, totalSpentMinutesOnLine, totalSpentToCalls, RopSalary, baseMinuse,
-        commission, holdReward, salary, financeClear }
+    return financeClear
 }
 
-function calculateFinanceClear(user, countUsers, date) {
-    return explainFinanceClear(user, countUsers, date).financeClear
-}
-
-module.exports = { calculateCallStats, calculateFinanceClear, explainFinanceClear }
+module.exports = { calculateCallStats, calculateFinanceClear }

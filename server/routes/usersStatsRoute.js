@@ -12,7 +12,6 @@ const bonusesModel = require('../models/bonusesModel.js')
 
 const { setUsersStatsToDB } = require('../crones/setUsersStats.js')
 const { getFullMonthClear } = require('../services/salaryService.js')
-const { explainFinanceClear } = require('../services/financeClearService.js')
 const { setTransfersToDB } = require('../crones/setTransfers.js')
 const { upsertBonusDataByUsers } = require('../crones/setBonuses.js')
 
@@ -181,11 +180,6 @@ router.get('/api/salary/get', async (req, res) => {
           });
 
         let resultObject = {}
-        const activeUsersByDate = new Map()
-        for (const row of result) {
-            if (!activeUsersByDate.has(row.date)) activeUsersByDate.set(row.date, new Set())
-            if (row.countCalls > 0) activeUsersByDate.get(row.date).add(row.email || String(row.user))
-        }
 
         function getBonusByDate(item) {
             let bonus = 0;
@@ -246,18 +240,9 @@ router.get('/api/salary/get', async (req, res) => {
                     // scriptBonus: bonusByDate,
                     clear: item.clear,
                     financeClear: item.financeClear || 0,
-                    salaryToLeads: item.salaryToLeads,
-                    financeDays: []
+                    salaryToLeads: item.salaryToLeads
                 }
             }
-            const countUsers = activeUsersByDate.get(item.date).size
-            resultObject[userEmail].financeDays.push({
-                date: item.date, countUsers,
-                sumHold: item.sumHold || 0, countHolds: item.countHolds || 0,
-                countCalls: item.countCalls || 0, totalMinutesOnLine: item.totalMinutesOnLine || 0,
-                salary: item.salary || 0, savedFinanceClear: item.financeClear,
-                calculation: explainFinanceClear(item, countUsers, item.date)
-            })
         })
 
         resultObject = Object.values(resultObject)
