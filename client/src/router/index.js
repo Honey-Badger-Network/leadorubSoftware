@@ -83,6 +83,12 @@ const router = createRouter({
       meta: { requiresAuth: true, onlyAdmin: true }
     },
     {
+      path: '/residence-sync-history',
+      name: 'residenceSyncHistory',
+      component: () => import('../views/ResidenceSyncHistoryView.vue'),
+      meta: { requiresAuth: true, onlyAdmin: true }
+    },
+    {
       path: '/bonuses',
       name: "bonuses",
       component: () => import('../views/BonusesView.vue'),

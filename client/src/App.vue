@@ -102,7 +102,7 @@
 <script>
 import { markRaw } from 'vue'
 import { useRoute } from 'vue-router'
-import { User, House, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin, Histogram, DataAnalysis, Discount, DocumentChecked } from '@element-plus/icons-vue'
+import { User, House, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin, Histogram, DataAnalysis, Discount, DocumentChecked, Clock } from '@element-plus/icons-vue'
 import AppHeader from './components/AppHeader.vue'
 
 export default {
@@ -218,6 +218,12 @@ export default {
           label: 'Аналитика баз',
           path: '/base-analytics',
           icon: markRaw(DataAnalysis),
+          condition: () => this.rankName === 'admin'
+        },
+        {
+          label: 'История сверок',
+          path: '/residence-sync-history',
+          icon: markRaw(Clock),
           condition: () => this.rankName === 'admin'
         },
         {

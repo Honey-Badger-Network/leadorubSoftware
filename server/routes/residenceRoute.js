@@ -16,6 +16,27 @@ const { residenceBaseUrl, residenceToken } = process.env
 
 const router = Router()
 
+router.get('/api/residence/sync-history', async (req, res) => {
+    const { getWeekDates } = require('../services/payrollService')
+    const history = require('../models/residenceSyncHistory')
+    const { gte, lte } = req.query
+    const page = Number(req.query.page || 1)
+    const limit = 30
+    try {
+        getWeekDates(gte)
+        getWeekDates(lte)
+        if (gte > lte || !Number.isInteger(page) || page < 1) throw new Error('Некорректный период или страница')
+    } catch (error) { return res.status(400).json({ msg: error.message }) }
+    try {
+        const filter = { state: 'applied', updatedAt: { $gte: gte, $lte: lte } }
+        const [data, total] = await Promise.all([
+            history.find(filter).select('-expected -after').sort({ recordedAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+            history.countDocuments(filter)
+        ])
+        res.json({ data, total, page, limit })
+    } catch (error) { res.status(500).json({ msg: error.message }) }
+})
+
 router.post(['/api/residence/reconcile', '/api/residence/reconcile-week'], async (req, res) => {
     const { resolvePeriod } = require('../services/residenceReconciliation')
     const { reconcileResidenceWeek } = require('../services/residenceWeeklyService')

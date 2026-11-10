@@ -55,46 +55,41 @@
   </el-card>
 </template>
 
-<script setup>
-import { computed, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+<script>
 import dayjs from 'dayjs'
-
-const store = useStore()
-const date = ref(dayjs().format('YYYY-MM-DD'))
-const report = ref(null)
-const loading = ref(false)
-const error = ref('')
-let requestId = 0
 const metrics = [
   { key: 'countCalls', title: 'Звонки' }, { key: 'countLeads', title: 'Лиды' },
   { key: 'countTargets', title: 'Целевые' }, { key: 'countHolds', title: 'Холды' },
   { key: 'sumHold', title: 'Сумма холдов, ₽' }, { key: 'salary', title: 'Зарплата, ₽' },
   { key: 'clear', title: 'Чистая, ₽' }
 ]
-const tableRows = computed(() => report.value ? [report.value.total] : [])
-const formatDate = value => dayjs(value).format('DD.MM.YYYY')
-const formatNumber = value => new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value || 0)
-async function fetchData() {
-  const id = ++requestId
-  report.value = null
-  error.value = ''
-  if (!date.value) { error.value = 'Выберите дату недели'; loading.value = false; return }
-  loading.value = true
-  try {
-    const response = await store.dispatch('getDataList', { col: 'api/salary/rop', params: { date: date.value } })
-    if (id === requestId) report.value = response.data
-  } catch (e) {
-    if (id === requestId) error.value = e.response?.data?.msg || 'Не удалось загрузить зарплату РОПа'
-  } finally { if (id === requestId) loading.value = false }
+
+export default {
+  data() { return { date: dayjs().format('YYYY-MM-DD'), report: null, loading: false, error: '', requestId: 0, metrics } },
+  computed: { tableRows() { return this.report ? [this.report.total] : [] } },
+  watch: { date: { handler: 'fetchData', immediate: true } },
+  methods: {
+    formatDate(value) { return dayjs(value).format('DD.MM.YYYY') },
+    formatNumber(value) { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value || 0) },
+    async fetchData() {
+      const id = ++this.requestId
+      this.report = null
+      this.error = ''
+      if (!this.date) { this.error = 'Выберите дату недели'; this.loading = false; return }
+      this.loading = true
+      try {
+        const response = await this.$store.dispatch('getDataList', { col: 'api/salary/rop', params: { date: this.date } })
+        if (id === this.requestId) this.report = response.data
+      } catch (e) {
+        if (id === this.requestId) this.error = e.response?.data?.msg || 'Не удалось загрузить зарплату РОПа'
+      } finally { if (id === this.requestId) this.loading = false }
+    },
+    moveWeek(direction) { this.date = dayjs(this.date).add(direction, 'week').format('YYYY-MM-DD') },
+    currentWeek() {
+      const today = dayjs().format('YYYY-MM-DD')
+      if (this.date === today) this.fetchData()
+      else this.date = today
+    }
+  }
 }
-function moveWeek(direction) {
-  date.value = dayjs(date.value).add(direction, 'week').format('YYYY-MM-DD')
-}
-function currentWeek() {
-  const today = dayjs().format('YYYY-MM-DD')
-  if (date.value === today) fetchData()
-  else date.value = today
-}
-watch(date, fetchData, { immediate: true })
 </script>

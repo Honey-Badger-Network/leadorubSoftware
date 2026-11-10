@@ -73,110 +73,34 @@ async function removeDublicates(gte, lte, phone) {
 }
 
 async function upsertNewLeadsData(lead) {
-
     try {
-        const entryFromDB = await leadsModel.findOne({
-            date: lead.date,
-            phone: lead.phone,
-        })
-
-        if (entryFromDB) {
-            
-            let isUniqueOtherInfo = getDistintBetweenUnUniqueLeads(entryFromDB)
-
-            // вызвать функцию которая удалит дублируюзие (если они есть)
-            let resultByDeleteDubles = await removeDublicates(lead.date, lead.date, lead.phone)
-
-            if (entryFromDB.isEdited === true) {
-                await leadsModel.updateOne(
-                    { _id: entryFromDB._id },
-                    {
-                        $set: {
-                            broker: lead.broker,
-                            price: lead.price,
-                            audioArray: lead.audioArray,
-                            residenceStatus: lead.residenceStatus,
-                            // selfLead: lead.selfLead,
-                            // selfLeadName: lead.selfLeadName,
-                            countHold: lead.countHold,
-                            offersList: lead.offersList,
-                            isUniquePhone: lead.isUniquePhone,
-                            lastPhoneCalled: lead.lastPhoneCalled,
-                            uniqueState: isUniqueOtherInfo.dateState,
-                            // leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
-                            leadProject: lead.leadProject,
-                            time: lead.time
-                        }
-                    }
-                );
-                return; 
-            } else {
-                const oldEntry = await leadsModel.findOneAndDelete({
-                    date: lead.date,
-                    phone: lead.phone,
-                })
-        
-                const newEntry = new leadsModel({
-                    date: lead.date,
-                    phone: lead.phone,
-                    userName: lead.userName,
-                    broker: lead.broker,
-                    price: lead.price,
-                    audioArray: lead.audioArray,
-                    residenceStatus: lead.residenceStatus,
-                    statusOKK: lead.statusOKK,
-                    // selfLead: lead.selfLead,
-                    // selfLeadName: lead.selfLeadName,
-                    user: lead.user,
-                    countHold: lead.countHold,
-                    isEdited: lead.isEdited,
-                    offersList: lead.offersList,
-                    isUniquePhone: lead.isUniquePhone,
-                    lastPhoneCalled: lead.lastPhoneCalled,
-                    uniqueState: isUniqueOtherInfo.dateState,
-                    leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
-                    isBreakedStatus: lead.isBreakedStatus,
-                    leadProject: lead.leadProject,
-                    time: lead.time
-                })
-        
-                await newEntry.save()
-            }
-        } else {
-
-            let isUniqueOtherInfo = getDistintBetweenUnUniqueLeads(lead)
-
-            const newEntry = new leadsModel({
-                date: lead.date,
-                phone: lead.phone,
-                userName: lead.userName,
-                broker: lead.broker,
-                price: lead.price,
-                audioArray: lead.audioArray,
-                residenceStatus: lead.residenceStatus,
-                statusOKK: lead.statusOKK,
-                selfLead: lead.selfLead,
-                selfLeadName: lead.selfLeadName,
-                user: lead.user,
-                countHold: lead.countHold,
-                isEdited: lead.isEdited,
-                offersList: lead.offersList,
-                isUniquePhone: lead.isUniquePhone,
-                lastPhoneCalled: lead.lastPhoneCalled,
-                uniqueState: isUniqueOtherInfo.dateState,
-                leadSalaryPrice: isUniqueOtherInfo.realSalaryToLead,
-                isBreakedStatus: lead.isBreakedStatus,
-                leadProject: lead.leadProject,
-                time: lead.time
-            })
-    
-            await newEntry.save()
+        const existing = await leadsModel.findOne({ date: lead.date, phone: lead.phone })
+        const uniqueInfo = getDistintBetweenUnUniqueLeads(existing || lead)
+        const data = {
+            broker: lead.broker, price: lead.price, audioArray: lead.audioArray,
+            residenceStatus: lead.residenceStatus, countHold: lead.countHold, offersList: lead.offersList,
+            isResidence: Boolean(lead.isResidence), countOffers: lead.offersList?.length || 0,
+            isUniquePhone: lead.isUniquePhone, lastPhoneCalled: lead.lastPhoneCalled,
+            uniqueState: uniqueInfo.dateState, leadProject: lead.leadProject, time: lead.time
         }
-
-    } catch (e) {
-        console.log(e.message, lead.phone)
-    }
-
+        if (!existing?.isEdited) Object.assign(data, {
+            userName: lead.userName, user: lead.user, statusOKK: lead.statusOKK,
+            isEdited: lead.isEdited, leadSalaryPrice: uniqueInfo.realSalaryToLead, isBreakedStatus: lead.isBreakedStatus
+        })
+        if (existing) {
+            // A daily, narrower fetch must not overwrite a weekly reconciliation.
+            if (existing.lastResidenceSyncId) {
+                for (const key of ['price', 'residenceStatus', 'countHold', 'offersList', 'isResidence', 'countOffers']) delete data[key]
+            }
+            await leadsModel.updateOne({
+                _id: existing._id,
+                lastResidenceSyncId: existing.lastResidenceSyncId || { $exists: false }
+            }, { $set: data })
+        } else {
+            await new leadsModel({ ...data, date: lead.date, phone: lead.phone,
+                selfLead: lead.selfLead, selfLeadName: lead.selfLeadName }).save()
+        }
+    } catch (error) { console.log(error.message, lead.phone) }
 }
 
 async function getLeadsByUser(gte, lte, name) {

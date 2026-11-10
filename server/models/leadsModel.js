@@ -8,6 +8,9 @@ const leadsModel = new Schema({
     phone: String,
     audioArray: Array,
     residenceStatus: String,
+    isResidence: { type: Boolean, default: false },
+    countOffers: { type: Number, default: 0 },
+    lastResidenceSyncId: Schema.Types.ObjectId,
     statusOKK: Boolean,
     selfLead: Boolean,  // как я понял 'Сам' ставит сдесь true а 'На брокера' и 'Ручной' false
     selfLeadName: {

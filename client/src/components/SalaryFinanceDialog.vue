@@ -26,27 +26,8 @@
   </el-dialog>
 </template>
 
-<script setup>
-const props = defineProps({ modelValue: Boolean, user: Object })
-defineEmits(['update:modelValue'])
-const format = value => Number.isFinite(value) ? new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value) : 'Нет данных'
+<script>
 const keys = ['sumSvyat', 'nalog', 'totalSpentMinutesOnLine', 'totalSpentToCalls', 'RopSalary', 'baseMinuse', 'commission', 'holdReward', 'salary']
-function substitution(key) {
-  const user = props.user || {}
-  const formulas = {
-    sumSvyat: [user.sumHold, 0.5, '× 0,5'],
-    nalog: [user.sumHold, 0.5 * 0.07, '× 0,5 × 7%'],
-    totalSpentMinutesOnLine: [user.totalMinutesOnLine, 1.7, 'мин. × 1,7'],
-    totalSpentToCalls: [user.countCalls, 0.3, 'звонков × 0,3'],
-    commission: [user.sumHold, 0.5 * 0.15, '× 0,5 × 15%'],
-    holdReward: [user.countHolds, 130, 'холдов × 130']
-  }
-  if (key === 'salary') return format(user.salary) + ' ₽'
-  if (!formulas[key]) return 'Дневное количество пользователей в строке за период не передаётся.'
-  const [value, coefficient, expression] = formulas[key]
-  return Number.isFinite(value) ? format(value) + ' ' + expression + ' = ' + format(value * coefficient) + ' ₽' : 'Нет данных'
-}
-
 const rules = [
   { title: 'Сумма Свят', formula: 'Сумма холдов × 0,5', description: 'Половина суммы холдов за день.' },
   { title: 'Налог', formula: 'Сумма Свят × 7%', description: 'Налог берётся от половины суммы холдов.' },
@@ -58,4 +39,28 @@ const rules = [
   { title: 'Бонус брокера', formula: 'Количество холдов × 130 ₽', description: 'Начисляется за каждый холд лидоруба.' },
   { title: 'Зарплата лидоруба', formula: 'Вычитается зарплата сотрудника за день', description: 'Берётся рассчитанная зарплата из поля salary. Бонусы лидоруба отдельно не вычитаются.' }
 ].map((rule, index) => ({ ...rule, key: keys[index] }))
+
+export default {
+  props: { modelValue: Boolean, user: Object },
+  emits: ['update:modelValue'],
+  data() { return { rules } },
+  methods: {
+    format(value) { return Number.isFinite(value) ? new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value) : 'Нет данных' },
+    substitution(key) {
+      const user = this.user || {}
+      const formulas = {
+        sumSvyat: [user.sumHold, 0.5, '× 0,5'],
+        nalog: [user.sumHold, 0.5 * 0.07, '× 0,5 × 7%'],
+        totalSpentMinutesOnLine: [user.totalMinutesOnLine, 1.7, 'мин. × 1,7'],
+        totalSpentToCalls: [user.countCalls, 0.3, 'звонков × 0,3'],
+        commission: [user.sumHold, 0.5 * 0.15, '× 0,5 × 15%'],
+        holdReward: [user.countHolds, 130, 'холдов × 130']
+      }
+      if (key === 'salary') return this.format(user.salary) + ' ₽'
+      if (!formulas[key]) return 'Дневное количество пользователей в строке за период не передаётся.'
+      const [value, coefficient, expression] = formulas[key]
+      return Number.isFinite(value) ? this.format(value) + ' ' + expression + ' = ' + this.format(value * coefficient) + ' ₽' : 'Нет данных'
+    }
+  }
+}
 </script>

@@ -141,6 +141,7 @@ async function getLeadsOnePhone(gte, lte, phone) {
             return item.phone === phone
         })
         let residenceInfo = {
+            isResidence: leadsByPhone.length > 0,
             price: 0,
             status: "created",
             broker: undefined,

@@ -126,59 +126,51 @@
   </template>
 </template>
 
-<script setup>
-import { computed, ref } from 'vue'
-import { useStore } from 'vuex'
+<script>
 import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
-
 dayjs.extend(isoWeek)
-const store = useStore()
-const mode = ref('week')
-const selectedDate = ref(dayjs().format('YYYY-MM-DD'))
-const localRange = ref([selectedDate.value, selectedDate.value])
-const residenceRange = ref([selectedDate.value, selectedDate.value])
-const loading = ref(false)
-const report = ref(null)
-const message = ref('')
-const error = ref('')
-const period = computed(() => {
-  if (mode.value === 'custom') return {
-    gte: localRange.value?.[0], lte: localRange.value?.[1],
-    residenceGte: residenceRange.value?.[0], residenceLte: residenceRange.value?.[1]
+
+export default {
+  data() {
+    const today = dayjs().format('YYYY-MM-DD')
+    return { mode: 'week', selectedDate: today, localRange: [today, today], residenceRange: [today, today],
+      loading: false, report: null, message: '', error: '' }
+  },
+  computed: {
+    period() {
+      if (this.mode === 'custom') return { gte: this.localRange?.[0], lte: this.localRange?.[1], residenceGte: this.residenceRange?.[0], residenceLte: this.residenceRange?.[1] }
+      if (!this.selectedDate || !dayjs(this.selectedDate).isValid()) return { gte: '', lte: '' }
+      const unit = this.mode === 'week' ? 'isoWeek' : 'month'
+      return { gte: dayjs(this.selectedDate).startOf(unit).format('YYYY-MM-DD'), lte: dayjs(this.selectedDate).endOf(unit).format('YYYY-MM-DD') }
+    },
+    isPeriodValid() {
+      const { gte, lte, residenceGte, residenceLte } = this.period
+      return Boolean(gte && lte && gte <= lte && (this.mode !== 'custom' || (residenceGte && residenceLte && residenceGte <= residenceLte)))
+    },
+    userRows() { return this.report ? [...this.report.users, this.report.total] : [] },
+    sortedChanges() { return [...(this.report?.changes || [])].sort((a, b) => this.offerSortOrder(a) - this.offerSortOrder(b)) }
+  },
+  methods: {
+    offerSortOrder(row) { return row.newOffers?.length ? 0 : row.offers?.length ? 1 : 2 },
+    number(value) { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value || 0) },
+    signed(value) { return (value >= 0 ? '+' : '') + this.number(value) },
+    deltaType(value) { return value > 0 ? 'success' : value < 0 ? 'danger' : 'info' },
+    formatDate(date) { return date ? dayjs(date).format('DD.MM.YYYY') : '—' },
+    statusType(status) { return ({ breaked: 'primary', hold: 'success', invalid: 'danger', refused: 'danger', created: 'info', confirmed: 'warning' }[status] || 'info') },
+    resetReport() { this.report = null; this.message = ''; this.error = '' },
+    shiftPeriod(direction) { this.selectedDate = dayjs(this.selectedDate).add(direction, this.mode).format('YYYY-MM-DD'); this.resetReport() },
+    async reconcile() {
+      if (this.loading || !this.isPeriodValid) return
+      this.resetReport()
+      this.loading = true
+      try {
+        const response = await this.$store.dispatch('createDataList', { col: 'api/residence/reconcile', data: { mode: this.mode, ...this.period } })
+        this.report = response.data
+        this.message = response.msg
+      } catch (e) { this.error = e.response?.data?.msg || e.message }
+      finally { this.loading = false }
+    }
   }
-  if (!selectedDate.value || !dayjs(selectedDate.value).isValid()) return { gte: '', lte: '' }
-  const unit = mode.value === 'week' ? 'isoWeek' : 'month'
-  return { gte: dayjs(selectedDate.value).startOf(unit).format('YYYY-MM-DD'), lte: dayjs(selectedDate.value).endOf(unit).format('YYYY-MM-DD') }
-})
-const isPeriodValid = computed(() => {
-  const { gte, lte, residenceGte, residenceLte } = period.value
-  return Boolean(gte && lte && gte <= lte && (mode.value !== 'custom' || (residenceGte && residenceLte && residenceGte <= residenceLte)))
-})
-const userRows = computed(() => report.value ? [...report.value.users, report.value.total] : [])
-const offerSortOrder = row => row.newOffers?.length ? 0 : row.offers?.length ? 1 : 2
-const sortedChanges = computed(() => [...(report.value?.changes || [])]
-  .sort((a, b) => offerSortOrder(a) - offerSortOrder(b)))
-const number = value => new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value || 0)
-const signed = value => `${value >= 0 ? '+' : ''}${number(value)}`
-const deltaType = value => value > 0 ? 'success' : value < 0 ? 'danger' : 'info'
-const formatDate = date => date ? dayjs(date).format('DD.MM.YYYY') : '—'
-const statusType = status => ({ breaked: 'primary', hold: 'success', invalid: 'danger', refused: 'danger', created: 'info', confirmed: 'warning' }[status] || 'info')
-function resetReport() { report.value = null; message.value = ''; error.value = '' }
-function shiftPeriod(direction) {
-  selectedDate.value = dayjs(selectedDate.value).add(direction, mode.value).format('YYYY-MM-DD')
-  resetReport()
-}
-async function reconcile() {
-  if (loading.value || !isPeriodValid.value) return
-  resetReport()
-  loading.value = true
-  try {
-    const response = await store.dispatch('createDataList', { col: 'api/residence/reconcile', data: { mode: mode.value, ...period.value } })
-    report.value = response.data
-    message.value = response.msg
-  } catch (e) {
-    error.value = e.response?.data?.msg || e.message
-  } finally { loading.value = false }
 }
 </script>

@@ -91,6 +91,7 @@ async function setTransfersToDB(gte, lte) {
           isSuccessTransfer: leadInfoPoints.isSuccessTransfer,
           audioArray: leadAudioArray,
           residenceStatus: leadResidence.status,
+          isResidence: leadResidence.isResidence,
           statusOKK: false,
           selfLead: isSelfLead,
           selfLeadName: isSelfLead ? 'Сам' : 'На брокера',
