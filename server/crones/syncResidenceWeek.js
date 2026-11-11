@@ -7,9 +7,9 @@ const syncResidenceWeek = createResidenceSync({
     history: require('../models/residenceSyncHistory'),
     fetchResidence: (gte, lte) => getResidenceLeads(gte, lte, { strict: true })
 })
-async function setResidenceSyncToDB() {
+async function setResidenceSyncToDB(date = new Date()) {
     try {
-        const result = await syncResidenceWeek(new Date())
+        const result = await syncResidenceWeek(date)
         console.log('Сверка лидов с резиденцией завершена:', result)
         return result
     } catch (error) {
@@ -22,7 +22,8 @@ function setResidenceSyncCrone() {
     const cronExpression = '0 21 * * *'
 
     crone.schedule(cronExpression, () => {
-        setResidenceSyncToDB()
+        const date = new Date()
+        setResidenceSyncToDB(date)
     }, { timezone: 'Europe/Moscow' })
 
     console.log('Крон сверки резиденции запущен: каждый день в 21:00 Europe/Moscow')
