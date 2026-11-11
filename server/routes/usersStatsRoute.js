@@ -223,6 +223,8 @@ router.get('/api/salary/get', async (req, res) => {
                 resultObject[userEmail].salary += Math.round(item.salary)
                 resultObject[userEmail].clear += item.clear
                 resultObject[userEmail].financeClear += item.financeClear || 0
+                resultObject[userEmail].ropSalary += item.ropSalary || 0
+                resultObject[userEmail].baseMinuse += item.baseMinuse || 0
                 resultObject[userEmail].salaryToLeads += item.salaryToLeads
             } else {
                 // resultObject[item.name] = {
@@ -240,6 +242,8 @@ router.get('/api/salary/get', async (req, res) => {
                     // scriptBonus: bonusByDate,
                     clear: item.clear,
                     financeClear: item.financeClear || 0,
+                    ropSalary: item.ropSalary || 0,
+                    baseMinuse: item.baseMinuse || 0,
                     salaryToLeads: item.salaryToLeads
                 }
             }
@@ -260,6 +264,8 @@ router.get('/api/salary/get', async (req, res) => {
             scriptBonus: 0,
             clear: 0,
             financeClear: 0,
+            ropSalary: 0,
+            baseMinuse: 0,
             totalMinutesOnLine: 0,
             targetLeadsArray: [],
             salaryToLeads: 0
@@ -275,6 +281,8 @@ router.get('/api/salary/get', async (req, res) => {
             total.salary += item.salary || 0;
             total.clear += item.clear || 0;
             total.financeClear += item.financeClear || 0;
+            total.ropSalary += item.ropSalary || 0;
+            total.baseMinuse += item.baseMinuse || 0;
             total.totalMinutesOnLine += item.totalMinutesOnLine || 0;
             total.salaryToLeads += item.salaryToLeads || 0
 

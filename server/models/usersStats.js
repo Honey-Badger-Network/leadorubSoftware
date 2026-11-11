@@ -28,6 +28,8 @@ const usersStats = new Schema({
     scriptBonus: numberWithDefault,
     clear: numberWithDefault,
     financeClear: numberWithDefault,
+    ropSalary: numberWithDefault,
+    baseMinuse: numberWithDefault,
     salaryToLeads: numberWithDefault,
 
     user: {
