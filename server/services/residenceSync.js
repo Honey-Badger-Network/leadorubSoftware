@@ -1,5 +1,8 @@
 const { normalizePhone, summarizeRecords } = require('./residenceReconciliation')
 const { getWeekDates } = require('./payrollService')
+const leadsModel = require('../models/leadsModel.js')
+const { getResidenceLeads } = require('./residenceService.js')
+const dayjs = require('dayjs')
 const holdStatuses = new Set(['hold', 'confirmed', 'refused'])
 
 function syncPeriod(now = new Date()) {
@@ -50,43 +53,49 @@ function buildSyncPlan(leads, records) {
     return plan
 }
 
-function createResidenceSync({ leads, history, fetchResidence }) {
-    let running = false
-    return async function sync(now = new Date()) {
-        if (running) return { skipped: true }
-        running = true
-        try {
-            const { gte, lte } = syncPeriod(now)
-            const selected = await leads.find({ date: { $gte: gte, $lte: lte } }).lean()
-            if (!selected.length) return { gte, lte, checked: 0, updated: 0 }
-            const payload = await fetchResidence(gte, lte)
-            if (!Array.isArray(payload?.data) || (payload.total != null && (!Number.isFinite(Number(payload.total)) || Number(payload.total) > payload.data.length))) {
-                throw new Error('Резиденция вернула неполный или некорректный список; обновление отменено')
+/**
+ * date = дата любого произвольного дня той недели которой день принаджелит
+ */
+async function createResidenceSync(date) {
+    try {
+
+        // крч нейронка совсем отупела и мен пришлсоь саомму весь этот код написать (((
+
+        const startWeek = dayjs(date).startOf('week').format('YYYY-MM-DD')
+        const endWeek = dayjs(date).endOf('week').format('YYYY-MM-DD')
+
+        // 1) получить лиды за опрееделное время из моей БД
+        // 2) получить лиды за определное время из резиденции
+        // 3) начать сверку лидов из моей БД и из резиденции
+        // 4) если будет новый статус или новые оферы у лидов из резиденции то 
+        // обновить и доабвить к истории сверки
+
+        const leadsByDate = await leadsModel.find({
+            date: {
+                $gte: startWeek,
+                $lte: endWeek
             }
-            const plan = buildSyncPlan(selected, payload.data)
-            let updated = 0
-            let conflicts = 0
-            for (const item of plan) {
-                const result = await leads.updateOne(item.expected, { $set: item.after })
-                if (result.matchedCount !== 1) {
-                    conflicts++
-                    continue
-                }
-                await history.create({
-                    leadId: item.lead.phone,
-                    date: item.lead.date,
-                    updatedAt: lte,
-                    prevSumHold: item.before.price,
-                    prevCountHold: item.before.countHold,
-                    prevOffersList: item.before.offersList,
-                    currentSumHold: item.after.price,
-                    currentCountHold: item.after.countHold,
-                    currentOffersList: item.after.offersList
-                })
-                updated++
-            }
-            return { gte, lte, checked: selected.length, updated, conflicts }
-        } finally { running = false }
+        })
+
+        const residenceLeadsByDate = await getResidenceLeads(startWeek, endWeek)
+        
+        leadsByDate.forEach((lead) => {
+            let leadsFromResidenceByPhoneMyLead = residenceLeadsByDate.data.filter((item) => {
+                return item.phone === lead.phone
+            })
+
+
+            leadsFromResidenceByPhoneMyLead.forEach((item) => {
+                // крч вот тут я итерируюсь по лидам из резиденции которые совпали по номеру телефона лида из БД
+                // вот тут и нужно сделать сверку
+            })
+
+        })
+
+
+    } catch (e) {
+        console.log(e)
+        return null
     }
 }
 
