@@ -52,23 +52,10 @@ function buildSyncPlan(leads, records) {
 
 function createResidenceSync({ leads, history, fetchResidence }) {
     let running = false
-    async function apply(entry) {
-        const existing = await leads.findById(entry.lead).lean()
-        if (String(existing?.lastResidenceSyncId) === String(entry._id)) {
-            await history.updateOne({ _id: entry._id }, { $set: { state: 'applied' } })
-            return true
-        }
-        const result = await leads.updateOne(entry.expected, { $set: { ...entry.after, lastResidenceSyncId: entry._id } })
-        const applied = result.matchedCount === 1
-        await history.updateOne({ _id: entry._id }, { $set: { state: applied ? 'applied' : 'conflict' } })
-        return applied
-    }
     return async function sync(now = new Date()) {
         if (running) return { skipped: true }
         running = true
         try {
-            // Recover an interrupted write without losing its before/after history.
-            for (const entry of await history.find({ state: 'pending' }).lean()) await apply(entry)
             const { gte, lte } = syncPeriod(now)
             const selected = await leads.find({ date: { $gte: gte, $lte: lte } }).lean()
             if (!selected.length) return { gte, lte, checked: 0, updated: 0 }
@@ -78,21 +65,27 @@ function createResidenceSync({ leads, history, fetchResidence }) {
             }
             const plan = buildSyncPlan(selected, payload.data)
             let updated = 0
+            let conflicts = 0
             for (const item of plan) {
-                const entry = await history.create({
-                    lead: item.lead._id, phone: item.lead.phone, userName: item.lead.userName,
-                    date: item.lead.date, updatedAt: lte, recordedAt: now, gte, lte,
-                    prevStatus: item.before.residenceStatus, currentStatus: item.after.residenceStatus,
-                    prevCountHold: item.before.countHold, currentCountHold: item.after.countHold,
-                    prevSumHold: item.before.price, currentSumHold: item.after.price,
-                    prevOffers: item.before.offersList, currentOffers: item.after.offersList,
-                    prevIsResidence: item.before.isResidence, currentIsResidence: true,
-                    prevCountOffers: item.before.countOffers, currentCountOffers: item.after.countOffers,
-                    expected: item.expected, after: item.after, state: 'pending'
+                const result = await leads.updateOne(item.expected, { $set: item.after })
+                if (result.matchedCount !== 1) {
+                    conflicts++
+                    continue
+                }
+                await history.create({
+                    leadId: item.lead.phone,
+                    date: item.lead.date,
+                    updatedAt: lte,
+                    prevSumHold: item.before.price,
+                    prevCountHold: item.before.countHold,
+                    prevOffersList: item.before.offersList,
+                    currentSumHold: item.after.price,
+                    currentCountHold: item.after.countHold,
+                    currentOffersList: item.after.offersList
                 })
-                if (await apply(entry)) updated++
+                updated++
             }
-            return { gte, lte, checked: selected.length, updated, conflicts: plan.length - updated }
+            return { gte, lte, checked: selected.length, updated, conflicts }
         } finally { running = false }
     }
 }

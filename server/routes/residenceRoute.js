@@ -28,9 +28,9 @@ router.get('/api/residence/sync-history', async (req, res) => {
         if (gte > lte || !Number.isInteger(page) || page < 1) throw new Error('Некорректный период или страница')
     } catch (error) { return res.status(400).json({ msg: error.message }) }
     try {
-        const filter = { state: 'applied', updatedAt: { $gte: gte, $lte: lte } }
+        const filter = { updatedAt: { $gte: gte, $lte: lte } }
         const [data, total] = await Promise.all([
-            history.find(filter).select('-expected -after').sort({ recordedAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+            history.find(filter).sort({ updatedAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
             history.countDocuments(filter)
         ])
         res.json({ data, total, page, limit })

@@ -11,23 +11,13 @@
     </el-form>
     <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
     <el-table v-loading="loading" :data="rows" row-key="_id" border empty-text="За выбранный период изменений нет">
-      <el-table-column label="Обновлено" min-width="125">
+      <el-table-column label="Дата сверки" min-width="125">
         <template #default="{ row }">{{ date(row.updatedAt) }}</template>
       </el-table-column>
       <el-table-column label="Дата лида" min-width="125">
         <template #default="{ row }">{{ date(row.date) }}</template>
       </el-table-column>
-      <el-table-column prop="userName" label="Лидоруб" min-width="150" />
-      <el-table-column prop="phone" label="Телефон" min-width="135" />
-      <el-table-column label="Статус: было → стало" min-width="240">
-        <template #default="{ row }">
-          <el-space wrap><el-tag :type="statusType(row.prevStatus)">{{ row.prevStatus }}</el-tag> →
-            <el-tag :type="statusType(row.currentStatus)">{{ row.currentStatus }}</el-tag></el-space>
-        </template>
-      </el-table-column>
-      <el-table-column label="В резиденции" min-width="125">
-        <template #default="{ row }">{{ row.prevIsResidence ? 'Да' : 'Нет' }} → Да</template>
-      </el-table-column>
+      <el-table-column prop="leadId" label="Телефон лида" min-width="145" />
       <el-table-column label="Холды" min-width="110">
         <template #default="{ row }">{{ row.prevCountHold }} → <el-text tag="b" :type="row.prevCountHold !== row.currentCountHold ? 'success' : undefined">{{ row.currentCountHold }}</el-text></template>
       </el-table-column>
@@ -36,7 +26,7 @@
       </el-table-column>
       <el-table-column label="Офферы" min-width="160">
         <template #default="{ row }">
-          <el-space>{{ row.prevCountOffers }} → {{ row.currentCountOffers }}
+          <el-space>{{ row.prevOffersList?.length || 0 }} → {{ row.currentOffersList?.length || 0 }}
             <el-button type="primary" link @click="selected = row">Сравнить</el-button></el-space>
         </template>
       </el-table-column>
@@ -75,13 +65,12 @@ export default {
     return {
       range: [dayjs().startOf('isoWeek').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
       rows: [], total: 0, page: 1, loading: false, error: '', selected: null, requestId: 0,
-      sides: [{ key: 'prevOffers', label: 'Было' }, { key: 'currentOffers', label: 'Стало' }]
+      sides: [{ key: 'prevOffersList', label: 'Было' }, { key: 'currentOffersList', label: 'Стало' }]
     }
   },
   methods: {
     date(value) { return dayjs(value).format('DD.MM.YYYY') },
     money(value) { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value || 0) },
-    statusType(status) { return ({ breaked: 'primary', hold: 'success', confirmed: 'warning', invalid: 'danger', refused: 'danger', created: 'info' }[status] || 'info') },
     async load() {
       if (!this.range?.length) return
       const id = ++this.requestId

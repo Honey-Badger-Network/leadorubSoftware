@@ -1,23 +1,22 @@
 <template>
   <el-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)"
     :title="`Правила расчёта · ${user?.name || ''}`" width="min(860px, 94vw)" destroy-on-close>
-    <el-text type="info">Формула: сумма Свят − налог − минуты − звонки − РОП − база − брокер − бонус брокера − зарплата лидоруба.</el-text>
+    <el-card shadow="never" class="finance-formula">
+      <el-text class="finance-formula__label" type="info">Формула financeClear</el-text>
+      <el-text class="finance-formula__text">Сумма Свят − налог − минуты − звонки − РОП − база − брокер − бонус брокера − зарплата лидоруба</el-text>
+    </el-card>
     <div class="finance-expression">
       <template v-for="(item, index) in compactItems" :key="item.key">
         <el-text v-if="index" class="finance-sign">−</el-text>
         <el-card shadow="never" class="finance-chip">
-          <el-space direction="vertical" alignment="start" :size="4">
-            <el-text class="finance-chip__title" size="small" type="info">{{ item.title }}</el-text>
-            <el-text class="finance-chip__value" tag="b">{{ item.value }}</el-text>
-          </el-space>
+          <div class="finance-chip__head">{{ item.title }}</div>
+          <div class="finance-chip__value">{{ item.value }}</div>
         </el-card>
       </template>
       <el-text class="finance-sign">=</el-text>
       <el-card shadow="never" class="finance-chip finance-chip--result">
-        <el-space direction="vertical" alignment="start" :size="4">
-          <el-text class="finance-chip__title" size="small" type="info">financeClear</el-text>
-          <el-text class="finance-chip__value" tag="b" :type="user?.financeClear >= 0 ? 'success' : 'danger'">{{ format(user?.financeClear) }} ₽</el-text>
-        </el-space>
+        <div class="finance-chip__head">financeClear</div>
+        <div class="finance-chip__value" :class="user?.financeClear >= 0 ? 'finance-chip__value--positive' : 'finance-chip__value--negative'">{{ format(user?.financeClear) }} ₽</div>
       </el-card>
     </div>
   </el-dialog>
@@ -29,7 +28,31 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 18px;
+  margin-top: 20px;
+}
+
+.finance-formula {
+  border-radius: 12px;
+  background: var(--el-fill-color-light);
+}
+
+.finance-formula__label,
+.finance-formula__text {
+  display: block;
+}
+
+.finance-formula__label {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.finance-formula__text {
+  color: var(--el-text-color-primary);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .finance-sign {
@@ -38,22 +61,44 @@
 }
 
 .finance-chip {
-  min-width: 118px;
-  padding: 10px 12px;
-  border-radius: 10px;
+  min-width: 122px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--el-bg-color-overlay);
 }
 
-.finance-chip__title {
+.finance-chip :deep(.el-card__body) {
+  padding: 0;
+}
+
+.finance-chip__head {
+  padding: 8px 12px;
+  color: #fff;
+  background: #7c3aed;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1.2;
 }
 
 .finance-chip__value {
-  font-size: 16px;
+  padding: 12px;
+  color: var(--el-text-color-primary);
+  font-size: 17px;
+  font-weight: 700;
   line-height: 1.2;
 }
 
+.finance-chip__value--positive {
+  color: var(--el-color-success);
+}
+
+.finance-chip__value--negative {
+  color: var(--el-color-danger);
+}
+
 .finance-chip--result {
-  border-color: var(--el-color-warning);
+  border-color: #7c3aed;
 }
 </style>
 

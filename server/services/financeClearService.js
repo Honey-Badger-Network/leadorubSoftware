@@ -18,7 +18,7 @@ function calculateCallStats(calls) {
         if (call.result !== 'Автоответчик') countCallsWithMan++
         if (call.result === 'Перезвонить') countCallsResultReCall++
     }
-    return { totalMinutesOnLine: Math.round(totalSeconds / 60), countCallsManyMinute, countCallsWithMan, countCallsResultReCall }
+    return { totalMinutesOnLine: totalSeconds / 60, countCallsManyMinute, countCallsWithMan, countCallsResultReCall }
 }
 
 function calculateFinanceParts(user, countUsers, date) {
@@ -30,8 +30,7 @@ function calculateFinanceParts(user, countUsers, date) {
     const sumSvyat = number(user.sumHold) * 0.5
     const nalog = sumSvyat * 0.07
     const totalSpentMinutesOnLine = number(user.totalMinutesOnLine) * 1.7
-    const totalSpentToCalls = number(user.countCalls) * 0.6
-    // блядская ты ебучая нейронка тебе кто блять разрешал менять туту коэфициент НИХУЯ МЕНЯТЬ НЕЛЬЗЯ ПИЗДЫ ПОЛУЧИШЬ ТВАРЬ
+    const totalSpentToCalls = number(user.countCalls) * 0.3
     const RopSalary = day === 0 || day === 6 || countUsers <= 0 ? 0 : 4000 / countUsers
     const baseMinuse = countUsers > 0 ? 5000 / countUsers : 0
 
