@@ -53,50 +53,115 @@ function buildSyncPlan(leads, records) {
     return plan
 }
 
+function summarizeResidenceLeadRecords(records) {
+    let status = ''
+    let holdStatus = null
+    let price = 0
+    let countHold = 0
+    const offersList = []
+
+    for (const item of records) {
+        const itemStatus = item.stats || item.status || 'created'
+        const isHold = holdStatuses.has(itemStatus)
+        const offerPrice = Number(item?.price?.offer || 0)
+
+        if (isHold) {
+            price += Number.isFinite(offerPrice) ? offerPrice : 0
+            countHold += 1
+            holdStatus = itemStatus
+        } else {
+            status = itemStatus
+        }
+
+        offersList.push({
+            offerName: item?.offerId?.name || item?.offerName || '',
+            broker: item?.userId?.name || item?.broker || '',
+            price: isHold && Number.isFinite(offerPrice) ? offerPrice : 0,
+            status: itemStatus
+        })
+
+        status = holdStatus || status
+    }
+
+    return {
+        status: status || 'created',
+        price,
+        countHold,
+        offersList: cleanOffers(offersList)
+    }
+}
+
 /**
- * date = дата любого произвольного дня той недели которой день принаджелит
+ * date = дата любого произвольного дня той недели, за которую выполняется сверка
  */
-async function createResidenceSync(date) {
+async function createResidenceSync(date = new Date()) {
     try {
+        const selectedDate = dayjs(date).format('YYYY-MM-DD')
+        const weekDates = getWeekDates(selectedDate)
+        const startWeek = weekDates[0]
+        const endWeek = weekDates[6]
+        const leadsByDate = await leadsModel.find({ date: { $gte: startWeek, $lte: endWeek } }).lean()
+        const residenceResponse = await getResidenceLeads(startWeek, endWeek, { strict: true })
+        const residenceRecords = Array.isArray(residenceResponse?.data) ? residenceResponse.data : []
+        const history = require('../models/residenceSyncHistory')
+        const updatedAt = dayjs().format('YYYY-MM-DD')
+        let updated = 0
+        let matched = 0
 
-        // крч нейронка совсем отупела и мен пришлсоь саомму весь этот код написать (((
+        for (const lead of leadsByDate) {
+            const matches = residenceRecords.filter(item => normalizePhone(item.phone) === normalizePhone(lead.phone))
+            if (!matches.length) continue
+            matched++
 
-        const startWeek = dayjs(date).startOf('week').format('YYYY-MM-DD')
-        const endWeek = dayjs(date).endOf('week').format('YYYY-MM-DD')
-
-        // 1) получить лиды за опрееделное время из моей БД
-        // 2) получить лиды за определное время из резиденции
-        // 3) начать сверку лидов из моей БД и из резиденции
-        // 4) если будет новый статус или новые оферы у лидов из резиденции то 
-        // обновить и доабвить к истории сверки
-
-        const leadsByDate = await leadsModel.find({
-            date: {
-                $gte: startWeek,
-                $lte: endWeek
+            const residenceInfo = summarizeResidenceLeadRecords(matches)
+            const before = {
+                residenceStatus: lead.residenceStatus || 'created',
+                price: Number(lead.price || 0),
+                countHold: Number(lead.countHold || 0),
+                countOffers: Number(lead.countOffers ?? lead.offersList?.length ?? 0),
+                isResidence: lead.isResidence === true,
+                offersList: cleanOffers(lead.offersList)
             }
-        })
+            const nextStatus = !lead.residenceStatus || lead.residenceStatus === 'created' || holdStatuses.has(residenceInfo.status)
+                ? residenceInfo.status
+                : lead.residenceStatus
+            const hasMoreHolds = residenceInfo.countHold > before.countHold
+            const after = {
+                residenceStatus: nextStatus,
+                price: hasMoreHolds ? residenceInfo.price : before.price,
+                countHold: hasMoreHolds ? residenceInfo.countHold : before.countHold,
+                countOffers: residenceInfo.offersList.length,
+                isResidence: true,
+                offersList: residenceInfo.offersList
+            }
 
-        const residenceLeadsByDate = await getResidenceLeads(startWeek, endWeek)
-        
-        leadsByDate.forEach((lead) => {
-            let leadsFromResidenceByPhoneMyLead = residenceLeadsByDate.data.filter((item) => {
-                return item.phone === lead.phone
+            if (JSON.stringify(before) === JSON.stringify(after)) continue
+            const expected = { _id: lead._id }
+            for (const key of ['residenceStatus', 'price', 'countHold', 'countOffers', 'isResidence', 'offersList']) {
+                expected[key] = lead[key] === undefined ? { $exists: false } : lead[key]
+            }
+            const result = await leadsModel.updateOne(expected, { $set: after })
+            if (result.matchedCount !== 1) continue
+
+            await history.create({
+                leadId: lead.phone,
+                date: lead.date,
+                updatedAt,
+                prevSumHold: before.price,
+                prevCountHold: before.countHold,
+                prevOffersList: before.offersList,
+                currentSumHold: after.price,
+                currentCountHold: after.countHold,
+                currentOffersList: after.offersList
             })
+            updated++
+        }
 
-
-            leadsFromResidenceByPhoneMyLead.forEach((item) => {
-                // крч вот тут я итерируюсь по лидам из резиденции которые совпали по номеру телефона лида из БД
-                // вот тут и нужно сделать сверку
-            })
-
-        })
-
-
+        return { gte: startWeek, lte: endWeek, checked: leadsByDate.length, matched, updated }
     } catch (e) {
         console.log(e)
         return null
     }
 }
 
-module.exports = { syncPeriod, buildSyncPlan, createResidenceSync }
+module.exports = { syncPeriod, buildSyncPlan, createResidenceSync, summarizeResidenceLeadRecords }
