@@ -3,7 +3,7 @@
     description="Автоматическое обновление лидов каждый день в 21:00 по Москве, с понедельника по текущий день." />
   <el-card shadow="never">
     <el-form inline @submit.prevent="reload">
-      <el-form-item label="Дата обновления">
+      <el-form-item label="Неделя создания лидов">
         <el-date-picker v-model="range" type="daterange" value-format="YYYY-MM-DD" format="DD.MM.YYYY"
           start-placeholder="С даты" end-placeholder="По дату" :clearable="false" />
       </el-form-item>

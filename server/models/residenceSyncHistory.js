@@ -11,5 +11,5 @@ const schema = new Schema({
     currentCountHold: Number,
     currentOffersList: [offer]
 })
-schema.index({ updatedAt: -1 })
+schema.index({ date: 1, updatedAt: -1 })
 module.exports = model('residenceSyncHistory', schema)
