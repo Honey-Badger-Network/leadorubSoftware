@@ -18,7 +18,7 @@ function calculateCallStats(calls) {
         if (call.result !== 'Автоответчик') countCallsWithMan++
         if (call.result === 'Перезвонить') countCallsResultReCall++
     }
-    return { totalMinutesOnLine: totalSeconds / 60, countCallsManyMinute, countCallsWithMan, countCallsResultReCall }
+    return { totalMinutesOnLine: Math.round(totalSeconds / 60), countCallsManyMinute, countCallsWithMan, countCallsResultReCall }
 }
 
 function calculateFinanceParts(user, countUsers, date) {
