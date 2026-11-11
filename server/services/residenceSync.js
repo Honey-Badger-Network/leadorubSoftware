@@ -118,7 +118,7 @@ async function createResidenceSync(date = new Date()) {
                 residenceStatus: lead.residenceStatus || 'created',
                 price: Number(lead.price || 0),
                 countHold: Number(lead.countHold || 0),
-                countOffers: Number(lead.countOffers ?? lead.offersList?.length ?? 0),
+                countOffers: cleanOffers(lead.offersList).length,
                 isResidence: lead.isResidence === true,
                 offersList: cleanOffers(lead.offersList)
             }
@@ -126,22 +126,28 @@ async function createResidenceSync(date = new Date()) {
                 ? residenceInfo.status
                 : lead.residenceStatus
             const hasMoreHolds = residenceInfo.countHold > before.countHold
+            const hasHoldAmountChanges = residenceInfo.price !== before.price
             const after = {
                 residenceStatus: nextStatus,
-                price: hasMoreHolds ? residenceInfo.price : before.price,
+                price: hasMoreHolds || hasHoldAmountChanges ? residenceInfo.price : before.price,
                 countHold: hasMoreHolds ? residenceInfo.countHold : before.countHold,
                 countOffers: residenceInfo.offersList.length,
                 isResidence: true,
                 offersList: residenceInfo.offersList
             }
 
-            if (JSON.stringify(before) === JSON.stringify(after)) continue
+            const hasReconciliationChanges = before.residenceStatus !== after.residenceStatus
+                || before.price !== after.price
+                || before.countHold !== after.countHold
+                || JSON.stringify(before.offersList) !== JSON.stringify(after.offersList)
+            if (!hasReconciliationChanges && before.isResidence) continue
             const expected = { _id: lead._id }
             for (const key of ['residenceStatus', 'price', 'countHold', 'countOffers', 'isResidence', 'offersList']) {
                 expected[key] = lead[key] === undefined ? { $exists: false } : lead[key]
             }
             const result = await leadsModel.updateOne(expected, { $set: after })
             if (result.matchedCount !== 1) continue
+            if (!hasReconciliationChanges) continue
 
             await history.create({
                 leadId: lead.phone,

@@ -27,7 +27,7 @@
       <el-table-column label="Офферы" min-width="160">
         <template #default="{ row }">
           <el-space>{{ row.prevOffersList?.length || 0 }} → {{ row.currentOffersList?.length || 0 }}
-            <el-button type="primary" link @click="selected = row">Сравнить</el-button></el-space>
+            <el-button type="primary" link @click="openOffers(row)">Сравнить</el-button></el-space>
         </template>
       </el-table-column>
     </el-table>
@@ -35,7 +35,7 @@
     <el-pagination v-model:current-page="page" :page-size="30" :total="total" layout="total, prev, pager, next" @current-change="load" />
   </el-card>
   <el-dialog :model-value="Boolean(selected)" @update:model-value="value => { if (!value) selected = null }"
-    :title="`Офферы · ${selected?.phone || ''}`" width="min(900px, 94vw)">
+    :title="`Офферы · ${selected?.leadId || ''}`" width="min(900px, 94vw)" destroy-on-close>
     <el-row v-if="selected" :gutter="20">
       <el-col v-for="side in sides" :key="side.key" :xs="24" :sm="12">
         <el-card shadow="never">
@@ -71,6 +71,8 @@ export default {
   methods: {
     date(value) { return dayjs(value).format('DD.MM.YYYY') },
     money(value) { return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value || 0) },
+    statusType(status) { return ({ breaked: 'primary', hold: 'success', confirmed: 'warning', invalid: 'danger', refused: 'danger', created: 'info' }[status] || 'info') },
+    openOffers(row) { this.selected = row },
     async load() {
       if (!this.range?.length) return
       const id = ++this.requestId
