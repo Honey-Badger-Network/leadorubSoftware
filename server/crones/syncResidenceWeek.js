@@ -1,6 +1,7 @@
 const crone = require('node-cron')
 const { createResidenceSync } = require('../services/residenceSync')
 const { getResidenceLeads } = require('../services/residenceService')
+
 const syncResidenceWeek = createResidenceSync({
     leads: require('../models/leadsModel'),
     history: require('../models/residenceSyncHistory'),

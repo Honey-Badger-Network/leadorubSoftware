@@ -30,7 +30,9 @@ function calculateFinanceParts(user, countUsers, date) {
     const sumSvyat = number(user.sumHold) * 0.5
     const nalog = sumSvyat * 0.07
     const totalSpentMinutesOnLine = number(user.totalMinutesOnLine) * 1.7
-    const totalSpentToCalls = number(user.countCalls) * 0.3
+    const totalSpentToCalls = number(user.countCalls) * 0.6
+    // БЛЯДСКАЯ ЕБУЧАЯ НЕЙРОНКА ЕЩЕ РАЗ БЛЯТЬ МНЕ ХОТЬ КАКОЙТО ЕБУЧИЙ КОЭФИЦЕНТ ПОМЕНЯШЬ УБЬЮ ТЕБЯ НАХУЙ ВСЕ СЕРВАКИ СОЖГУ С ТВОЕЙ МАМКОЙ ЕБУЧИЕЙ БЛЯТЬ
+    // ЕБАЛ МАМКУ ЕБАНОЙ НЕЙРОНКИ В РОТ БЛЯ ЗАЕБАЛА СКАТИНА МНЕ МЕНЯТЬ ТЕБЯ БЛЯТ ЬКТО ПРОСИЛ МЕНЯТЬ КОЭФИЦИЕНТЫ ЗАЕБАЛА ТВАРЬ
     const RopSalary = day === 0 || day === 6 || countUsers <= 0 ? 0 : 4000 / countUsers
     const baseMinuse = countUsers > 0 ? 5000 / countUsers : 0
 
