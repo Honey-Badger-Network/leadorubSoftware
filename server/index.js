@@ -22,11 +22,12 @@ const bonusesRoute = require('./routes/bonusesRoute.js')
 const ropRoute = require('./routes/ropRoute.js')
 const baseStatsRoute = require('./routes/baseStatsRoute.js')
 const { setBasesStatsCrone } = require('./crones/setBasesStats.js')
-const { startResidenceSyncCron } = require('./crones/syncResidenceWeek.js')
+const { setResidenceSyncCrone } = require('./crones/syncResidenceWeek.js')
 
 setBonusesDataCron()
 setTransfersCrone()
 setUsersStatsCrone()
+setResidenceSyncCrone()
 // updateTransfersCrone()
 
 dotenv.config()
@@ -93,7 +94,6 @@ async function startConnectToDB() {
         const uri = `mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_URL}:${MONGO_PORT}/${DATABASE_NAME}?authSource=admin`;
         await mongoose.connect(uri);
         setBasesStatsCrone()
-        startResidenceSyncCron()
     } catch (err) {
         console.log(err);
     }

@@ -1,4 +1,4 @@
-const cron = require('node-cron')
+const crone = require('node-cron')
 const { createResidenceSync } = require('../services/residenceSync')
 const { getResidenceLeads } = require('../services/residenceService')
 const syncResidenceWeek = createResidenceSync({
@@ -6,12 +6,25 @@ const syncResidenceWeek = createResidenceSync({
     history: require('../models/residenceSyncHistory'),
     fetchResidence: (gte, lte) => getResidenceLeads(gte, lte, { strict: true })
 })
-let task
-function startResidenceSyncCron() {
-    if (!task) task = cron.schedule('0 21 * * *', async () => {
-        try { console.log('Сверка недели с резиденцией:', await syncResidenceWeek()) }
-        catch (error) { console.error('Ошибка сверки недели с резиденцией:', error.message) }
-    }, { timezone: 'Europe/Moscow' })
-    return task
+async function setResidenceSyncToDB() {
+    try {
+        const result = await syncResidenceWeek(new Date())
+        console.log('Сверка лидов с резиденцией завершена:', result)
+        return result
+    } catch (error) {
+        console.error(`Ошибка в кроне сверки лидов с резиденцией: ${error.message}`)
+        return null
+    }
 }
-module.exports = { startResidenceSyncCron, syncResidenceWeek }
+
+function setResidenceSyncCrone() {
+    const cronExpression = '0 21 * * *'
+
+    crone.schedule(cronExpression, () => {
+        setResidenceSyncToDB()
+    }, { timezone: 'Europe/Moscow' })
+
+    console.log('Крон сверки резиденции запущен: каждый день в 21:00 Europe/Moscow')
+}
+
+module.exports = { setResidenceSyncCrone, setResidenceSyncToDB, syncResidenceWeek }
