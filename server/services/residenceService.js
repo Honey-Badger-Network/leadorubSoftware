@@ -185,7 +185,7 @@ async function getLeadsOnePhone(gte, lte, phone) {
 
             residenceInfo.broker = item.userId.name
             residenceInfo.status = holdStatus !== null ? holdStatus : currentStatus
-
+            residenceInfo.developerName = item.offerId.name
         })
 
         return residenceInfo

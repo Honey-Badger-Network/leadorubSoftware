@@ -98,6 +98,11 @@
                   </div>
                 </template>
               </el-table-column>
+              <el-table-column v-if="rankName === 'admin'" prop="developerName" label="Застройщик" :width="160">
+                <template #default="{ row }">
+                  <span>{{ row.developerName ? row.developerName : '---' }}</span>
+                </template>
+              </el-table-column>
               <el-table-column :width="160" v-if="rankName === 'admin'" prop="price" label="Цена"></el-table-column>
               <el-table-column :width="160" v-if="rankName === 'admin'" prop="countHold" label="Кол-во холдов">
                 <template #default="{ row }">

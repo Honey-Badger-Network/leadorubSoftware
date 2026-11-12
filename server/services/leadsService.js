@@ -77,11 +77,20 @@ async function upsertNewLeadsData(lead) {
         const existing = await leadsModel.findOne({ date: lead.date, phone: lead.phone })
         const uniqueInfo = getDistintBetweenUnUniqueLeads(existing || lead)
         const data = {
-            broker: lead.broker, price: lead.price, audioArray: lead.audioArray,
-            residenceStatus: lead.residenceStatus, countHold: lead.countHold, offersList: lead.offersList,
-            isResidence: Boolean(lead.isResidence), countOffers: lead.offersList?.length || 0,
-            isUniquePhone: lead.isUniquePhone, lastPhoneCalled: lead.lastPhoneCalled,
-            uniqueState: uniqueInfo.dateState, leadProject: lead.leadProject, time: lead.time
+            broker: lead.broker,
+            price: lead.price,
+            audioArray: lead.audioArray,
+            residenceStatus: lead.residenceStatus,
+            countHold: lead.countHold,
+            offersList: lead.offersList,
+            isResidence: Boolean(lead.isResidence),
+            developerName: lead.developerName,
+            countOffers: lead.offersList?.length || 0,
+            isUniquePhone: lead.isUniquePhone,
+            lastPhoneCalled: lead.lastPhoneCalled,
+            uniqueState: uniqueInfo.dateState,
+            leadProject: lead.leadProject,
+            time: lead.time
         }
         if (!existing?.isEdited) Object.assign(data, {
             userName: lead.userName, user: lead.user, statusOKK: lead.statusOKK,

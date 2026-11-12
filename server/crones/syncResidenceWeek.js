@@ -14,8 +14,8 @@ async function setResidenceSyncToDB(date = new Date()) {
 
 function setResidenceSyncCrone() {
     const cronExpression = '0 21 * * *'
-    
-    setResidenceSyncToDB(new Date('2026-11-04'))
+
+    setResidenceSyncToDB(new Date('2026-11-10'))
 
     crone.schedule(cronExpression, () => {
         const date = new Date()

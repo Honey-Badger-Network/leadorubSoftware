@@ -31,7 +31,7 @@
         <el-table-column prop="name" width="200" label="Имя"></el-table-column>
         <el-table-column prop="rankName" label="Роль" width="110">
             <template #default="{ row }">
-                <el-tag type="info" effect="plain" round>
+                <el-tag :type="getTypeByRankName(row.rankName)" effect="plain" round>
                     {{ row.rankName }}
                 </el-tag>
             </template>
@@ -63,7 +63,10 @@
                 <el-input v-model="newCreatedUser.name"></el-input>
             </el-form-item>
             <el-form-item label="Ранк" prop="rankName">
-                <el-input v-model="newCreatedUser.rankName"></el-input>
+                <!-- <el-input v-model="newCreatedUser.rankName"></el-input> -->
+                 <el-select v-model="newCreatedUser.rankName">
+                    <el-option v-for="(item, index) in ranksNamesArray" :value="item" :label="item"></el-option>
+                </el-select>
             </el-form-item>
             <el-form-item label="Пароль" prop="password">
                 <el-input v-model="newCreatedUser.password"></el-input>
@@ -89,7 +92,10 @@
           <el-input v-model="editedUser.name"></el-input>
         </el-form-item>
         <el-form-item label="Ранк" prop="rankName">
-          <el-input v-model="editedUser.rankName"></el-input>
+            <!-- <el-input v-model="editedUser.rankName"></el-input> -->
+            <el-select v-model="editedUser.rankName">
+                <el-option v-for="(item, index) in ranksNamesArray" :value="item" :label="item"></el-option>
+            </el-select>
         </el-form-item>
         <el-form-item label="Пароль" prop="password">
           <el-input v-model="editedUser.password"></el-input>
@@ -191,6 +197,7 @@
         data() {
             return {
                 usersArray: [],
+                ranksNamesArray: ['holdorub', 'leadorub', 'admin'],
                 editedUser: null,
                 isShowModalEditUser: false,
                 visibleModalCreateUser: false,
@@ -280,6 +287,15 @@
             openModalToAvatar(userObject) {
                 this.userForAvatar = userObject
                 this.visibleModalToAvatar = true
+            },
+            getTypeByRankName(userRankName) {
+                if (userRankName === 'admin') {
+                    return 'danger'
+                } else if (userRankName === 'leadorub') {
+                    return 'info'
+                } else if (userRankName === 'holdorub') {
+                    return 'success'
+                }
             },
             handleFileChange(file, fileList) {
                 if (file.raw) {
