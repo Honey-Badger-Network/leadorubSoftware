@@ -26,8 +26,12 @@
       </el-table-column>
       <el-table-column label="Прирост чистой, ₽" min-width="155">
         <template #default="{ row }">
-          <el-text type="success" tag="b">
-            <el-icon><Top /></el-icon>
+          <el-text :type="getTypeByChangeHoldSum(row.currentSumHold, row.prevSumHold)" tag="b">
+            <el-icon>
+              <Top v-if="row.currentSumHold > row.prevSumHold" />
+              <Bottom v-else-if="row.currentSumHold < row.prevSumHold" />
+              <Check v-else />
+            </el-icon>
             {{ money((Number(row.currentSumHold || 0) - Number(row.prevSumHold || 0)) / 2) }}
           </el-text>
         </template>
@@ -66,11 +70,11 @@
 <script>
 import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
-import { Top } from '@element-plus/icons-vue'
+import { Top, Bottom, Check } from '@element-plus/icons-vue'
 dayjs.extend(isoWeek)
 
 export default {
-  components: { Top },
+  components: { Top, Bottom, Check },
   data() {
     return {
       range: [dayjs().startOf('isoWeek').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
@@ -99,6 +103,17 @@ export default {
         this.total = 0
         this.error = e.response?.data?.msg || e.message
       } finally { if (id === this.requestId) this.loading = false }
+    },
+    getTypeByChangeHoldSum(currentSum, prevSum) {
+      if (currentSum === 0 && prevSum === 0) {
+        return 'info'
+      } else if (currentSum === prevSum) {
+        return 'info'
+      } else if (currentSum > prevSum) {
+        return 'success'
+      } else if (currentSum < prevSum) {
+        return 'danger'
+      }
     },
     reload() { this.page = 1; this.load() }
   },
