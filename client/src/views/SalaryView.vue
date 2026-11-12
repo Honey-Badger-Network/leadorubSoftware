@@ -72,7 +72,6 @@
         </el-table-column>
         <!-- <el-table-column prop="email" label="Логин"></el-table-column> -->
         <el-table-column :width="100" prop="countCalls" label="Звонки"></el-table-column>
-        <el-table-column :width="100" prop="countCallsManyMinute" label="Звонки 60+"></el-table-column>
         <el-table-column :width="100" prop="countLeads" label="Лиды"></el-table-column>
         <el-table-column :width="100" prop="countTargets" label="Целевые"></el-table-column>
         <el-table-column :width="100" prop="countHolds" label="Холды"></el-table-column>

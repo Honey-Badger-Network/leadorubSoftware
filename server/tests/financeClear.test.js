@@ -18,7 +18,7 @@ test('sums seconds before converting to minutes and preserves existing call metr
         { duration: '01:00', result: 'Перезвонить' },
         { duration: '01:30', result: 'Разговор' },
         { duration: '01:00:00', result: 'Разговор' }
-    ]), { totalMinutesOnLine: 63, countCallsManyMinute: 2, countCallsWithMan: 3, countCallsResultReCall: 1 })
+    ]), { totalMinutesOnLine: 63, countCallsWithMan: 3, countCallsResultReCall: 1 })
     assert.equal(calculateCallStats([{ duration: '00:15' }]).totalMinutesOnLine, 0.25)
     assert.equal(calculateCallStats([]).totalMinutesOnLine, 0)
     assert.throws(() => calculateCallStats([{ duration: 'bad' }]))

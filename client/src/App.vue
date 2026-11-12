@@ -37,7 +37,7 @@
 
         <template v-for="(item, index) in menuItems" :key="index">
           <el-tooltip v-if="!item.condition || item.condition()" :content="item.label" :disabled="isShowMenu" placement="right">
-            <el-menu-item :index="item.path" :to="item.path">
+            <el-menu-item :index="item.path" :to="item.path" :disabled="item.disabled">
               <el-icon>
                 <component :is="item.icon" />
               </el-icon>
@@ -230,7 +230,8 @@ export default {
           label: 'Сверка резиденции',
           path: '/residence-reconciliation',
           icon: markRaw(DocumentChecked),
-          condition: () => this.rankName === 'admin'
+          condition: () => this.rankName === 'admin',
+          disabled: true
         }
         // {
         //   label: 'Сверка',

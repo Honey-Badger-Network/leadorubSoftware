@@ -13,7 +13,6 @@ test('weekly totals keep values around a day with zero statistics', () => {
             date: '2026-10-05',
             countCalls: 12,
             countCallsWithMan: 9,
-            countCallsManyMinute: 4,
             countCallsResultReCall: 2,
             countLeads: 3,
             countTargets: 2,
@@ -23,7 +22,6 @@ test('weekly totals keep values around a day with zero statistics', () => {
             date: '2026-10-06',
             countCalls: 8,
             countCallsWithMan: 0,
-            countCallsManyMinute: 0,
             countCallsResultReCall: 0,
             countLeads: 0,
             countTargets: 0,
@@ -33,7 +31,6 @@ test('weekly totals keep values around a day with zero statistics', () => {
             date: '2026-10-07',
             countCalls: '10',
             countCallsWithMan: 6,
-            countCallsManyMinute: '3',
             countCallsResultReCall: 1,
             countLeads: 2,
             countTargets: 1,
@@ -50,20 +47,17 @@ test('weekly totals keep values around a day with zero statistics', () => {
 
     assert.equal(totals.countCalls, 30)
     assert.equal(totals.countCallsWithMan, 15)
-    assert.equal(totals.countCallsManyMinute, 7)
-    assert.deepEqual(dynamics.map((day) => day.countCallsManyMinute), [4, 0, 3])
 })
 
 test('missing or invalid values are counted as zero instead of poisoning the range total', () => {
     const totals = getCardDataToSumAggr([
-        { countCalls: 10, countCallsWithMan: 7, countCallsManyMinute: 4 },
-        { countCalls: 0, countCallsWithMan: undefined, countCallsManyMinute: NaN },
-        { countCalls: 8, countCallsWithMan: 5, countCallsManyMinute: 2 }
+        { countCalls: 10, countCallsWithMan: 7 },
+        { countCalls: 0, countCallsWithMan: undefined },
+        { countCalls: 8, countCallsWithMan: 5 }
     ])
 
     assert.equal(totals.countCalls, 18)
     assert.equal(totals.countCallsWithMan, 12)
-    assert.equal(totals.countCallsManyMinute, 6)
 })
 
 test('conversions return zero for an empty denominator', () => {

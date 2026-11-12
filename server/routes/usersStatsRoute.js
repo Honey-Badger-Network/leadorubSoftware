@@ -215,7 +215,6 @@ router.get('/api/salary/get', async (req, res) => {
             if (resultObject[userEmail]) {
                 resultObject[userEmail].countCalls += item.countCalls || 0
                 resultObject[userEmail].totalMinutesOnLine += item.totalMinutesOnLine || 0
-                resultObject[userEmail].countCallsManyMinute += item.countCallsManyMinute || 0
                 resultObject[userEmail].countLeads += item.countLeads
                 resultObject[userEmail].countTargets += item.countTargets
                 resultObject[userEmail].countHolds += item.countHolds
@@ -233,7 +232,6 @@ router.get('/api/salary/get', async (req, res) => {
                     email: item.email,
                     countCalls: item.countCalls || 0,
                     totalMinutesOnLine: item.totalMinutesOnLine || 0,
-                    countCallsManyMinute: item.countCallsManyMinute || 0,
                     countLeads: item.countLeads,
                     countTargets: item.countTargets,
                     countHolds: item.countHolds,
@@ -255,7 +253,6 @@ router.get('/api/salary/get', async (req, res) => {
             name: 'Итого',
             email: 'total@total.com',
             countCalls: 0,
-            countCallsManyMinute: 0,
             countLeads: 0,
             countTargets: 0,
             countHolds: 0,
@@ -273,7 +270,6 @@ router.get('/api/salary/get', async (req, res) => {
 
         resultObject.forEach(item => {
             total.countCalls += item.countCalls || 0;
-            total.countCallsManyMinute += item.countCallsManyMinute || 0
             total.countLeads += item.countLeads || 0;
             total.countTargets += item.countTargets || 0;
             total.countHolds += item.countHolds || 0;

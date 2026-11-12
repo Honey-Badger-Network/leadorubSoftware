@@ -2,7 +2,6 @@ const USER_STATS_SUM_KEYS = [
     'countCalls',
     'countMissedCalls',
     'countCallsWithMan',
-    'countCallsManyMinute',
     'countCallsResultReCall',
     'countLeads',
     'countTargets',
@@ -37,24 +36,15 @@ export function getCardDataToSumAggr (usersStatsDataArray = []) {
         countMissedCalls: 0,
 
         countCallsWithMan: 0,
-        countCallsManyMinute: 0,
         countCallsResultReCall: 0,
         countLeads: 0,
         countTargets: 0,
-        clear: 0,
-
-        usersCallsInfo: []
+        clear: 0
     }
 
     usersStatsDataArray.forEach((row = {}) => {
         USER_STATS_SUM_KEYS.forEach((key) => {
             totalObject[key] += toFiniteNumber(row[key])
-        })
-        totalObject.usersCallsInfo.push({
-            userName: row.name,
-            countCallsWithMan: row.countCallsWithMan,
-            countCallsManyMinute: row.countCallsManyMinute,
-            countCallsResultReCall: row.countCallsResultReCall,
         })
     })
 
@@ -95,7 +85,6 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
             aggregatedDataObject[row.name].countMissedCalls += toFiniteNumber(row.countMissedCalls)
             aggregatedDataObject[row.name].countCallsWithMan += toFiniteNumber(row.countCallsWithMan)
             aggregatedDataObject[row.name].countCallsResultReCall += toFiniteNumber(row.countCallsResultReCall)
-            aggregatedDataObject[row.name].countCallsManyMinute += toFiniteNumber(row.countCallsManyMinute)
             aggregatedDataObject[row.name].countLeads += toFiniteNumber(row.countLeads)
             aggregatedDataObject[row.name].countTargets += toFiniteNumber(row.countTargets)
             aggregatedDataObject[row.name].countHolds += toFiniteNumber(row.countHolds)
@@ -107,7 +96,6 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
                 countMissedCalls: toFiniteNumber(row.countMissedCalls),
                 countCallsWithMan: toFiniteNumber(row.countCallsWithMan),
                 countCallsResultReCall: toFiniteNumber(row.countCallsResultReCall),
-                countCallsManyMinute: toFiniteNumber(row.countCallsManyMinute),
                 countLeads: toFiniteNumber(row.countLeads),
                 countTargets: toFiniteNumber(row.countTargets),
                 countHolds: toFiniteNumber(row.countHolds),
@@ -129,7 +117,6 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
         countMissedCalls: 0,
         countCallsWithMan: 0,
         countCallsResultReCall: 0,
-        countCallsManyMinute: 0,
         countLeads: 0,
         countTargets: 0,
         countHolds: 0,
@@ -162,7 +149,6 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
         totalLidorubValue.countMissedCalls += user.countMissedCalls
         totalLidorubValue.countCallsWithMan += user.countCallsWithMan
         totalLidorubValue.countCallsResultReCall += user.countCallsResultReCall
-        totalLidorubValue.countCallsManyMinute += user.countCallsManyMinute
         totalLidorubValue.countLeads += user.countLeads
         totalLidorubValue.countTargets += user.countTargets
         totalLidorubValue.countHolds += user.countHolds
@@ -294,7 +280,6 @@ export function getDailyDynamics(usersStatsDataArray, leadsDataArray, datesArray
         result[date] = {
             date,
             countCalls: 0,
-            countCallsManyMinute: 0,
             countCallsResultReCall: 0,
             countLeads: 0,
             countTargets: 0,
@@ -315,7 +300,6 @@ export function getDailyDynamics(usersStatsDataArray, leadsDataArray, datesArray
         }
 
         day.countCalls += toFiniteNumber(row.countCalls)
-        day.countCallsManyMinute += toFiniteNumber(row.countCallsManyMinute)
         day.countCallsResultReCall += toFiniteNumber(row.countCallsResultReCall)
         day.countLeads += toFiniteNumber(row.countLeads)
         day.countTargets += toFiniteNumber(row.countTargets)

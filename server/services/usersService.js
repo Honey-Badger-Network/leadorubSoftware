@@ -44,7 +44,6 @@ async function upserUsersStatsToDB(userObject) {
             countMissedCalls: userObject.countMissedCalls,
 
             countCallsWithMan: userObject.countCallsWithMan,
-            countCallsManyMinute: userObject.countCallsManyMinute,
             countCallsResultReCall: userObject.countCallsResultReCall,
             totalMinutesOnLine: userObject.totalMinutesOnLine,
             financeClear: userObject.financeClear,

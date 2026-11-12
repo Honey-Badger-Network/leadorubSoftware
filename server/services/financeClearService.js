@@ -3,7 +3,6 @@ const number = value => Number.isFinite(Number(value)) ? Number(value) : 0
 
 function calculateCallStats(calls) {
     let totalSeconds = 0
-    let countCallsManyMinute = 0
     let countCallsWithMan = 0
     let countCallsResultReCall = 0
     for (const call of calls) {
@@ -14,11 +13,10 @@ function calculateCallStats(calls) {
         }
         const seconds = parts.reduce((total, part) => total * 60 + Number(part), 0)
         totalSeconds += seconds
-        if (seconds > 60) countCallsManyMinute++
         if (call.result !== 'Автоответчик') countCallsWithMan++
         if (call.result === 'Перезвонить') countCallsResultReCall++
     }
-    return { totalMinutesOnLine: totalSeconds / 60, countCallsManyMinute, countCallsWithMan, countCallsResultReCall }
+    return { totalMinutesOnLine: totalSeconds / 60, countCallsWithMan, countCallsResultReCall }
 }
 
 function calculateFinanceParts(user, countUsers, date) {

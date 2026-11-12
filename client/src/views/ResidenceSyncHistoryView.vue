@@ -24,6 +24,14 @@
       <el-table-column label="Сумма холдов, ₽" min-width="170">
         <template #default="{ row }">{{ money(row.prevSumHold) }} → <el-text tag="b" :type="row.prevSumHold !== row.currentSumHold ? 'success' : undefined">{{ money(row.currentSumHold) }}</el-text></template>
       </el-table-column>
+      <el-table-column label="Прирост чистой, ₽" min-width="155">
+        <template #default="{ row }">
+          <el-text type="success" tag="b">
+            <el-icon><Top /></el-icon>
+            {{ money((Number(row.currentSumHold || 0) - Number(row.prevSumHold || 0)) / 2) }}
+          </el-text>
+        </template>
+      </el-table-column>
       <el-table-column label="Офферы" min-width="160">
         <template #default="{ row }">
           <el-space>{{ row.prevOffersList?.length || 0 }} → {{ row.currentOffersList?.length || 0 }}
@@ -58,9 +66,11 @@
 <script>
 import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
+import { Top } from '@element-plus/icons-vue'
 dayjs.extend(isoWeek)
 
 export default {
+  components: { Top },
   data() {
     return {
       range: [dayjs().startOf('isoWeek').format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],

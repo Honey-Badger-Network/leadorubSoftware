@@ -65,7 +65,6 @@
 <script>
 const FUNNEL_STAGES = [
   { key: 'countCalls', title: 'Звонки' },
-  { key: 'countCallsManyMinute', title: 'Разговоры 60+ сек' },
   { key: 'countLeads', title: 'Лиды' },
   { key: 'countTargets', title: 'Целевые лиды' },
   { key: 'countResidence', title: 'Передано брокеру' },
@@ -74,18 +73,6 @@ const FUNNEL_STAGES = [
 ]
 
 const CONVERSION_STAGES = [
-  {
-    key: 'callToLongConversation',
-    title: 'Звонок → разговор 60+',
-    numerator: 'countCallsManyMinute',
-    denominator: 'countCalls'
-  },
-  {
-    key: 'longConversationToLead',
-    title: 'Разговор 60+ → лид',
-    numerator: 'countLeads',
-    denominator: 'countCallsManyMinute'
-  },
   {
     key: 'leadToTarget',
     title: 'Лид → целевой',

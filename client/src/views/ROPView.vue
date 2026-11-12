@@ -75,7 +75,6 @@
           :prev-value="cardsData.prevValues?.[card.key] || 0"
           :count="cardsData[card.key] || 0"
           :percent="cardsData.percent?.[`${card.key}Percent`] || 0"
-          :callsDataArray="cardsData.usersCallsInfo"
         />
       </div>
     </el-card>
@@ -143,20 +142,6 @@
           <el-table-column label="Пропущенные" prop="countMissedCalls" />
           <el-table-column label="Разговоры с человеком" prop="countCallsWithMan" />
           <el-table-column label="Перезвонить" prop="countCallsResultReCall" />
-        </el-table-column>
-
-        <el-table-column label="Звонки 60+" align="center">
-          <el-table-column label="Всего" prop="countCallsManyMinute" min-width="95" />
-          <el-table-column label="Цена звонка">
-            <template #default="{ row }">
-              <span>15</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="Сума денег">
-            <template #default="{ row }">
-              <span>{{ row.countCallsManyMinute * 15 }}</span>
-            </template>
-          </el-table-column>
         </el-table-column>
 
         <el-table-column label="Статистика по лидам" align="center">
@@ -258,7 +243,6 @@ const SUMMARY_CARDS = [
   { key: 'countCalls', title: 'Звонки', icon: 'Phone', color: '#5b7cfa' },
   { key: 'countMissedCalls', title: 'Пропущеные', icon: 'Phone', color: '#1b9fffa' },
   { key: 'countCallsWithMan', title: 'Разговоры с человеком', icon: 'Phone', color: '#18a77a' },
-  { key: 'countCallsManyMinute', title: 'Разговоры 60+ сек', icon: 'Phone', color: '#eab308' },
   { key: 'countCallsResultReCall', title: 'Перезвонить', icon: 'Phone', color: '#f97316' },
   { key: 'countLeads', title: 'Лиды', icon: 'User', color: '#64748b' },
   { key: 'countTargets', title: 'Целевые (ОКК)', icon: 'Aim', color: '#10b981' },
@@ -273,11 +257,11 @@ const SUMMARY_CARDS = [
 const CHART_CONFIGS = [
   {
     key: 'calls',
-    title: 'Звонки и разговоры 60+ сек',
-    description: 'Объём набора и количество содержательных разговоров.',
+    title: 'Звонки и разговоры с человеком',
+    description: 'Объём набора и количество разговоров с человеком.',
     series: [
       { key: 'countCalls', label: 'Звонки', color: '#5b7cfa' },
-      { key: 'countCallsManyMinute', label: 'Разговоры 60+ сек', color: '#21c7a8' }
+      { key: 'countCallsWithMan', label: 'С человеком', color: '#21c7a8' }
     ]
   },
   {

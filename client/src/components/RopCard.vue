@@ -3,13 +3,7 @@
     <div class="metric-card__header">
       <span>{{ title }}</span>
 
-      <el-button @click="isShowModalToUsersCallsStats = true" size="small" plain v-if="isShowUsersCallsDataStats" type="success">
-        <el-icon>
-          <component :is="iconName" />
-        </el-icon>
-      </el-button>
-
-      <span v-else class="metric-card__icon">
+      <span class="metric-card__icon">
         <el-icon :style="{ 'color': iconColor }">
           <component :is="iconName" />
         </el-icon>
@@ -30,15 +24,6 @@
       <span class="metric-card__previous">Было {{ formatNumber(prevValue) }}</span>
     </div>
   </el-card>
-
-  <el-dialog v-model="isShowModalToUsersCallsStats" title="Статистика юзеров по звонкам">
-    <el-table :data="callsDataArray">
-      <el-table-column label="Лидоруб" prop="userName"></el-table-column>
-      <el-table-column label="звонки 60+ сек" prop="countCallsManyMinute"></el-table-column>
-      <el-table-column label="перезвонить" prop="countCallsResultReCall"></el-table-column>
-      <el-table-column label="звонки с человеком" prop="countCallsWithMan"></el-table-column>
-    </el-table>
-  </el-dialog>
 
 </template>
 
@@ -96,16 +81,6 @@ export default {
     prevValue: {
       type: Number,
       default: 0
-    },
-    callsDataArray: {
-      type: Array,
-      default: [],
-      required: false
-    }
-  },
-  data() {
-    return {
-      isShowModalToUsersCallsStats: false
     }
   },
   computed: {
@@ -113,13 +88,6 @@ export default {
       if (this.percent > 0) return 'metric-card__trend--positive'
       if (this.percent < 0) return 'metric-card__trend--negative'
       return 'metric-card__trend--neutral'
-    },
-    isShowUsersCallsDataStats() {
-      if (['Разговоры с человеком', 'Разговоры 60+ сек', 'Перезвонить'].includes(this.title)) {
-        return true
-      } else {
-        return false
-      }
     }
   },
   methods: {

@@ -14,7 +14,6 @@ const usersStats = new Schema({
     countCalls: numberWithDefault,
     countMissedCalls: numberWithDefault,
     countCallsWithMan: numberWithDefault,
-    countCallsManyMinute: numberWithDefault,
     countCallsResultReCall: numberWithDefault,
     totalMinutesOnLine: numberWithDefault,
 
