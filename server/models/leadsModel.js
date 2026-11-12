@@ -8,7 +8,6 @@ const leadsModel = new Schema({
     phone: String,
     audioArray: Array,
     residenceStatus: String,
-    developerName: String,
     isResidence: { type: Boolean, default: false },
     countOffers: { type: Number, default: 0 },
     lastResidenceSyncId: Schema.Types.ObjectId,

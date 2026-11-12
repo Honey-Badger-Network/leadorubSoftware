@@ -84,7 +84,6 @@ async function upsertNewLeadsData(lead) {
             countHold: lead.countHold,
             offersList: lead.offersList,
             isResidence: Boolean(lead.isResidence),
-            developerName: lead.developerName,
             countOffers: lead.offersList?.length || 0,
             isUniquePhone: lead.isUniquePhone,
             lastPhoneCalled: lead.lastPhoneCalled,

@@ -92,7 +92,6 @@ async function setTransfersToDB(gte, lte) {
           audioArray: leadAudioArray,
           residenceStatus: leadResidence.status,
           isResidence: leadResidence.isResidence,
-          developerName: leadResidence.developerName,
           statusOKK: false,
           selfLead: isSelfLead,
           selfLeadName: isSelfLead ? 'Сам' : 'На брокера',
