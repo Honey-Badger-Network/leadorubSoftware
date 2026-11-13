@@ -117,7 +117,7 @@ export default {
         { key: 'sumSvyat', title: 'Сумма Свят', value: this.format(holdSum * 0.5) + ' ₽' },
         { key: 'nalog', title: 'Налог', value: this.format(holdSum * 0.5 * 0.07) + ' ₽' },
         { key: 'minutes', title: 'Минуты', value: this.format(minutes * 1.7) + ' ₽' },
-        { key: 'calls', title: 'Звонки', value: this.format(calls * 0.3) + ' ₽' },
+        { key: 'calls', title: 'Звонки', value: this.format(calls * 0.6) + ' ₽' },
         { key: 'rop', title: 'ЗП РОПа', value: this.format(user.ropSalary) + ' ₽' },
         { key: 'base', title: 'Базовый минус', value: this.format(user.baseMinuse) + ' ₽' },
         { key: 'commission', title: 'ЗП брокера', value: this.format(holdSum * 0.5 * 0.15) + ' ₽' },
