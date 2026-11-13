@@ -34,6 +34,120 @@ async function getSkorozvonToken() {
     }
 }
 
+async function fetchSkorozvonCallsByProject(project = 20000146656) {
+    try {
+
+        const token = await getSkorozvonToken()
+
+        const params = new URLSearchParams();
+
+        params.append('filter[tags_condition]', 'or');
+        params.append('filter[managers]', 'all');
+        params.append('filter[scenario_id]', '');
+        params.append('filter[call_result]', '');
+        params.append('filter[business]', '');
+        params.append('filter[firm_name]', '');
+        params.append('filter[file_id]', '');
+        params.append('filter[city]', '');
+        params.append('filter[tags]', 'all');
+        params.append('filter[scenario]', '');
+        params.append('filter[results]', '');
+        params.append('filter[excluded_results]', '');
+        params.append('filter[deleted]', 'false');
+        params.append('filter[lead_delete_start]', '');
+        params.append('filter[lead_delete_end]', '');
+        params.append('filter[latest_call_start]', '');
+        params.append('filter[latest_call_end]', '');
+        params.append('filter[used_type]', '');
+        params.append('filter[used_by]', 'user');
+        params.append('filter[term]', '');
+        params.append('filter[project_id]', '20000146656');
+        params.append('filter[project_state]', '');
+        params.append('filter[result_by]', 'client');
+        params.append('filter[lead_create_start]', '');
+        params.append('filter[comment]', '');
+        params.append('filter[lead_create_end]', '');
+        params.append('filter[tags_exclusion]', '');
+        params.append('filter[event_type]', '');
+
+        const responseByCountCalls = await axios.post('https://pod5-shard2-lb1.skorozvon.ru/settings/contacts/count', params, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+
+        const countCallsWithByProject = responseByCountCalls.data.count
+        const countPagesByPagination = Math.ceil(countCallsWithByProject / 100) // limit = 100 поэтому и делю на 100
+        // я хуй его знает нахуй я этот комент написал про limit но пох у меня шиза опять пробудилась (((
+
+        var callsTableData = []
+
+        for (let i = 0; i < countPagesByPagination; i++) {
+            const response = await axios.post('https://pod5-shard2-lb1.skorozvon.ru/settings/contacts/filter', 
+                {
+                    authenticity_token: '0OlreTUuWfDbT4q2zL7mJ4QOuhc5dqK9Cptz/iRzQqI=',
+                    limit: 100,
+                    order: {
+                        column: "id",
+                        direction: "DESC"
+                    },
+                    page: i,
+                    filter: { 
+                        business: "",
+                        call_result: "",
+                        city: "",
+                        comment: "",
+                        deleted: false,
+                        event_type: null,
+                        excluded_results: null,
+                        file_id: "",
+                        firm_name: "",
+                        latest_call_end: null,
+                        latest_call_start: null,
+                        lead_create_end: null,
+                        lead_create_start: null,
+                        lead_delete_end: null,
+                        lead_delete_start: null,
+                        managers: "all",
+                        project_id: project,
+                        project_state: null,
+                        result_by: "client",
+                        results: null,
+                        scenario: null,
+                        scenario_id: "",
+                        tags: "all",
+                        tags_condition: "or",
+                        tags_exclusion: null,
+                        term: "",
+                        time_range: null,
+                        used_by: "user",
+                        used_type: null
+                    }
+                },
+                { headers: { Authorization: `Bearer ${token}` }
+            })
+
+            let callsArray = response.data.data.leads
+
+            callsArray.forEach((lead) => {
+                callsTableData.push({
+                    region: lead.region,
+                    date: dayjs(lead.created_at).format('YYYY-MM-DD'),
+                    phone: lead.phones[0].replace(/\D/g, "")
+                })
+            })
+
+        }
+
+        console.log(callsTableData)
+
+        return callsTableData
+    } catch (e) {
+        console.log(e.message)
+        return null
+    }
+}
+
 async function getDifferenceByCalls(gte, lte, user) {
 
     // получить данные о звонках от имени админа
@@ -443,4 +557,4 @@ async function getLeadTimeline(transfer, onlyTransfers = false) {
     }
 }
 
-module.exports = { getSkorozvonToken, getSkorozvonCalls, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls, getSkorozvonCallsFromProfile, getDifferenceByCalls }
+module.exports = { getSkorozvonToken, getSkorozvonCalls, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls, getSkorozvonCallsFromProfile, getDifferenceByCalls, fetchSkorozvonCallsByProject }

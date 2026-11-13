@@ -24,6 +24,11 @@ const baseStatsRoute = require('./routes/baseStatsRoute.js')
 const { setBasesStatsCrone } = require('./crones/setBasesStats.js')
 const { setResidenceSyncCrone } = require('./crones/syncResidenceWeek.js')
 
+
+const { fetchSkorozvonCallsByProject } = require('./services/skorozvonService.js')
+
+fetchSkorozvonCallsByProject()
+
 setBonusesDataCron()
 setTransfersCrone()
 setUsersStatsCrone()
