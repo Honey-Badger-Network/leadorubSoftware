@@ -21,6 +21,11 @@
       <el-form-item>
         <el-button type="primary" :loading="loading" native-type="submit">Показать</el-button>
       </el-form-item>
+      <el-form-item>
+        <el-button type="success" :loading="exporting" @click="exportToExcel">
+          Выгрузить в Excel
+        </el-button>
+      </el-form-item>
     </el-form>
 
     <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
@@ -37,6 +42,21 @@
       <el-table-column prop="region" label="Регион" min-width="150" />
       <el-table-column prop="clientName" label="Клиент" min-width="180" />
       <el-table-column prop="clientAge" label="Возраст" min-width="100" />
+      <el-table-column label="Статусы лида" min-width="190">
+        <template #default="{ row }">
+          <el-space v-if="row.leadStatuses?.length" wrap>
+            <el-tag
+              v-for="(status, index) in row.leadStatuses"
+              :key="`${status}-${index}`"
+              :type="statusType(status)"
+              size="small"
+            >
+              {{ status }}
+            </el-tag>
+          </el-space>
+          <el-text v-else type="info">Нет статусов</el-text>
+        </template>
+      </el-table-column>
     </el-table>
 
     <el-pagination
@@ -69,6 +89,7 @@ export default {
       page: 1,
       pageSize: 25,
       loading: false,
+      exporting: false,
       error: '',
       requestId: 0
     }
@@ -111,6 +132,76 @@ export default {
     changePageSize() {
       this.page = 1
       this.load()
+    },
+    statusType(status) {
+      const normalized = String(status || '').toLowerCase()
+      if (['hold', 'confirmed'].some(value => normalized.includes(value))) return 'success'
+      if (['refused', 'invalid', 'breaked', 'rejected'].some(value => normalized.includes(value))) return 'danger'
+      if (['created', 'new', 'нов'].some(value => normalized.includes(value))) return 'info'
+      return 'warning'
+    },
+    escapeCell(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+    },
+    async exportToExcel() {
+      if (!this.range || this.range.length !== 2 || this.exporting) return
+
+      this.exporting = true
+      this.error = ''
+
+      try {
+        const allRows = []
+        let exportPage = 1
+        const exportLimit = 500
+
+        while (true) {
+          const result = await this.$store.dispatch('getDataList', {
+            col: 'api/calls-projects',
+            params: {
+              gte: this.range[0],
+              lte: this.range[1],
+              page: exportPage,
+              limit: exportLimit
+            }
+          })
+
+          const rows = result.data || []
+          allRows.push(...rows)
+          if (rows.length < exportLimit || allRows.length >= result.total) break
+          exportPage += 1
+        }
+
+        const headers = ['Дата', 'Телефон', 'Регион', 'Клиент', 'Возраст', 'Статусы лида']
+        const body = allRows.map(row => [
+          row.date,
+          row.phone,
+          row.region,
+          row.clientName,
+          row.clientAge,
+          (row.leadStatuses || []).join(', ')
+        ])
+        const table = [headers, ...body].map(cells => `
+          <tr>${cells.map(cell => `<td>${this.escapeCell(cell)}</td>`).join('')}</tr>
+        `).join('')
+        const workbook = `<!doctype html><html><head><meta charset="utf-8"></head><body><table>${table}</table></body></html>`
+        const blob = new Blob([workbook], { type: 'application/vnd.ms-excel;charset=utf-8' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `лиды-проектов_${this.range[0]}_${this.range[1]}.xls`
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        URL.revokeObjectURL(url)
+      } catch (error) {
+        this.error = error.response?.data?.msg || error.message || 'Не удалось выгрузить файл'
+      } finally {
+        this.exporting = false
+      }
     }
   },
   mounted() {

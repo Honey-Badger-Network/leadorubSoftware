@@ -16,15 +16,16 @@ async function syncCallsProjects() {
     const operations = [...uniqueRecords.values()].map(record => ({
         updateOne: {
             filter: { date: record.date, phone: record.phone },
-            update: { $setOnInsert: record },
+            update: { $set: record },
             upsert: true
         }
     }))
 
-    if (!operations.length) return { fetched: records.length, inserted: 0, skipped: 0 }
+    if (!operations.length) return { fetched: records.length, inserted: 0, updated: 0, processed: 0 }
     const result = await callsProjectsModel.bulkWrite(operations, { ordered: false })
     const inserted = result.upsertedCount || 0
-    return { fetched: records.length, inserted, skipped: uniqueRecords.size - inserted }
+    const updated = result.modifiedCount || 0
+    return { fetched: records.length, inserted, updated, processed: uniqueRecords.size }
 }
 
 module.exports = { syncCallsProjects }
