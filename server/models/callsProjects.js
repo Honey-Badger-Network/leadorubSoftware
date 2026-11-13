@@ -5,7 +5,8 @@ const callsProjects = new Schema({
     date: String,
     region: String,
     clientName: String,
-    clientAge: Number
+    clientAge: Number,
+    leadStatuses: Array
 })
 
 callsProjects.index({ date: 1, phone: 1 }, { unique: true })

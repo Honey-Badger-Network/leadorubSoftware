@@ -129,15 +129,27 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
 
             let callsArray = response.data.data.leads
 
-            callsArray.forEach((lead) => {
+            for (let lead of callsArray) {
+                let responseToHistory = await axios.get(`https://pod5-shard2-lb1.skorozvon.ru/resurgent/leads/${lead.id}?history_limit=1&deleted=false`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+                let historyData = responseToHistory.data.data.history.data
+                let leadStatuses = []
+                
+                historyData.forEach((item) => {
+                    leadStatuses.push(item.result)
+                })
+
                 callsTableData.push({
                     region: lead.region,
                     date: dayjs(lead.created_at).format('YYYY-MM-DD'),
                     phone: String(lead.phones?.[0] || '').replace(/\D/g, ""),
                     clientName: lead.clientName || lead.name || lead.full_name || '',
-                    clientAge: Number(lead.clientAge ?? lead.age) || undefined
+                    clientAge: Number(lead.clientAge ?? lead.age) || undefined,
+                    leadStatuses
                 })
-            })
+
+            }
 
         }
 
