@@ -41,10 +41,12 @@
 
     <el-pagination
       v-model:current-page="page"
-      :page-size="30"
+      v-model:page-size="pageSize"
+      :page-sizes="[5, 10, 25, 50, 100, 500]"
       :total="total"
-      layout="total, prev, pager, next"
+      layout="total, sizes, prev, pager, next, jumper"
       @current-change="load"
+      @size-change="changePageSize"
     />
   </el-card>
 </template>
@@ -65,6 +67,7 @@ export default {
       rows: [],
       total: 0,
       page: 1,
+      pageSize: 25,
       loading: false,
       error: '',
       requestId: 0
@@ -81,7 +84,12 @@ export default {
       try {
         const result = await this.$store.dispatch('getDataList', {
           col: 'api/calls-projects',
-          params: { gte: this.range[0], lte: this.range[1], page: this.page }
+          params: {
+            gte: this.range[0],
+            lte: this.range[1],
+            page: this.page,
+            limit: this.pageSize
+          }
         })
 
         if (requestId !== this.requestId) return
@@ -97,6 +105,10 @@ export default {
       }
     },
     reload() {
+      this.page = 1
+      this.load()
+    },
+    changePageSize() {
       this.page = 1
       this.load()
     }

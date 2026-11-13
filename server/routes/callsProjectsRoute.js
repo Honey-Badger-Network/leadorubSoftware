@@ -14,7 +14,7 @@ router.get('/api/calls-projects', async (req, res) => {
     const requestedPage = Number(req.query.page || 1)
     const requestedLimit = Number(req.query.limit || 30)
     const page = Number.isInteger(requestedPage) ? Math.max(1, requestedPage) : 1
-    const limit = Number.isInteger(requestedLimit) ? Math.min(100, Math.max(1, requestedLimit)) : 30
+    const limit = Number.isInteger(requestedLimit) ? Math.min(500, Math.max(1, requestedLimit)) : 30
     if (!validDate(gte) || !validDate(lte) || gte > lte || !Number.isInteger(requestedPage) || !Number.isInteger(requestedLimit)) {
         return res.status(400).json({ msg: 'Укажите корректный период и страницу' })
     }
