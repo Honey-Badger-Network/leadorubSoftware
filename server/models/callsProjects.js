@@ -8,4 +8,6 @@ const callsProjects = new Schema({
     clientAge: Number
 })
 
+callsProjects.index({ date: 1, phone: 1 }, { unique: true })
+
 module.exports = model('callsProjects', callsProjects)

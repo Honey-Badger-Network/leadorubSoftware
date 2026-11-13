@@ -77,6 +77,12 @@ const router = createRouter({
       meta: { requiresAuth: true, onlyAdmin: true }
     },
     {
+      path: '/calls-projects',
+      name: 'callsProjects',
+      component: () => import('../views/CallsProjectsView.vue'),
+      meta: { requiresAuth: true, onlyAdmin: true }
+    },
+    {
       path: '/residence-reconciliation',
       name: 'residenceReconciliation',
       component: () => import('../views/ResidenceReconciliationView.vue'),

@@ -61,7 +61,7 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
         params.append('filter[used_type]', '');
         params.append('filter[used_by]', 'user');
         params.append('filter[term]', '');
-        params.append('filter[project_id]', '20000146656');
+        params.append('filter[project_id]', String(project));
         params.append('filter[project_state]', '');
         params.append('filter[result_by]', 'client');
         params.append('filter[lead_create_start]', '');
@@ -133,7 +133,9 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
                 callsTableData.push({
                     region: lead.region,
                     date: dayjs(lead.created_at).format('YYYY-MM-DD'),
-                    phone: lead.phones[0].replace(/\D/g, "")
+                    phone: String(lead.phones?.[0] || '').replace(/\D/g, ""),
+                    clientName: lead.clientName || lead.name || lead.full_name || '',
+                    clientAge: Number(lead.clientAge ?? lead.age) || undefined
                 })
             })
 
