@@ -1,9 +1,13 @@
 const crone = require('node-cron')
 const { createResidenceSync } = require('../services/residenceSync')
+const { setUsersStatsToDB } = require('./setUsersStats')
 
 async function setResidenceSyncToDB(date = new Date()) {
     try {
         const result = await createResidenceSync(date)
+        for (const leadDate of result?.updatedLeadsDates || []) {
+            await setUsersStatsToDB(leadDate, leadDate)
+        }
         console.log('Сверка лидов с резиденцией завершена:', result)
         return result
     } catch (error) {

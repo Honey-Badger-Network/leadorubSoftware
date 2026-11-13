@@ -107,6 +107,7 @@ async function createResidenceSync(date = new Date()) {
         const updatedAt = dayjs().format('YYYY-MM-DD')
         let updated = 0
         let matched = 0
+        const updatedLeadsDates = new Set()
 
         for (const lead of leadsByDate) {
             const matches = residenceRecords.filter(item => normalizePhone(item.phone) === normalizePhone(lead.phone))
@@ -147,6 +148,7 @@ async function createResidenceSync(date = new Date()) {
             }
             const result = await leadsModel.updateOne(expected, { $set: after })
             if (result.matchedCount !== 1) continue
+            if (lead.date) updatedLeadsDates.add(dayjs(lead.date).format('YYYY-MM-DD'))
             if (!hasReconciliationChanges) continue
 
             await history.create({
@@ -163,7 +165,7 @@ async function createResidenceSync(date = new Date()) {
             updated++
         }
 
-        return { gte: startWeek, lte: endWeek, checked: leadsByDate.length, matched, updated }
+        return { gte: startWeek, lte: endWeek, checked: leadsByDate.length, matched, updated, updatedLeadsDates: [...updatedLeadsDates].sort() }
     } catch (e) {
         console.log(e)
         return null
