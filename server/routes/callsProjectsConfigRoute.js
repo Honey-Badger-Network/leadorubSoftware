@@ -1,25 +1,39 @@
 const { Router } = require('express')
-const { getConfiguredProjectIds, saveConfiguredProjectIds } = require('../services/callsProjectsConfigService')
+const {
+    getConfiguredProjects,
+    saveConfiguredProject,
+    removeConfiguredProject
+} = require('../services/callsProjectsConfigService')
 
 const router = Router()
 
 router.get('/api/calls-projects/config', async (req, res) => {
     try {
-        res.json({ data: { projectIds: await getConfiguredProjectIds() } })
+        res.json({ data: await getConfiguredProjects() })
     } catch (error) {
         res.status(500).json({ msg: error.message })
     }
 })
 
 router.put('/api/calls-projects/config', async (req, res) => {
-    const projectIds = req.body?.projectIds
-    if (!Array.isArray(projectIds) || projectIds.some(id => id === null || id === undefined || String(id).trim() === '')) {
-        return res.status(400).json({ msg: 'Передайте массив projectIds' })
+    const project = req.body
+    if (!project?.projectId || String(project.projectId).trim() === '') {
+        return res.status(400).json({ msg: 'Передайте projectId проекта' })
     }
 
     try {
-        const config = await saveConfiguredProjectIds(projectIds)
-        res.json({ data: { projectIds: config.projectIds } })
+        const saved = await saveConfiguredProject(project)
+        res.json({ data: saved })
+    } catch (error) {
+        res.status(500).json({ msg: error.message })
+    }
+})
+
+router.delete('/api/calls-projects/config', async (req, res) => {
+    if (!req.body?.projectId) return res.status(400).json({ msg: 'Передайте projectId проекта' })
+    try {
+        await removeConfiguredProject(req.body.projectId)
+        res.json({ data: true })
     } catch (error) {
         res.status(500).json({ msg: error.message })
     }

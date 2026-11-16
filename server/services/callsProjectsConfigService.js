@@ -3,19 +3,26 @@ const callsProjectsConfigModel = require('../models/callsProjectsConfig')
 const DEFAULT_PROJECT_ID = '20000146656'
 
 async function getConfiguredProjectIds() {
-    const config = await callsProjectsConfigModel.findOne().lean()
-    if (!config) return [DEFAULT_PROJECT_ID]
-    const projectIds = [...new Set((config.projectIds || []).map(String).filter(Boolean))]
+    const projects = await callsProjectsConfigModel.find({ projectId: { $exists: true, $ne: '' } }).select('projectId').lean()
+    const projectIds = [...new Set(projects.map(project => String(project.projectId)).filter(Boolean))]
     return projectIds.length ? projectIds : [DEFAULT_PROJECT_ID]
 }
 
-async function saveConfiguredProjectIds(projectIds) {
-    const normalizedIds = [...new Set(projectIds.map(String).map(id => id.trim()).filter(Boolean))]
+async function getConfiguredProjects() {
+    return callsProjectsConfigModel.find({ projectId: { $exists: true, $ne: '' } }).sort({ name: 1, projectId: 1 }).lean()
+}
+
+async function saveConfiguredProject(project) {
+    const projectId = String(project.projectId || '').trim()
     return callsProjectsConfigModel.findOneAndUpdate(
-        {},
-        { $set: { projectIds: normalizedIds } },
+        { projectId },
+        { $set: { projectId, name: String(project.name || ''), state: String(project.state || '') } },
         { upsert: true, new: true, setDefaultsOnInsert: true }
     ).lean()
 }
 
-module.exports = { getConfiguredProjectIds, saveConfiguredProjectIds, DEFAULT_PROJECT_ID }
+async function removeConfiguredProject(projectId) {
+    return callsProjectsConfigModel.findOneAndDelete({ projectId: String(projectId) })
+}
+
+module.exports = { getConfiguredProjectIds, getConfiguredProjects, saveConfiguredProject, removeConfiguredProject, DEFAULT_PROJECT_ID }
