@@ -9,13 +9,30 @@ const https = require('https')
 dotenv.config()
 
 const { skorozvonAPI, skorozvonUSER, skorozvonID, skorozvonSecret } = process.env
-const { getSkorozvonToken, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls } = require('../services/skorozvonService.js')
+const { getSkorozvonToken, getLeadsToOneDay, getLeadTimeline, fetchSkorozvonProjects } = require('../services/skorozvonService.js')
 const { findAllCallsInResidence, getResidenceLeads } = require('../services/residenceService.js')
 const { getUISCalls } = require('../services/uisService.js')
 
 
 
 const router = Router()
+
+router.get('/api/skorozvon/projects', async (req, res) => {
+    try {
+        const data = await fetchSkorozvonProjects()
+
+        // id = айдишник (value), title = название (label), state = состояние проекта
+
+        res.status(200).json({
+            data: data
+        })
+    } catch (e) {
+        console.log(e.message)
+        res.status(500).json({
+            err: e.message
+        })
+    }
+})
 
 router.get('/api/skorozvon/allTransfers', async (req, res) => {
     try {

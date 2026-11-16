@@ -34,6 +34,28 @@ async function getSkorozvonToken() {
     }
 }
 
+async function fetchSkorozvonProjects() {
+    try {
+        const token = await getSkorozvonToken()
+        const projectsResponse = await axios.get('https://pod5-shard2-lb1.skorozvon.ru/call_projects', {
+            headers: { Authorization: token },
+            params: {
+                limit: 100,
+                hide_ended: true,
+                'order[column]': 'state_order',
+                'order[direction]': 0,
+                dialing_type: 'call',
+                page: 0
+            }
+        })
+        const projectsArray = projectsResponse.data.projects
+        return projectsArray
+    } catch (e) {
+        console.log(e.message)
+        return null
+    }
+}
+
 async function fetchSkorozvonCallsByProject(project = 20000146656) {
     try {
 
@@ -569,4 +591,4 @@ async function getLeadTimeline(transfer, onlyTransfers = false) {
     }
 }
 
-module.exports = { getSkorozvonToken, getSkorozvonCalls, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls, getSkorozvonCallsFromProfile, getDifferenceByCalls, fetchSkorozvonCallsByProject }
+module.exports = { getSkorozvonToken, getSkorozvonCalls, getLeadsToOneDay, getLeadTimeline, getLeadAudioUrls, getSkorozvonCallsFromProfile, getDifferenceByCalls, fetchSkorozvonCallsByProject, fetchSkorozvonProjects }
