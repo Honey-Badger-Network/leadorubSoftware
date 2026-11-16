@@ -48,7 +48,7 @@ async function fetchSkorozvonProjects() {
                 page: 0
             }
         })
-        const projectsArray = projectsResponse.data.projects
+        const projectsArray = projectsResponse.data.data.projects
         return projectsArray
     } catch (e) {
         console.log(e.message)
