@@ -37,6 +37,25 @@
           />
         </el-select>
       </el-form-item>
+      <el-form-item label="Проекты">
+        <el-select
+          v-model="selectedProjectNames"
+          multiple
+          collapse-tags
+          collapse-tags-tooltip
+          clearable
+          filterable
+          placeholder="Все проекты"
+          style="min-width: 240px"
+        >
+          <el-option
+            v-for="projectName in projectNameOptions"
+            :key="projectName"
+            :label="projectName"
+            :value="projectName"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" :loading="loading" native-type="submit">Показать</el-button>
       </el-form-item>
@@ -61,6 +80,26 @@
       <el-table-column prop="region" label="Регион" min-width="150" />
       <el-table-column prop="clientName" label="Клиент" min-width="180" />
       <el-table-column prop="clientAge" label="Возраст" min-width="100" />
+      <el-table-column label="Проект" min-width="180">
+        <template #default="{ row }">
+          <el-space v-if="row.projectName?.length" wrap>
+            <el-tag v-for="projectName in row.projectName" :key="projectName" type="primary" size="small">
+              {{ projectName }}
+            </el-tag>
+          </el-space>
+          <el-text v-else type="info">Не указан</el-text>
+        </template>
+      </el-table-column>
+      <el-table-column label="Лидоруб" min-width="170">
+        <template #default="{ row }">
+          <el-space v-if="row.leadorub?.length" wrap>
+            <el-tag v-for="leadorub in row.leadorub" :key="leadorub" type="success" size="small">
+              {{ leadorub }}
+            </el-tag>
+          </el-space>
+          <el-text v-else type="info">Не указан</el-text>
+        </template>
+      </el-table-column>
       <el-table-column label="Статусы лида" min-width="190">
         <template #default="{ row }">
           <el-space v-if="row.leadStatuses?.length" wrap>
@@ -122,6 +161,8 @@ export default {
       pageSize: 25,
       selectedStatuses: [],
       statusOptions: defaultStatusOptions,
+      selectedProjectNames: [],
+      projectNameOptions: [],
       loading: false,
       exporting: false,
       error: '',
@@ -144,7 +185,8 @@ export default {
             lte: this.range[1],
             page: this.page,
             limit: this.pageSize,
-            statuses: this.selectedStatuses.join(',')
+            statuses: this.selectedStatuses.join(','),
+            projectNames: this.selectedProjectNames.join(',')
           }
         })
 
@@ -193,14 +235,22 @@ export default {
     async loadStatusOptions() {
       if (!this.range || this.range.length !== 2) return
       try {
-        const result = await this.$store.dispatch('getDataList', {
-          col: 'api/calls-projects/statuses',
-          params: { gte: this.range[0], lte: this.range[1] }
-        })
-        const values = result.data || []
+        const [statusesResult, projectsResult] = await Promise.all([
+          this.$store.dispatch('getDataList', {
+            col: 'api/calls-projects/statuses',
+            params: { gte: this.range[0], lte: this.range[1] }
+          }),
+          this.$store.dispatch('getDataList', {
+            col: 'api/calls-projects/project-names',
+            params: { gte: this.range[0], lte: this.range[1] }
+          })
+        ])
+        const values = statusesResult.data || []
         this.statusOptions = [...new Set([...defaultStatusOptions, ...values])]
+        this.projectNameOptions = projectsResult.data || []
       } catch (error) {
         this.statusOptions = defaultStatusOptions
+        this.projectNameOptions = []
       }
     },
     escapeCell(value) {
@@ -229,7 +279,8 @@ export default {
               lte: this.range[1],
               page: exportPage,
               limit: exportLimit,
-              statuses: this.selectedStatuses.join(',')
+              statuses: this.selectedStatuses.join(','),
+              projectNames: this.selectedProjectNames.join(',')
             }
           })
 
@@ -239,13 +290,15 @@ export default {
           exportPage += 1
         }
 
-        const headers = ['Дата', 'Телефон', 'Регион', 'Клиент', 'Возраст', 'Статусы лида']
+        const headers = ['Дата', 'Телефон', 'Регион', 'Клиент', 'Возраст', 'Проект', 'Лидоруб', 'Статусы лида']
         const body = allRows.map(row => [
           row.date,
           row.phone,
           row.region,
           row.clientName,
           row.clientAge,
+          (row.projectName || []).join(', '),
+          (row.leadorub || []).join(', '),
           (row.leadStatuses || []).join(', ')
         ])
         const table = [headers, ...body].map(cells => `

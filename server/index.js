@@ -25,6 +25,7 @@ const { setBasesStatsCrone } = require('./crones/setBasesStats.js')
 const { setResidenceSyncCrone } = require('./crones/syncResidenceWeek.js')
 const { setCallsProjectsCron } = require('./crones/setCallsProjects.js')
 const callsProjectsRoute = require('./routes/callsProjectsRoute.js')
+const callsProjectsConfigRoute = require('./routes/callsProjectsConfigRoute.js')
 
 setBonusesDataCron()
 setTransfersCrone()
@@ -90,6 +91,7 @@ app.use(bonusesRoute)
 app.use(ropRoute)
 app.use(baseStatsRoute)
 app.use(callsProjectsRoute)
+app.use(callsProjectsConfigRoute)
 
 
 async function startConnectToDB() {

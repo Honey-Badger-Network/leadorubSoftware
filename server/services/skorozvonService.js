@@ -157,9 +157,21 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
                 })
                 let historyData = responseToHistory.data.data.history.data
                 let leadStatuses = []
+                let leadorubs = new Set()
+                let projectNames = new Set()
                 
                 historyData.forEach((item) => {
-                    leadStatuses.push(item.result)
+                    if (item.result) leadStatuses.push(item.result)
+
+                    const projectName = typeof item.call_project === 'object'
+                        ? item.call_project?.name || item.call_project?.title || item.call_project?.id
+                        : item.call_project
+                    const leadorub = typeof (item.called_user || item.manager) === 'object'
+                        ? (item.called_user || item.manager)?.name || (item.called_user || item.manager)?.full_name || (item.called_user || item.manager)?.id
+                        : (item.called_user || item.manager)
+
+                    if (projectName) projectNames.add(String(projectName))
+                    if (leadorub) leadorubs.add(String(leadorub))
                 })
 
                 callsTableData.push({
@@ -168,7 +180,9 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
                     phone: String(lead.phones?.[0] || '').replace(/\D/g, ""),
                     clientName: lead.clientName || lead.name || lead.full_name || '',
                     clientAge: Number(lead.clientAge ?? lead.age) || undefined,
-                    leadStatuses
+                    leadStatuses,
+                    leadorub: [...leadorubs],
+                    projectName: [...projectNames]
                 })
 
             }

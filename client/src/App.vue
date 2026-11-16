@@ -102,7 +102,7 @@
 <script>
 import { markRaw } from 'vue'
 import { useRoute } from 'vue-router'
-import { User, House, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin, Histogram, DataAnalysis, Discount, DocumentChecked, Clock, DataBoard } from '@element-plus/icons-vue'
+import { User, House, Service, Star, View, Money, Phone, ArrowRight, ArrowDown, Menu, List, Coin, Histogram, DataAnalysis, Discount, DocumentChecked, Clock, DataBoard, Setting } from '@element-plus/icons-vue'
 import AppHeader from './components/AppHeader.vue'
 
 export default {
@@ -224,6 +224,12 @@ export default {
           label: 'Лиды проектов',
           path: '/calls-projects',
           icon: markRaw(DataBoard),
+          condition: () => this.rankName === 'admin'
+        },
+        {
+          label: 'Проекты для крона',
+          path: '/calls-projects-settings',
+          icon: markRaw(Setting),
           condition: () => this.rankName === 'admin'
         },
         {

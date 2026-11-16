@@ -59,7 +59,7 @@ async function upsertBonusDataByUsers(date) {
             for (let user of aggregatedUsersStatsArrat) {
 
                 if (user.clear > 0) {
-                    user.bonusValue = Math.ceil(user.clear * 0.2)
+                    user.bonusValue = Math.ceil(user.clear * 0.15)
                     user.bonusType = 'clearBonus'
                     user.bonusText = 'бонус за чистую'
                     // console.log(user, '!!!!*(@^#*^!@(*#^!')
