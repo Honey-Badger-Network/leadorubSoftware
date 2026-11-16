@@ -18,6 +18,25 @@
           :clearable="false"
         />
       </el-form-item>
+      <el-form-item label="Результаты звонков">
+        <el-select
+          v-model="selectedStatuses"
+          multiple
+          collapse-tags
+          collapse-tags-tooltip
+          clearable
+          filterable
+          placeholder="Все результаты"
+          style="min-width: 260px"
+        >
+          <el-option
+            v-for="status in statusOptions"
+            :key="status"
+            :label="status"
+            :value="status"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" :loading="loading" native-type="submit">Показать</el-button>
       </el-form-item>
@@ -75,6 +94,19 @@
 import dayjs from 'dayjs'
 import PageHeader from '../components/PageHeader.vue'
 
+const defaultStatusOptions = [
+  'Автоответчик',
+  'Не интересно',
+  'Потерян (системный)',
+  'Нет ответа (системный)',
+  'Недозвон',
+  'Неопознанная ошибка (системный)',
+  'Перезвонить',
+  'Обнаружен автоответчик (системный)',
+  'Целевой Лид',
+  'Отклонен (системный)'
+]
+
 export default {
   name: 'CallsProjectsView',
   components: { PageHeader },
@@ -88,6 +120,8 @@ export default {
       total: 0,
       page: 1,
       pageSize: 25,
+      selectedStatuses: [],
+      statusOptions: defaultStatusOptions,
       loading: false,
       exporting: false,
       error: '',
@@ -109,7 +143,8 @@ export default {
             gte: this.range[0],
             lte: this.range[1],
             page: this.page,
-            limit: this.pageSize
+            limit: this.pageSize,
+            statuses: this.selectedStatuses.join(',')
           }
         })
 
@@ -127,6 +162,7 @@ export default {
     },
     reload() {
       this.page = 1
+      this.loadStatusOptions()
       this.load()
     },
     changePageSize() {
@@ -154,6 +190,19 @@ export default {
         case 'Отклонен (системный)': return 'danger'
       }
     },
+    async loadStatusOptions() {
+      if (!this.range || this.range.length !== 2) return
+      try {
+        const result = await this.$store.dispatch('getDataList', {
+          col: 'api/calls-projects/statuses',
+          params: { gte: this.range[0], lte: this.range[1] }
+        })
+        const values = result.data || []
+        this.statusOptions = [...new Set([...defaultStatusOptions, ...values])]
+      } catch (error) {
+        this.statusOptions = defaultStatusOptions
+      }
+    },
     escapeCell(value) {
       return String(value ?? '')
         .replace(/&/g, '&amp;')
@@ -179,7 +228,8 @@ export default {
               gte: this.range[0],
               lte: this.range[1],
               page: exportPage,
-              limit: exportLimit
+              limit: exportLimit,
+              statuses: this.selectedStatuses.join(',')
             }
           })
 
@@ -219,6 +269,7 @@ export default {
     }
   },
   mounted() {
+    this.loadStatusOptions()
     this.load()
   }
 }

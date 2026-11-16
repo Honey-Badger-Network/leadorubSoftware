@@ -8,6 +8,32 @@ function validDate(value) {
     return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && dayjs(value).format('YYYY-MM-DD') === value
 }
 
+function parseStatuses(value) {
+    if (Array.isArray(value)) return value.flatMap(parseStatuses).filter(Boolean)
+    if (typeof value !== 'string') return []
+    return value.split(',').map(status => status.trim()).filter(Boolean)
+}
+
+router.get('/api/calls-projects/statuses', async (req, res) => {
+    const gte = req.query.gte
+    const lte = req.query.lte
+    const filter = {}
+
+    if (gte || lte) {
+        if (!validDate(gte) || !validDate(lte) || gte > lte) {
+            return res.status(400).json({ msg: 'Укажите корректный период' })
+        }
+        filter.date = { $gte: gte, $lte: lte }
+    }
+
+    try {
+        const values = await callsProjectsModel.distinct('leadStatuses', filter)
+        res.json({ data: values.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), 'ru')) })
+    } catch (error) {
+        res.status(500).json({ msg: error.message })
+    }
+})
+
 router.get('/api/calls-projects', async (req, res) => {
     const gte = req.query.gte || req.query.date
     const lte = req.query.lte || gte
@@ -21,6 +47,8 @@ router.get('/api/calls-projects', async (req, res) => {
 
     try {
         const filter = { date: { $gte: gte, $lte: lte } }
+        const statuses = parseStatuses(req.query.statuses)
+        if (statuses.length) filter.leadStatuses = { $in: statuses }
         const [data, total] = await Promise.all([
             callsProjectsModel.find(filter).sort({ date: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
             callsProjectsModel.countDocuments(filter)
