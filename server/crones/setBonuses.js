@@ -64,6 +64,7 @@ async function upsertBonusDataByUsers(date) {
                     user.bonusText = 'бонус за чистую'
                     // console.log(user, '!!!!*(@^#*^!@(*#^!')
                     // заливка бонусов в БД
+
                     const result = await bonusesModel.updateBonusData(user)
                 } else {
                     // если условиее по чистой не совопадает (чистая меньше 0)

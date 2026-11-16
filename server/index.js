@@ -29,7 +29,7 @@ const callsProjectsRoute = require('./routes/callsProjectsRoute.js')
 setBonusesDataCron()
 setTransfersCrone()
 setUsersStatsCrone()
-setResidenceSyncCrone()
+// setResidenceSyncCrone()
 // updateTransfersCrone()
 
 dotenv.config()
