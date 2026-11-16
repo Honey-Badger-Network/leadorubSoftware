@@ -153,8 +153,6 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
 
         }
 
-        console.log(callsTableData)
-
         return callsTableData
     } catch (e) {
         console.log(e.message)

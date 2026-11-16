@@ -48,13 +48,13 @@
             <el-tag
               v-for="(status, index) in row.leadStatuses"
               :key="`${status}-${index}`"
-              :type="statusType(status)"
+              :type="getTagTypeByStatus(status)"
               size="small"
             >
               {{ status }}
             </el-tag>
           </el-space>
-          <el-text v-else type="info">Нет статусов</el-text>
+          <el-tag v-else type="info">Нет статусов</el-tag>
         </template>
       </el-table-column>
     </el-table>
@@ -139,6 +139,20 @@ export default {
       if (['refused', 'invalid', 'breaked', 'rejected'].some(value => normalized.includes(value))) return 'danger'
       if (['created', 'new', 'нов'].some(value => normalized.includes(value))) return 'info'
       return 'warning'
+    },
+    getTagTypeByStatus(text) {
+      switch (text) {
+        case 'Автоответчик': return 'warning'
+        case 'Не интересно': return 'danger'
+        case 'Потерян (системный)': return 'danger'
+        case 'Нет ответа (системный)': return 'warning'
+        case 'Недозвон': return 'warning'
+        case 'Неопознанная ошибка (системный)': return 'danger'
+        case 'Перезвонить': return 'success'
+        case 'Обнаружен автоответчик (системный)': return 'danger'
+        case 'Целевой Лид': return 'success'
+        case 'Отклонен (системный)': return 'danger'
+      }
     },
     escapeCell(value) {
       return String(value ?? '')
