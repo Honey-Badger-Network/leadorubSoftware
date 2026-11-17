@@ -21,16 +21,21 @@ function parseValues(value) {
     return parseStatuses(value)
 }
 
+function getDateField(value) {
+    return value === 'exportDate' ? 'exportDate' : 'date'
+}
+
 router.get('/api/calls-projects/statuses', async (req, res) => {
     const gte = req.query.gte
     const lte = req.query.lte
+    const dateField = getDateField(req.query.dateField)
     const filter = {}
 
     if (gte || lte) {
         if (!validDate(gte) || !validDate(lte) || gte > lte) {
             return res.status(400).json({ msg: 'Укажите корректный период' })
         }
-        filter.date = { $gte: gte, $lte: lte }
+        filter[dateField] = { $gte: gte, $lte: lte }
     }
 
     try {
@@ -44,13 +49,14 @@ router.get('/api/calls-projects/statuses', async (req, res) => {
 router.get('/api/calls-projects/project-names', async (req, res) => {
     const gte = req.query.gte
     const lte = req.query.lte
+    const dateField = getDateField(req.query.dateField)
     const filter = {}
 
     if (gte || lte) {
         if (!validDate(gte) || !validDate(lte) || gte > lte) {
             return res.status(400).json({ msg: 'Укажите корректный период' })
         }
-        filter.date = { $gte: gte, $lte: lte }
+        filter[dateField] = { $gte: gte, $lte: lte }
     }
 
     try {
@@ -76,6 +82,7 @@ router.post('/api/calls-projects/export-date', upload.single('file'), async (req
 router.get('/api/calls-projects', async (req, res) => {
     const gte = req.query.gte || req.query.date
     const lte = req.query.lte || gte
+    const dateField = getDateField(req.query.dateField)
     const requestedPage = Number(req.query.page || 1)
     const requestedLimit = Number(req.query.limit || 30)
     const page = Number.isInteger(requestedPage) ? Math.max(1, requestedPage) : 1
@@ -85,13 +92,13 @@ router.get('/api/calls-projects', async (req, res) => {
     }
 
     try {
-        const filter = { date: { $gte: gte, $lte: lte } }
+        const filter = { [dateField]: { $gte: gte, $lte: lte } }
         const statuses = parseStatuses(req.query.statuses)
         const projectNames = parseValues(req.query.projectNames)
         if (statuses.length) filter.leadStatuses = { $in: statuses }
         if (projectNames.length) filter.projectName = { $in: projectNames }
         const [data, total] = await Promise.all([
-            callsProjectsModel.find(filter).sort({ date: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+            callsProjectsModel.find(filter).sort({ [dateField]: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
             callsProjectsModel.countDocuments(filter)
         ])
         res.json({ data, total, page, limit })

@@ -7,7 +7,13 @@
 
   <el-card shadow="never">
     <el-form inline @submit.prevent="reload">
-      <el-form-item label="Период лидов">
+      <el-form-item label="Фильтровать по">
+        <el-select v-model="dateFilterType" style="min-width: 210px" @change="reload">
+          <el-option label="Дате лида" value="date" />
+          <el-option label="Дате выгрузки" value="exportDate" />
+        </el-select>
+      </el-form-item>
+      <el-form-item :label="dateFilterType === 'exportDate' ? 'Период выгрузки' : 'Период лидов'">
         <el-date-picker
           v-model="range"
           type="daterange"
@@ -226,6 +232,7 @@ export default {
       statusOptions: defaultStatusOptions,
       selectedProjectNames: [],
       projectNameOptions: [],
+      dateFilterType: 'date',
       loading: false,
       exporting: false,
       error: '',
@@ -254,6 +261,7 @@ export default {
           params: {
             gte: this.range[0],
             lte: this.range[1],
+            dateField: this.dateFilterType,
             page: this.page,
             limit: this.pageSize,
             statuses: this.selectedStatuses.join(','),
@@ -313,11 +321,11 @@ export default {
         const [statusesResult, projectsResult] = await Promise.all([
           this.$store.dispatch('getDataList', {
             col: 'api/calls-projects/statuses',
-            params: { gte: this.range[0], lte: this.range[1] }
+            params: { gte: this.range[0], lte: this.range[1], dateField: this.dateFilterType }
           }),
           this.$store.dispatch('getDataList', {
             col: 'api/calls-projects/project-names',
-            params: { gte: this.range[0], lte: this.range[1] }
+            params: { gte: this.range[0], lte: this.range[1], dateField: this.dateFilterType }
           })
         ])
         const values = statusesResult.data || []
@@ -387,6 +395,7 @@ export default {
             params: {
               gte: this.range[0],
               lte: this.range[1],
+              dateField: this.dateFilterType,
               page: exportPage,
               limit: exportLimit,
               statuses: this.selectedStatuses.join(','),
