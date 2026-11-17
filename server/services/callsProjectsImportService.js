@@ -1,4 +1,5 @@
 const XLSX = require('xlsx')
+const iconv = require('iconv-lite')
 const callsProjectsModel = require('../models/callsProjects')
 
 function normalizeHeader(value) {
@@ -15,8 +16,23 @@ function findColumn(headers, variants) {
     return headers.find(header => variants.some(variant => normalizeHeader(header).includes(variant)))
 }
 
+function decodeCsvBuffer(buffer) {
+    if (buffer[0] === 0xff && buffer[1] === 0xfe) return iconv.decode(buffer, 'utf16-le')
+    if (buffer[0] === 0xfe && buffer[1] === 0xff) return iconv.decode(buffer, 'utf16-be')
+
+    try {
+        return new TextDecoder('utf-8', { fatal: true }).decode(buffer)
+    } catch (error) {
+        return iconv.decode(buffer, 'win1251')
+    }
+}
+
 function parseImportFile(buffer) {
-    const workbook = XLSX.read(buffer, { type: 'buffer', raw: false })
+    const isZipWorkbook = buffer[0] === 0x50 && buffer[1] === 0x4b
+    const isBinaryWorkbook = buffer[0] === 0xd0 && buffer[1] === 0xcf
+    const workbook = isZipWorkbook || isBinaryWorkbook
+        ? XLSX.read(buffer, { type: 'buffer', raw: false })
+        : XLSX.read(decodeCsvBuffer(buffer), { type: 'string', raw: false })
     const sheet = workbook.Sheets[workbook.SheetNames[0]]
     if (!sheet) throw new Error('В файле нет листов')
 
