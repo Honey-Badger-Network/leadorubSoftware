@@ -157,11 +157,25 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
                 })
                 let historyData = responseToHistory.data.data.history.data
                 let leadStatuses = []
+                let urlForAudioRefsArray = []
                 let leadorubs = new Set()
                 let projectNames = new Set()
                 
-                historyData.forEach((item) => {
+                for (let item of historyData) {
                     if (item.result) leadStatuses.push(item.result)
+
+                    let urlToGetAudioArrayRequest = `https://pod5-shard2-lb1.skorozvon.ru/call_records/${item.id}`
+
+                    try {
+                        let responseToAudio = await axios.get(urlToGetAudioArrayRequest, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        })
+                        let currentUrlForCurrentLead = responseToAudio.data.data.url
+
+                        urlForAudioRefsArray.push(currentUrlForCurrentLead)
+                    } catch (e) {
+                        console.log(e.message)
+                    }
 
                     const projectName = typeof item.call_project === 'object'
                         ? item.call_project?.name || item.call_project?.title || item.call_project?.id
@@ -172,7 +186,7 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
 
                     if (projectName) projectNames.add(String(projectName))
                     if (leadorub) leadorubs.add(String(leadorub))
-                })
+                }
 
                 callsTableData.push({
                     region: lead.region,
