@@ -2,7 +2,7 @@ const { Router } = require('express')
 const dayjs = require('dayjs')
 const callsProjectsModel = require('../models/callsProjects')
 const multer = require('multer')
-const { importCallsProjects, reconcileCallsProjects } = require('../services/callsProjectsImportService')
+const { applyExportDate } = require('../services/callsProjectsExportService')
 
 const router = Router()
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } })
@@ -61,20 +61,12 @@ router.get('/api/calls-projects/project-names', async (req, res) => {
     }
 })
 
-router.post('/api/calls-projects/import', upload.single('file'), async (req, res) => {
-    if (!req.file) return res.status(400).json({ msg: 'Загрузите CSV или Excel-файл' })
+router.post('/api/calls-projects/export-date', upload.single('file'), async (req, res) => {
+    if (!req.file) return res.status(400).json({ msg: 'Загрузите TXT-файл' })
+    if (!/\.txt$/i.test(req.file.originalname || '')) return res.status(400).json({ msg: 'Поддерживаются только TXT-файлы' })
+    if (!validDate(req.body?.exportDate)) return res.status(400).json({ msg: 'Укажите корректную дату выгрузки' })
     try {
-        const result = await importCallsProjects(req.file.buffer)
-        res.json({ data: result })
-    } catch (error) {
-        res.status(400).json({ msg: error.message })
-    }
-})
-
-router.post('/api/calls-projects/reconcile', upload.single('file'), async (req, res) => {
-    if (!req.file) return res.status(400).json({ msg: 'Загрузите CSV или Excel-файл' })
-    try {
-        const result = await reconcileCallsProjects(req.file.buffer)
+        const result = await applyExportDate(req.file.buffer, req.body.exportDate)
         res.json({ data: result })
     } catch (error) {
         res.status(400).json({ msg: error.message })

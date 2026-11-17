@@ -65,18 +65,12 @@
         </el-button>
       </el-form-item>
       <el-form-item>
-        <el-upload
-          :show-file-list="false"
-          accept=".csv,.xls,.xlsx"
-          :http-request="importProjectFile"
-        >
-          <el-button type="warning" :loading="importing">Обновить из CSV/Excel</el-button>
-        </el-upload>
+        <el-button type="warning" @click="exportDialog = true">Загрузить TXT-выгрузку</el-button>
       </el-form-item>
     </el-form>
 
     <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
-    <el-alert v-if="importMessage" :title="importMessage" :type="importMessageType" :closable="false" show-icon />
+    <el-alert v-if="exportMessage" :title="exportMessage" :type="exportMessageType" :closable="false" show-icon />
 
     <el-table
       v-loading="loading"
@@ -90,10 +84,8 @@
       <el-table-column prop="region" label="Регион" min-width="150" />
       <el-table-column prop="clientName" label="Клиент" min-width="180" />
       <el-table-column prop="clientAge" label="Возраст" min-width="100" />
-      <el-table-column prop="fio" label="ФИО" min-width="180" />
-      <el-table-column prop="geo" label="ГЕО" min-width="130" />
-      <el-table-column label="Финальный результат" min-width="190">
-        <template #default="{ row }">{{ row.finalResult || row.vvkReadiness || 'Не указан' }}</template>
+      <el-table-column prop="exportDate" label="Дата выгрузки" min-width="145">
+        <template #default="{ row }">{{ row.exportDate || 'Не указана' }}</template>
       </el-table-column>
       <el-table-column label="Аудио" min-width="150">
         <template #default="{ row }">
@@ -154,6 +146,39 @@
       <audio v-if="currentAudioUrl" :src="currentAudioUrl" controls autoplay style="width: 100%" />
     </el-dialog>
 
+    <el-dialog v-model="exportDialog" title="Дата выгрузки из TXT" width="min(520px, 94vw)" destroy-on-close>
+      <el-form label-position="top">
+        <el-form-item label="Дата выгрузки">
+          <el-date-picker
+            v-model="selectedExportDate"
+            type="date"
+            value-format="YYYY-MM-DD"
+            format="DD.MM.YYYY"
+            :clearable="false"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="TXT-файл со списком номеров">
+          <el-upload
+            :auto-upload="false"
+            :limit="1"
+            accept=".txt,text/plain"
+            :on-change="onExportFileChange"
+            :on-remove="clearExportFile"
+          >
+            <el-button type="primary">Выбрать TXT-файл</el-button>
+            <template #tip>
+              <div class="el-upload__tip">Один номер телефона в строке</div>
+            </template>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="exportDialog = false">Отмена</el-button>
+        <el-button type="primary" :loading="exportingDate" @click="submitExportDate">Сохранить дату</el-button>
+      </template>
+    </el-dialog>
+
 
     <el-pagination
       v-model:current-page="page"
@@ -203,10 +228,13 @@ export default {
       projectNameOptions: [],
       loading: false,
       exporting: false,
-      importing: false,
       error: '',
-      importMessage: '',
-      importMessageType: 'success',
+      exportDialog: false,
+      selectedExportDate: dayjs().format('YYYY-MM-DD'),
+      exportFile: null,
+      exportingDate: false,
+      exportMessage: '',
+      exportMessageType: 'success',
       audioDialog: false,
       currentAudioUrl: '',
       requestId: 0
@@ -307,32 +335,39 @@ export default {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
     },
-    async uploadProjectFile(uploadRequest, endpoint) {
-      this.importing = true
-      this.importMessage = ''
+    onExportFileChange(uploadFile) {
+      this.exportFile = uploadFile?.raw || null
+    },
+    clearExportFile() {
+      this.exportFile = null
+    },
+    async submitExportDate() {
+      if (!this.selectedExportDate || !this.exportFile) {
+        this.exportMessageType = 'warning'
+        this.exportMessage = 'Выберите дату и TXT-файл'
+        return
+      }
+      this.exportingDate = true
+      this.exportMessage = ''
       try {
         const formData = new FormData()
-        formData.append('file', uploadRequest.file)
+        formData.append('file', this.exportFile)
+        formData.append('exportDate', this.selectedExportDate)
         const result = await this.$store.dispatch('uploadDataList', {
-          col: endpoint,
+          col: 'api/calls-projects/export-date',
           data: formData
         })
-        return result
-      } catch (error) {
-        throw error
-      } finally {
-        this.importing = false
-      }
-    },
-    async importProjectFile(uploadRequest) {
-      try {
-        const result = await this.uploadProjectFile(uploadRequest, 'api/calls-projects/import')
-        this.importMessageType = 'success'
-        this.importMessage = `Обработано строк: ${result.data.fileRows}. Совпало лидов: ${result.data.matched}. Обновлено: ${result.data.modified}.`
+        const data = result.data || {}
+        this.exportMessageType = 'success'
+        this.exportMessage = `Номеров в файле: ${data.filePhones || 0}. Совпало лидов: ${data.matched || 0}. Обновлено: ${data.updated || 0}.`
+        this.exportFile = null
+        this.exportDialog = false
         await this.load()
       } catch (error) {
-        this.importMessageType = 'error'
-        this.importMessage = error.response?.data?.msg || error.message || 'Не удалось загрузить файл'
+        this.exportMessageType = 'error'
+        this.exportMessage = error.response?.data?.msg || error.message || 'Не удалось обработать TXT-файл'
+      } finally {
+        this.exportingDate = false
       }
     },
     async exportToExcel() {
@@ -365,16 +400,14 @@ export default {
           exportPage += 1
         }
 
-        const headers = ['Дата', 'Телефон', 'Регион', 'Клиент', 'Возраст', 'ФИО', 'ГЕО', 'Финальный результат', 'Аудио', 'Проект', 'Лидоруб', 'Статусы лида']
+        const headers = ['Дата', 'Телефон', 'Регион', 'Клиент', 'Возраст', 'Дата выгрузки', 'Аудио', 'Проект', 'Лидоруб', 'Статусы лида']
         const body = allRows.map(row => [
           row.date,
           row.phone,
           row.region,
           row.clientName,
           row.clientAge,
-          row.fio,
-          row.geo,
-          row.finalResult || row.vvkReadiness,
+          row.exportDate,
           (row.audioArray || []).join(', '),
           (row.projectName || []).join(', '),
           (row.leadorub || []).join(', '),
