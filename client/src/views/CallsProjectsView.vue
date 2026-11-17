@@ -85,14 +85,14 @@
       stripe
       empty-text="За выбранный период лидов нет"
     >
-      <el-table-column prop="date" label="Дата" min-width="125" />
+      <el-table-column prop="exportDate" label="Дата выгрузки" min-width="145">
+        <template #default="{ row }">{{ row.exportDate || '---' }}</template>
+      </el-table-column>
+      <el-table-column prop="date" label="Дата лида" min-width="125" />
       <el-table-column prop="phone" label="Телефон" min-width="145" />
       <el-table-column prop="region" label="Регион" min-width="150" />
       <el-table-column prop="clientName" label="Клиент" min-width="180" />
       <el-table-column prop="clientAge" label="Возраст" min-width="100" />
-      <el-table-column prop="exportDate" label="Дата выгрузки" min-width="145">
-        <template #default="{ row }">{{ row.exportDate || 'Не указана' }}</template>
-      </el-table-column>
       <el-table-column label="Аудио" min-width="150">
         <template #default="{ row }">
           <el-space v-if="row.audioArray?.length" wrap>
