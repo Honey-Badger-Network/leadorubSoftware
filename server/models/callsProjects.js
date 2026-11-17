@@ -6,6 +6,9 @@ const callsProjects = new Schema({
     region: String,
     clientName: String,
     clientAge: Number,
+    fio: String,
+    geo: String,
+    vvkReadiness: String,
     leadStatuses: [String],
     leadorub: [String],
     projectName: [String]

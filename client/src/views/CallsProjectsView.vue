@@ -64,9 +64,19 @@
           Выгрузить в Excel
         </el-button>
       </el-form-item>
+      <el-form-item>
+        <el-upload
+          :show-file-list="false"
+          accept=".csv,.xls,.xlsx"
+          :http-request="importProjectFile"
+        >
+          <el-button type="warning" :loading="importing">Загрузить данные</el-button>
+        </el-upload>
+      </el-form-item>
     </el-form>
 
     <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
+    <el-alert v-if="importMessage" :title="importMessage" :type="importMessageType" :closable="false" show-icon />
 
     <el-table
       v-loading="loading"
@@ -80,6 +90,9 @@
       <el-table-column prop="region" label="Регион" min-width="150" />
       <el-table-column prop="clientName" label="Клиент" min-width="180" />
       <el-table-column prop="clientAge" label="Возраст" min-width="100" />
+      <el-table-column prop="fio" label="ФИО" min-width="180" />
+      <el-table-column prop="geo" label="ГЕО" min-width="130" />
+      <el-table-column prop="vvkReadiness" label="Готовность пройти ВВК" min-width="190" />
       <el-table-column label="Проект" min-width="180">
         <template #default="{ row }">
           <el-space v-if="row.projectName?.length" wrap>
@@ -165,7 +178,10 @@ export default {
       projectNameOptions: [],
       loading: false,
       exporting: false,
+      importing: false,
       error: '',
+      importMessage: '',
+      importMessageType: 'success',
       requestId: 0
     }
   },
@@ -260,6 +276,26 @@ export default {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
     },
+    async importProjectFile(uploadRequest) {
+      this.importing = true
+      this.importMessage = ''
+      try {
+        const formData = new FormData()
+        formData.append('file', uploadRequest.file)
+        const result = await this.$store.dispatch('uploadDataList', {
+          col: 'api/calls-projects/import',
+          data: formData
+        })
+        this.importMessageType = 'success'
+        this.importMessage = `Обработано строк: ${result.data.fileRows}. Совпало лидов: ${result.data.matched}. Обновлено: ${result.data.modified}.`
+        await this.load()
+      } catch (error) {
+        this.importMessageType = 'error'
+        this.importMessage = error.response?.data?.msg || error.message || 'Не удалось загрузить файл'
+      } finally {
+        this.importing = false
+      }
+    },
     async exportToExcel() {
       if (!this.range || this.range.length !== 2 || this.exporting) return
 
@@ -290,13 +326,16 @@ export default {
           exportPage += 1
         }
 
-        const headers = ['Дата', 'Телефон', 'Регион', 'Клиент', 'Возраст', 'Проект', 'Лидоруб', 'Статусы лида']
+        const headers = ['Дата', 'Телефон', 'Регион', 'Клиент', 'Возраст', 'ФИО', 'ГЕО', 'Готовность пройти ВВК', 'Проект', 'Лидоруб', 'Статусы лида']
         const body = allRows.map(row => [
           row.date,
           row.phone,
           row.region,
           row.clientName,
           row.clientAge,
+          row.fio,
+          row.geo,
+          row.vvkReadiness,
           (row.projectName || []).join(', '),
           (row.leadorub || []).join(', '),
           (row.leadStatuses || []).join(', ')

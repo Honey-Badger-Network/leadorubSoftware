@@ -57,6 +57,15 @@ const store = createStore({
         throw error
       }
     },
+    async uploadDataList({ state }, { col, data }) {
+      try {
+        const response = await axios.post(`${state.apiBaseURL}${col}`, data)
+        return response.data
+      } catch (error) {
+        console.error(error)
+        throw error
+      }
+    },
     // PUT запрос
     async updateDataList({ state }, { col, data }) {
       try {

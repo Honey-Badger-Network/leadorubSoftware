@@ -1,8 +1,11 @@
 const { Router } = require('express')
 const dayjs = require('dayjs')
 const callsProjectsModel = require('../models/callsProjects')
+const multer = require('multer')
+const { importCallsProjects } = require('../services/callsProjectsImportService')
 
 const router = Router()
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } })
 
 function validDate(value) {
     return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && dayjs(value).format('YYYY-MM-DD') === value
@@ -55,6 +58,16 @@ router.get('/api/calls-projects/project-names', async (req, res) => {
         res.json({ data: values.filter(Boolean).sort((a, b) => String(a).localeCompare(String(b), 'ru')) })
     } catch (error) {
         res.status(500).json({ msg: error.message })
+    }
+})
+
+router.post('/api/calls-projects/import', upload.single('file'), async (req, res) => {
+    if (!req.file) return res.status(400).json({ msg: 'Загрузите CSV или Excel-файл' })
+    try {
+        const result = await importCallsProjects(req.file.buffer)
+        res.json({ data: result })
+    } catch (error) {
+        res.status(400).json({ msg: error.message })
     }
 })
 
