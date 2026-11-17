@@ -42,21 +42,24 @@ function parseImportFile(buffer) {
 async function importCallsProjects(buffer) {
     const rows = parseImportFile(buffer)
     const uniqueRows = new Map(rows.map(row => [row.phone, row]))
-    const operations = [...uniqueRows.values()].map(row => {
-        const fields = {}
-        if (row.fio) fields.fio = row.fio
-        if (row.geo) fields.geo = row.geo
-        if (row.vvkReadiness) {
-            fields.vvkReadiness = row.vvkReadiness
-            fields.finalResult = row.vvkReadiness
-        }
-        return {
-            updateMany: {
-                filter: { phone: row.phone },
-                update: { $set: fields }
+    const databaseRows = await callsProjectsModel.find({ phone: { $exists: true, $ne: '' } }).select('_id phone').lean()
+    const operations = databaseRows.flatMap(databaseRow => {
+        const row = uniqueRows.get(normalizePhone(databaseRow.phone))
+        if (!row) return []
+        return [{
+            updateOne: {
+                filter: { _id: databaseRow._id },
+                update: {
+                    $set: {
+                        fio: row.fio,
+                        geo: row.geo,
+                        vvkReadiness: row.vvkReadiness,
+                        finalResult: row.vvkReadiness
+                    }
+                }
             }
-        }
-    }).filter(operation => Object.keys(operation.updateMany.update.$set).length)
+        }]
+    })
 
     if (!operations.length) return { fileRows: rows.length, matched: 0, modified: 0 }
     const result = await callsProjectsModel.bulkWrite(operations, { ordered: false })
@@ -67,4 +70,56 @@ async function importCallsProjects(buffer) {
     }
 }
 
-module.exports = { importCallsProjects, parseImportFile, normalizePhone }
+async function reconcileCallsProjects(buffer) {
+    const fileRows = parseImportFile(buffer)
+    const fileByPhone = new Map(fileRows.map(row => [row.phone, row]))
+    const databaseRows = await callsProjectsModel.find({}).sort({ date: -1, _id: -1 }).lean()
+    const result = []
+    const matchedPhones = new Set()
+
+    for (const databaseRow of databaseRows) {
+        const fileRow = fileByPhone.get(normalizePhone(databaseRow.phone))
+        if (fileRow) matchedPhones.add(fileRow.phone)
+        result.push({
+            source: fileRow ? 'both' : 'database',
+            phone: databaseRow.phone,
+            date: databaseRow.date,
+            database: {
+                fio: databaseRow.fio || '',
+                geo: databaseRow.geo || '',
+                finalResult: databaseRow.finalResult || databaseRow.vvkReadiness || ''
+            },
+            file: fileRow ? {
+                fio: fileRow.fio,
+                geo: fileRow.geo,
+                finalResult: fileRow.vvkReadiness
+            } : null
+        })
+    }
+
+    for (const fileRow of fileRows) {
+        if (matchedPhones.has(fileRow.phone)) continue
+        result.push({
+            source: 'file',
+            phone: fileRow.phone,
+            date: '',
+            database: null,
+            file: {
+                fio: fileRow.fio,
+                geo: fileRow.geo,
+                finalResult: fileRow.vvkReadiness
+            }
+        })
+    }
+
+    return {
+        fileRows: fileRows.length,
+        databaseRows: databaseRows.length,
+        matched: result.filter(row => row.source === 'both').length,
+        databaseOnly: result.filter(row => row.source === 'database').length,
+        fileOnly: result.filter(row => row.source === 'file').length,
+        data: result
+    }
+}
+
+module.exports = { importCallsProjects, reconcileCallsProjects, parseImportFile, normalizePhone }

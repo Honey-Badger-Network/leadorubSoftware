@@ -70,7 +70,7 @@
           accept=".csv,.xls,.xlsx"
           :http-request="importProjectFile"
         >
-          <el-button type="warning" :loading="importing">Загрузить данные</el-button>
+          <el-button type="warning" :loading="importing">Обновить из CSV/Excel</el-button>
         </el-upload>
       </el-form-item>
     </el-form>
@@ -153,6 +153,7 @@
     <el-dialog v-model="audioDialog" title="Прослушивание записи" width="min(560px, 94vw)" destroy-on-close>
       <audio v-if="currentAudioUrl" :src="currentAudioUrl" controls autoplay style="width: 100%" />
     </el-dialog>
+
 
     <el-pagination
       v-model:current-page="page"
@@ -306,24 +307,32 @@ export default {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
     },
-    async importProjectFile(uploadRequest) {
+    async uploadProjectFile(uploadRequest, endpoint) {
       this.importing = true
       this.importMessage = ''
       try {
         const formData = new FormData()
         formData.append('file', uploadRequest.file)
         const result = await this.$store.dispatch('uploadDataList', {
-          col: 'api/calls-projects/import',
+          col: endpoint,
           data: formData
         })
+        return result
+      } catch (error) {
+        throw error
+      } finally {
+        this.importing = false
+      }
+    },
+    async importProjectFile(uploadRequest) {
+      try {
+        const result = await this.uploadProjectFile(uploadRequest, 'api/calls-projects/import')
         this.importMessageType = 'success'
         this.importMessage = `Обработано строк: ${result.data.fileRows}. Совпало лидов: ${result.data.matched}. Обновлено: ${result.data.modified}.`
         await this.load()
       } catch (error) {
         this.importMessageType = 'error'
         this.importMessage = error.response?.data?.msg || error.message || 'Не удалось загрузить файл'
-      } finally {
-        this.importing = false
       }
     },
     async exportToExcel() {
