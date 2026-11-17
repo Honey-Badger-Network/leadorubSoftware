@@ -92,7 +92,27 @@
       <el-table-column prop="clientAge" label="Возраст" min-width="100" />
       <el-table-column prop="fio" label="ФИО" min-width="180" />
       <el-table-column prop="geo" label="ГЕО" min-width="130" />
-      <el-table-column prop="vvkReadiness" label="Готовность пройти ВВК" min-width="190" />
+      <el-table-column label="Финальный результат" min-width="190">
+        <template #default="{ row }">{{ row.finalResult || row.vvkReadiness || 'Не указан' }}</template>
+      </el-table-column>
+      <el-table-column label="Аудио" min-width="150">
+        <template #default="{ row }">
+          <el-space v-if="row.audioArray?.length" wrap>
+            <el-button
+              v-for="(audio, index) in row.audioArray"
+              :key="audio"
+              circle
+              plain
+              type="primary"
+              size="small"
+              @click="openAudio(audio, index)"
+            >
+              {{ index + 1 }}
+            </el-button>
+          </el-space>
+          <el-text v-else type="info">Нет аудио</el-text>
+        </template>
+      </el-table-column>
       <el-table-column label="Проект" min-width="180">
         <template #default="{ row }">
           <el-space v-if="row.projectName?.length" wrap>
@@ -129,6 +149,10 @@
         </template>
       </el-table-column>
     </el-table>
+
+    <el-dialog v-model="audioDialog" title="Прослушивание записи" width="min(560px, 94vw)" destroy-on-close>
+      <audio v-if="currentAudioUrl" :src="currentAudioUrl" controls autoplay style="width: 100%" />
+    </el-dialog>
 
     <el-pagination
       v-model:current-page="page"
@@ -182,6 +206,8 @@ export default {
       error: '',
       importMessage: '',
       importMessageType: 'success',
+      audioDialog: false,
+      currentAudioUrl: '',
       requestId: 0
     }
   },
@@ -247,6 +273,10 @@ export default {
         case 'Целевой Лид': return 'success'
         case 'Отклонен (системный)': return 'danger'
       }
+    },
+    openAudio(url) {
+      this.currentAudioUrl = url
+      this.audioDialog = true
     },
     async loadStatusOptions() {
       if (!this.range || this.range.length !== 2) return
@@ -326,7 +356,7 @@ export default {
           exportPage += 1
         }
 
-        const headers = ['Дата', 'Телефон', 'Регион', 'Клиент', 'Возраст', 'ФИО', 'ГЕО', 'Готовность пройти ВВК', 'Проект', 'Лидоруб', 'Статусы лида']
+        const headers = ['Дата', 'Телефон', 'Регион', 'Клиент', 'Возраст', 'ФИО', 'ГЕО', 'Финальный результат', 'Аудио', 'Проект', 'Лидоруб', 'Статусы лида']
         const body = allRows.map(row => [
           row.date,
           row.phone,
@@ -335,7 +365,8 @@ export default {
           row.clientAge,
           row.fio,
           row.geo,
-          row.vvkReadiness,
+          row.finalResult || row.vvkReadiness,
+          (row.audioArray || []).join(', '),
           (row.projectName || []).join(', '),
           (row.leadorub || []).join(', '),
           (row.leadStatuses || []).join(', ')

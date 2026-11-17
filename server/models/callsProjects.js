@@ -9,6 +9,8 @@ const callsProjects = new Schema({
     fio: String,
     geo: String,
     vvkReadiness: String,
+    finalResult: { type: String, default: '' },
+    audioArray: { type: [String], default: [] },
     leadStatuses: [String],
     leadorub: [String],
     projectName: [String]

@@ -46,7 +46,10 @@ async function importCallsProjects(buffer) {
         const fields = {}
         if (row.fio) fields.fio = row.fio
         if (row.geo) fields.geo = row.geo
-        if (row.vvkReadiness) fields.vvkReadiness = row.vvkReadiness
+        if (row.vvkReadiness) {
+            fields.vvkReadiness = row.vvkReadiness
+            fields.finalResult = row.vvkReadiness
+        }
         return {
             updateMany: {
                 filter: { phone: row.phone },

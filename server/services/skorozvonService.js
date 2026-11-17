@@ -194,6 +194,7 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
                     phone: String(lead.phones?.[0] || '').replace(/\D/g, ""),
                     clientName: lead.clientName || lead.name || lead.full_name || '',
                     clientAge: Number(lead.clientAge ?? lead.age) || undefined,
+                    audioArray: [...new Set(urlForAudioRefsArray.filter(Boolean))],
                     leadStatuses,
                     leadorub: [...leadorubs],
                     projectName: [...projectNames]
