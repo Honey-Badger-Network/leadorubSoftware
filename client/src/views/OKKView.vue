@@ -100,8 +100,8 @@
             </template>
         </el-table-column>
 
-        <el-table-column prop="selfLeadName" :width="110" label="Сам перевел" />
-        <el-table-column prop="broker" :width="140" label="Брокер"></el-table-column>
+        <el-table-column prop="selfLeadName" :width="140" label="Сам перевел" />
+        <el-table-column prop="broker" :width="200" label="Брокер"></el-table-column>
 
         <el-table-column prop="residenceStatus" :width="200" label="Статус">
             <template #default="{ row }">

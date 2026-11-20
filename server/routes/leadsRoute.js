@@ -294,7 +294,7 @@ router.post('/api/leads/create', async (req, res) => {
 
         let selfLeadValue = false
 
-        if (leadObject.selfLead === 'Сам') {
+        if (leadObject.selfLead === 'На застройщика') {
             selfLeadValue = true
         } else if (leadObject.selfLead === 'На брокера') {
             selfLeadValue = false

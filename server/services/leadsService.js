@@ -72,10 +72,10 @@ async function removeDublicates(gte, lte, phone) {
     }
 }
 
-async function upsertNewLeadsData(lead) {
+async function upsertNewLeadsData(lead, userObj) {
     try {
         const existing = await leadsModel.findOne({ date: lead.date, phone: lead.phone })
-        const uniqueInfo = getDistintBetweenUnUniqueLeads(existing || lead)
+        const uniqueInfo = getDistintBetweenUnUniqueLeads(existing || lead, userObj)
         const data = {
             broker: lead.broker,
             price: lead.price,
@@ -152,7 +152,7 @@ function calculateClearByUser(userObject, countUsers, date) {
     return { clear }
 }
 
-function getDistintBetweenUnUniqueLeads(lead) {
+function getDistintBetweenUnUniqueLeads(lead, user) {
     const leadDate = dayjs(lead.lastPhoneCalled)
     const now = dayjs()
 
@@ -176,7 +176,7 @@ function getDistintBetweenUnUniqueLeads(lead) {
 
     // у лидов будет стоять зп за лид зависить только от его уникальности 
     // то что он целевой или не целевой это смотреть имено в кроне на зарплатную в кроне
-    let realSalaryToLead = salaryToLead
+    let realSalaryToLead = user.rankName === 'holdorub' ? 500 : salaryToLead
 
     return {
         dateState,

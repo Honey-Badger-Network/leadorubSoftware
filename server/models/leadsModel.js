@@ -18,7 +18,7 @@ const leadsModel = new Schema({
         required: true,
         default: 'На брокера',
         enum: [
-            'Сам',
+            'На застройщика',
             'На брокера',
             'Ручной'
         ]

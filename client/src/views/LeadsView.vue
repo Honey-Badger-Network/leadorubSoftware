@@ -337,7 +337,7 @@
         usersList: [],
         userObject: null,
         rankName: null,
-        selfLeadsOptions: ['Сам', 'На брокера', 'Ручной'],
+        selfLeadsOptions: ['На застройщика', 'На брокера', 'Ручной'],
         isLeadOffersEdit: false,
         leadUpdatedLoading: false
       }

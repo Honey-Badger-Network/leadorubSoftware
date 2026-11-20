@@ -83,9 +83,19 @@ async function setTransfersToDB(gte, lte) {
           var brokerInCalls = foundCallByLeadPhone(lead.number, allResidenceCalls)
         }
 
+        let brokerOfLead
+
+        if (leadResidence.broker === 'Холдоруб') {
+          brokerOfLead = leadResidence.offersList[0].offerName
+        } else {
+          brokerOfLead = leadResidence.broker || brokerInCalls
+        }
+
+
+
         let leadInfo = {
           date: dayjs(gte).format('YYYY-MM-DD'),
-          broker: leadResidence.broker || brokerInCalls,
+          broker: brokerOfLead,
           price: leadResidence.price,
           phone: lead.number.slice(1),
           isSuccessTransfer: leadInfoPoints.isSuccessTransfer,
@@ -94,7 +104,7 @@ async function setTransfersToDB(gte, lte) {
           isResidence: leadResidence.isResidence,
           statusOKK: false,
           selfLead: isSelfLead,
-          selfLeadName: isSelfLead ? 'Сам' : 'На брокера',
+          selfLeadName: isSelfLead ? 'На застройщика' : 'На брокера',
           user: userIdObject?._id ?? undefined,
           userName: leadUser,
           countHold: leadResidence.countHold,
@@ -107,8 +117,10 @@ async function setTransfersToDB(gte, lte) {
           leadProject: leadProject,
           time: leadTime
         };
+
+        console.log(leadInfo, '&*&**(&*(&(&(&(&(&')
   
-        const result = await upsertNewLeadsData(leadInfo);
+        const result = await upsertNewLeadsData(leadInfo, userIdObject);
       }
   
       console.log('Обновление в базу за ', dayjs(gte).format('YYYY-MM-DD'), 'закончилось');

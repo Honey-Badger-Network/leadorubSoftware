@@ -105,7 +105,7 @@ async function findAllCallsInResidence(gte, lte) {
 async function defaineSelfLead(gte, lte, phone) {
 
     try {
-        const allowedUsers = ['Владимир Медоед', 'Наташа Юрист ']
+        const allowedUsers = ['Владимир Медоед', 'Наташа Юрист', 'Холдоруб']
 
         const allLeadsToDate = await getResidenceLeads(gte, lte)
         const allLeadsData = allLeadsToDate.data
