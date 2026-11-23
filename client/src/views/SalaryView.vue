@@ -83,6 +83,12 @@
                 </el-tag>
             </template>
         </el-table-column>
+<!-- 
+        <el-table-column v-if="userRole === 'admin'" label="Роль" prop="role">
+            <template #default="{ row }">
+                <el-tag :type="getRoleName(row).type">{{ getRoleName(row).name }}</el-tag>
+            </template>
+        </el-table-column> -->
 
         <el-table-column :width="100" prop="salaryToLeads" label="ЗП за лиды"></el-table-column>
 
@@ -247,6 +253,15 @@
                 if (this.userRole !== 'admin') return
                 this.financeRulesUser = row
                 this.financeRulesVisible = true
+            },
+            getRoleName(row) {
+                if (row.role === 'leadorub') {
+                    return { name: 'L', type: 'primary' }
+                } else if (row.role === 'holdorub') {
+                    return { name: 'H', type: 'success' }
+                } else {
+                    return { name: 'total', type: 'warning' }
+                }
             },
             async getSalaryData() {
                 const period = { gte: dayjs(this.gte).format('YYYY-MM-DD'), lte: dayjs(this.lte).format('YYYY-MM-DD') }

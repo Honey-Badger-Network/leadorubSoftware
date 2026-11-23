@@ -292,6 +292,7 @@ router.get('/api/salary/get', async (req, res) => {
 
             if (userObjectKey) {
                 item.avatar = userObjectKey.avatar
+                item.role = userObjectKey.rankName
             }
 
             if (lidorubObjectKey) {

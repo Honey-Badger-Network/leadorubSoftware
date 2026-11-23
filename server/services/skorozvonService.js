@@ -51,7 +51,7 @@ async function fetchSkorozvonProjects() {
         const projectsArray = projectsResponse.data.data.projects
         return projectsArray
     } catch (e) {
-        console.log(e.message)
+        // console.log(e.message)
         return null
     }
 }
@@ -174,7 +174,7 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
 
                         urlForAudioRefsArray.push(currentUrlForCurrentLead)
                     } catch (e) {
-                        console.log(e.message)
+                        // console.log(e.message)
                     }
 
                     const projectName = typeof item.call_project === 'object'
@@ -206,7 +206,7 @@ async function fetchSkorozvonCallsByProject(project = 20000146656) {
 
         return callsTableData
     } catch (e) {
-        console.log(e.message)
+        // console.log(e.message)
         return null
     }
 }

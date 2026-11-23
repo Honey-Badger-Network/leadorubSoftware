@@ -77,7 +77,8 @@ async function setUsersStatsToDB(gte, lte) {
         if (user.rankName === "leadorub") {
             user.salary = calculateSalaryLeadorub(user)
         } else if (user.rankName === "holdorub") {
-            user.salary = await calculateSalaryHoldorub(gte, lte, user)
+            // user.salary = await calculateSalaryHoldorub(gte, lte, user)
+            user.salary = calculateSalaryLeadorub(user)
         }
 
         let clearData = await calculateClearByUser(user, usersCallsWithoutZeroCalls.length, dayjs(gte).format('YYYY-MM-DD'))
@@ -130,7 +131,7 @@ function setUsersStatsCrone() {
     const cronMinute = '*/15 * * * *'
     const cronExpression = '*/5 * * * *'
 
-    setUsersStatsToDB(new Date(), new Date())
+    setUsersStatsToDB(new Date('2026-11-19'), new Date('2026-11-19'))
     // setUsersStatsByManyDays()
   
     crone.schedule(cronHour, () => {

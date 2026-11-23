@@ -117,8 +117,6 @@ async function setTransfersToDB(gte, lte) {
           leadProject: leadProject,
           time: leadTime
         };
-
-        console.log(leadInfo, '&*&**(&*(&(&(&(&(&')
   
         const result = await upsertNewLeadsData(leadInfo, userIdObject);
       }
