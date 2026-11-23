@@ -51,4 +51,33 @@ router.post('/api/bonuses/createHand', async (req, res) => {
     }
 })
 
+router.put('/api/bonuses/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ msg: 'Некорректный идентификатор бонуса' })
+        const { bonusDate, bonusText, bonusValue, bonusUserId, bonusUserName, userEmail } = req.body
+        const updatedBonus = await bonusesModel.findByIdAndUpdate(
+            id,
+            { bonusDate, bonusText, bonusValue: Number(bonusValue), bonusUserId, bonusUserName, userEmail },
+            { new: true, runValidators: true }
+        )
+        if (!updatedBonus) return res.status(404).json({ msg: 'Бонус не найден' })
+        res.status(200).json({ msg: 'Бонус успешно обновлён', data: updatedBonus })
+    } catch (e) {
+        res.status(400).json({ msg: e.message })
+    }
+})
+
+router.delete('/api/bonuses/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(400).json({ msg: 'Некорректный идентификатор бонуса' })
+        const deletedBonus = await bonusesModel.findByIdAndDelete(id)
+        if (!deletedBonus) return res.status(404).json({ msg: 'Бонус не найден' })
+        res.status(200).json({ msg: 'Бонус успешно удалён' })
+    } catch (e) {
+        res.status(400).json({ msg: e.message })
+    }
+})
+
 module.exports = router

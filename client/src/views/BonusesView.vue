@@ -40,6 +40,20 @@
                     <strong class="bonus-value">+ {{ row.bonusValue }} ₽</strong>
                 </template>
             </el-table-column>
+            <el-table-column label="Редактировать" width="145" align="center">
+                <template #default="{ row }">
+                    <el-button circle type="warning" @click="openEditBonus(row)">
+                        <el-icon><Edit /></el-icon>
+                    </el-button>
+                </template>
+            </el-table-column>
+            <el-table-column label="Удалить" width="110" align="center">
+                <template #default="{ row }">
+                    <el-button circle type="danger" @click="confirmDeleteBonus(row)">
+                        <el-icon><Delete /></el-icon>
+                    </el-button>
+                </template>
+            </el-table-column>
         </el-table>
     </div>
     <el-empty v-else description="Выберите период и загрузите бонусы" />
@@ -65,13 +79,37 @@
 
     </el-dialog>
 
+    <el-dialog title="Редактировать бонус" v-model="isShowEditBonus" width="500px">
+        <el-form v-if="editingBonus" label-position="top">
+            <el-form-item label="Дата">
+                <el-date-picker v-model="editingBonus.bonusDate" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
+            </el-form-item>
+            <el-form-item label="Название">
+                <el-select v-model="editingBonus.bonusText" style="width: 100%">
+                    <el-option v-for="type in allBonusTexts" :key="type" :label="type" :value="type" />
+                </el-select>
+            </el-form-item>
+            <el-form-item label="Лидоруб">
+                <FormItemSelect v-if="usersList.length > 0" v-model="editingBonus.bonusUserName" :options="usersList" valueKey="name" labelKey="name" />
+            </el-form-item>
+            <el-form-item label="Сумма бонуса">
+                <el-input v-model.number="editingBonus.bonusValue" type="number" />
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <el-button @click="isShowEditBonus = false">Отмена</el-button>
+            <el-button type="primary" :loading="savingBonus" @click="saveEditedBonus">Сохранить</el-button>
+        </template>
+    </el-dialog>
+
 </template>
 
 <script>
 
     import dayjs from 'dayjs';
 
-    import { ElMessage } from 'element-plus';
+    import { ElMessage, ElMessageBox } from 'element-plus';
+    import { Delete, Edit } from '@element-plus/icons-vue'
     import FormItemSelect from '../components/FormItemSelect.vue'
 
 
@@ -83,9 +121,12 @@
                 lte: dayjs(new Date).format('YYYY-MM-DD'),
                 bonusesData: null,
                 isShowModalToBonus: false,
+                isShowEditBonus: false,
+                editingBonus: null,
+                savingBonus: false,
                 allBonusTexts: ['Ручной бонус'],
                 bonusesTypes: [{type: 'handBonus', text: 'Ручной бонус'}],
-                usersList: null,
+                usersList: [],
                 newHandBonus: {
                     bonusDate: dayjs(new Date).format('YYYY-MM-DD'),
                     bonusType: null,
@@ -98,7 +139,9 @@
             }
         },
         components: {
-            FormItemSelect
+            FormItemSelect,
+            Delete,
+            Edit
         },
         methods: {
             async fetchBonuses() {
@@ -122,7 +165,7 @@
                         col: 'api/users/getList',
                         params: {}
                     })
-                    this.usersList = response.data
+                    this.usersList = response.data || []
                 } catch (e) {
                     console.log(e.message)
                 }
@@ -173,12 +216,63 @@
                         type: 'error',
                     })
                 }
+            },
+            openEditBonus(row) {
+                this.editingBonus = { ...row }
+                this.isShowEditBonus = true
+            },
+            async saveEditedBonus() {
+                if (!this.editingBonus) return
+                const user = this.usersList.find(item => item.name === this.editingBonus.bonusUserName)
+                if (!user) {
+                    ElMessage.error('Выберите пользователя')
+                    return
+                }
+                this.savingBonus = true
+                try {
+                    const result = await this.$store.dispatch('updateDataList', {
+                        col: `api/bonuses/${this.editingBonus._id}`,
+                        data: {
+                            bonusDate: this.editingBonus.bonusDate,
+                            bonusText: this.editingBonus.bonusText,
+                            bonusValue: Number(this.editingBonus.bonusValue),
+                            bonusUserId: user._id,
+                            bonusUserName: user.name,
+                            userEmail: user.email
+                        }
+                    })
+                    ElMessage.success(result.msg || 'Бонус обновлён')
+                    this.isShowEditBonus = false
+                    await this.fetchBonuses()
+                } catch (e) {
+                    ElMessage.error(e.response?.data?.msg || e.message || 'Не удалось обновить бонус')
+                } finally {
+                    this.savingBonus = false
+                }
+            },
+            async confirmDeleteBonus(row) {
+                try {
+                    await ElMessageBox.confirm(
+                        `Удалить бонус для ${row.bonusUserName} от ${row.bonusDate}?`,
+                        'Подтверждение удаления',
+                        { type: 'warning', confirmButtonText: 'Удалить', cancelButtonText: 'Отмена' }
+                    )
+                    const result = await this.$store.dispatch('deleteDataList', {
+                        col: `api/bonuses/${row._id}`
+                    })
+                    ElMessage.success(result.msg || 'Бонус удалён')
+                    await this.fetchBonuses()
+                } catch (e) {
+                    if (e !== 'cancel' && e !== 'close') {
+                        ElMessage.error(e.response?.data?.msg || e.message || 'Не удалось удалить бонус')
+                    }
+                }
             }
         },
         async beforeMount() {
             await this.fetchLidorubs()
             this.newHandBonus.bonusText = this.allBonusTexts[0]
-            this.newHandBonus.bonusUserName = this.usersList[0]
+            this.newHandBonus.bonusUserName = this.usersList[0]?.name || null
         }
     }
 
