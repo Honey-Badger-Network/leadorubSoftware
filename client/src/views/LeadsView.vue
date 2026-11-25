@@ -67,7 +67,7 @@
                 </template>
               </el-table-column>
               <el-table-column :width="160" prop="userName" label="Имя"></el-table-column>
-              <el-table-column :width="150" prop="leadProject" label="База">
+              <el-table-column v-if="rankName === 'admin'" :width="150" prop="leadProject" label="База">
                 <template #default="{ row }">
                   <el-tag v-if="row.leadProject" type="primary" effect="plain">{{ row.leadProject }}</el-tag>
                   <el-text v-else type="info">Не указана</el-text>
