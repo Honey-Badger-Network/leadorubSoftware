@@ -67,6 +67,12 @@
                 </template>
               </el-table-column>
               <el-table-column :width="160" prop="userName" label="Имя"></el-table-column>
+              <el-table-column :width="150" prop="leadProject" label="База">
+                <template #default="{ row }">
+                  <el-tag v-if="row.leadProject" type="primary" effect="plain">{{ row.leadProject }}</el-tag>
+                  <el-text v-else type="info">Не указана</el-text>
+                </template>
+              </el-table-column>
               <el-table-column :width="110" prop="statusOKK" label="Статус ОКК">
                 <template #default="{ row }">
                   <el-tag :type="row.statusOKK ? 'success' : 'info'" round>
@@ -74,7 +80,16 @@
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column :width="160" prop="commentOKK" label="Коментарий"></el-table-column>
+              <el-table-column :width="200" prop="commentOKK" label="Комментарий">
+                <template #default="{ row }">
+                  <span v-if="row.commentOKK && row.commentOKK.length <= 50">{{ row.commentOKK }}</span>
+                  <el-button v-else-if="row.commentOKK" link type="primary" @click="openComment(row.commentOKK)">
+                    <el-icon><ChatDotRound /></el-icon>
+                    Показать
+                  </el-button>
+                  <el-text v-else type="info">Нет комментария</el-text>
+                </template>
+              </el-table-column>
               <el-table-column :width="160" prop="selfLeadName" label="Сам перевел" />
 
               <!-- новые свойства рендерю в таблицу -->
@@ -270,6 +285,10 @@
       </div>
     </el-dialog>
 
+    <el-dialog v-model="isCommentDialogVisible" title="Комментарий ОКК" width="min(560px, 94vw)">
+      <el-text style="white-space: pre-wrap; line-height: 1.6">{{ selectedComment }}</el-text>
+    </el-dialog>
+
 </template>
   
 
@@ -296,7 +315,7 @@
 
   import FormItemSelect from '../components/FormItemSelect.vue'
   import { ElMessage } from 'element-plus';
-  import { Plus, Delete } from '@element-plus/icons-vue'
+  import { Plus, Delete, ChatDotRound } from '@element-plus/icons-vue'
 
   
   export default {
@@ -320,6 +339,8 @@
 
         isShowModalCreateLead: false,
         isShowModalLeadInfo: false,
+        isCommentDialogVisible: false,
+        selectedComment: '',
         newLeadsObject: {
           date: dayjs().format('YYYY-MM-DD'),
           time: dayjs().format('HH:mm:ss'),
@@ -346,7 +367,8 @@
       Pagination,
       FormItemSelect,
       Plus,
-      Delete
+      Delete,
+      ChatDotRound
     },
     computed: {
       handCurrentLeads() {
@@ -457,6 +479,10 @@
       openInfoModalLead(lead) {
         this.isShowLeadObjectToModal = lead
         this.isShowModalLeadInfo = true
+      },
+      openComment(comment) {
+        this.selectedComment = comment
+        this.isCommentDialogVisible = true
       },
       async fetchLeads() {
         const params = {
