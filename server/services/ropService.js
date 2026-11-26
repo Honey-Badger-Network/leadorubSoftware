@@ -14,6 +14,10 @@ function toFiniteNumber (value) {
     return Number.isFinite(number) ? number : 0
 }
 
+function newClear(row = {}) {
+    return toFiniteNumber(row.financeClear !== undefined ? row.financeClear : row.clear)
+}
+
 function roundToTwo(value) {
     return Math.round((value + Number.EPSILON) * 100) / 100
 }
@@ -44,7 +48,7 @@ export function getCardDataToSumAggr (usersStatsDataArray = []) {
 
     usersStatsDataArray.forEach((row = {}) => {
         USER_STATS_SUM_KEYS.forEach((key) => {
-            totalObject[key] += toFiniteNumber(row[key])
+            totalObject[key] += key === 'clear' ? newClear(row) : toFiniteNumber(row[key])
         })
     })
 
@@ -89,6 +93,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
             aggregatedDataObject[row.name].countTargets += toFiniteNumber(row.countTargets)
             aggregatedDataObject[row.name].countHolds += toFiniteNumber(row.countHolds)
             aggregatedDataObject[row.name].sumHold += toFiniteNumber(row.sumHold)
+            aggregatedDataObject[row.name].clear += newClear(row)
         } else {
             aggregatedDataObject[row.name] = {
                 name: row.name,
@@ -101,7 +106,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
                 countHolds: toFiniteNumber(row.countHolds),
                 sumHold: toFiniteNumber(row.sumHold),
                 salary: toFiniteNumber(row.salary),
-                clear: toFiniteNumber(row.clear),
+                clear: newClear(row),
                 countCreated: 0,
                 countBreaked: 0,
                 countInvalid: 0
@@ -154,7 +159,7 @@ export function getLidorubsDataAggregated (leadsDataArray, usersStatsArr) {
         totalLidorubValue.countHolds += user.countHolds
         totalLidorubValue.sumHold += user.sumHold
         totalLidorubValue.salary += user.salary
-        totalLidorubValue.clear += user.clear
+        totalLidorubValue.clear += newClear(user)
         totalLidorubValue.countCreated += user.countCreated
         totalLidorubValue.countBreaked += user.countBreaked
         totalLidorubValue.countInvalid += user.countInvalid

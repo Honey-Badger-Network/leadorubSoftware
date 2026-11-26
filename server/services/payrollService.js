@@ -30,7 +30,7 @@ function getRopSalary(rows, users, date) {
         const rank = row.rankName || byId.get(String(row.user))?.rankName || byEmail.get(row.email)?.rankName
         const day = byDate.get(row.date)
         if (rank !== 'leadorub' || !day) continue
-        for (const key of METRICS) day[key] += number(row[key])
+        for (const key of METRICS) day[key] += number(key === 'clear' ? row.financeClear : row[key])
     }
     const total = { name: 'РОП', date: 'Итого за неделю' }
     for (const key of [...METRICS, 'salary']) total[key] = days.reduce((sum, day) => sum + day[key], 0)

@@ -102,12 +102,7 @@
                 <el-text tag="b">{{ row.salary + row.scriptBonus }}</el-text>
             </template>
         </el-table-column>
-        <el-table-column :width="110" prop="clear" label="Чистая">
-            <template #default="{ row }">
-                <el-text tag="b" :type="row.clear >= 0 ? 'success' : 'danger'">{{ row.clear }}</el-text>
-            </template>
-        </el-table-column>
-        <el-table-column v-if="userRole === 'admin'" label="Новая чистая" :width="140">
+        <el-table-column v-if="userRole === 'admin'" label="Чистая" :width="140">
             <template #default="{ row }">
                 <el-text tag="b" :type="row.financeClear >= 0 ? 'success' : 'danger'">{{ new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(row.financeClear || 0) }}</el-text>
             </template>

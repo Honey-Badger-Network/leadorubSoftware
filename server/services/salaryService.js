@@ -42,10 +42,10 @@ function calculateBonusToClearPrice(userObject) {
 
     let bonusToClear
 
-    if (userObject.clear > 0) {
-        // bonusToClear = Math.floor(userObject.clear * 0.1)
+    if (userObject.financeClear > 0) {
+        // bonusToClear = Math.floor(userObject.financeClear * 0.1)
         // TODO тоже меняется в тесте мотивации 20% от чистой бонус (0.2 или 0.1)
-        bonusToClear = Math.floor(userObject.clear * 0.1)
+        bonusToClear = Math.floor(userObject.financeClear * 0.1)
     } else {
         bonusToClear = 0
     }
@@ -78,7 +78,7 @@ async function getFullMonthClear(gte, lte, dateType) {
             {
                 $group: {
                     _id: "$email", // группировка по имени пользователя
-                    totalClear: { $sum: "$clear" } // сумма поля clear для каждого пользователя
+                    totalClear: { $sum: "$financeClear" } // сумма новой чистой для каждого пользователя
                 }
             }
         ]);

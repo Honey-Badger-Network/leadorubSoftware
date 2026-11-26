@@ -40,11 +40,11 @@ async function upsertBonusDataByUsers(date) {
             // перебор статистика и агрегация
             usersStatsDataWeek.forEach((user) => {
                 if (aggregatedUsersStatsObject[user.email]) {
-                    aggregatedUsersStatsObject[user.email].clear += user.clear
+                    aggregatedUsersStatsObject[user.email].clear += Number(user.financeClear || 0)
                 } else {
                     aggregatedUsersStatsObject[user.email] = {
                         email: user.email,
-                        clear: user.clear,
+                        clear: Number(user.financeClear || 0),
                         bonusUserId: user._id,
                         bonusUserName: user.name,
                         bonusDate: dayOfEndWeek

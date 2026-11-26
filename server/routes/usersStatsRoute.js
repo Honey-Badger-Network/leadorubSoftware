@@ -89,11 +89,11 @@ router.get('/api/salary/bestLidorub', async (req, res) => {
 
         monthlySalaryData.forEach((date) => {
             if (aggregatedMonthlyData[date.name]) {
-                aggregatedMonthlyData[date.name].clear += date.clear
+                aggregatedMonthlyData[date.name].clear += Number(date.financeClear || 0)
             } else {
                 aggregatedMonthlyData[date.name] = {
                     name: date.name,
-                    clear: date.clear
+                    clear: Number(date.financeClear || 0)
                 }
             }
         })
@@ -220,7 +220,7 @@ router.get('/api/salary/get', async (req, res) => {
                 resultObject[userEmail].countHolds += item.countHolds
                 resultObject[userEmail].sumHold += item.sumHold
                 resultObject[userEmail].salary += Math.round(item.salary)
-                resultObject[userEmail].clear += item.clear
+                resultObject[userEmail].clear += item.financeClear || 0
                 resultObject[userEmail].financeClear += item.financeClear || 0
                 resultObject[userEmail].ropSalary += item.ropSalary || 0
                 resultObject[userEmail].baseMinuse += item.baseMinuse || 0
@@ -238,7 +238,7 @@ router.get('/api/salary/get', async (req, res) => {
                     sumHold: item.sumHold,
                     salary: Math.round(item.salary),
                     // scriptBonus: bonusByDate,
-                    clear: item.clear,
+                    clear: item.financeClear || 0,
                     financeClear: item.financeClear || 0,
                     ropSalary: item.ropSalary || 0,
                     baseMinuse: item.baseMinuse || 0,
